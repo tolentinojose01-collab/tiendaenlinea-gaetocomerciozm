@@ -16,7 +16,7 @@
         .toolbar{background:#1e2a3e;padding:12px;border-radius:20px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:25px;position:sticky;top:0;z-index:150;box-shadow:0 4px 12px rgba(0,0,0,0.2)}
         .toolbar button,.toolbar label{background:#2d3a4e;border:none;padding:8px 16px;border-radius:40px;color:white;cursor:pointer;font-size:13px}
         .toolbar .danger{background:#b91c1c}
-        .toolbar .share{background:#25d366} /* Color verde WhatsApp para el botón de compartir */
+        .toolbar .share{background:#25d366}
         
         .contenedor-busqueda {max-width:500px; margin: 0 auto 20px auto; display: flex; gap: 10px;}
         .busqueda-input {flex: 1; padding: 12px 20px; border-radius: 40px; border: 1px solid #ccc; outline: none; font-size: 14px;}
@@ -24,11 +24,23 @@
         .filtro-categorias{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:25px}
         .filtro-btn{background:#e2e8f0;border:none;padding:8px 20px;border-radius:40px;font-weight:bold;cursor:pointer}
         .filtro-btn.activo{background:#002b5c;color:white}
-        .producto{background:white;border-radius:28px;margin-bottom:30px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,0.08);position:relative}
-        .etiqueta-promo{position:absolute;top:15px;right:15px;background:#e11d48;color:white;padding:6px 12px;border-radius:50px;font-weight:bold;font-size:12px;text-align:center;z-index:2}
-        .vigencia{font-size:10px;display:block;margin-top:3px}
+        .producto{background:white;border-radius:28px;margin-bottom:30px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,0.08)}
+        
+        /* NUEVO NOMBRE PARA DESTRUIR LA MEMORIA VIEJA DEL CELULAR */
+        .banner-promo-fuera{
+            display:block;
+            background:#e11d48;
+            color:white;
+            padding:12px 15px;
+            font-weight:bold;
+            font-size:14px;
+            text-align:center;
+            border-bottom: 3px solid white; /* Separación visual de la foto */
+        }
+        .banner-promo-fuera .vigencia{font-size:11px;display:block;margin-top:3px}
+        
         .codigo{font-size:12px;color:#666;margin-bottom:5px;font-family:monospace}
-        .imagen-area{width:100%;background:white;display:flex;justify-content:center;align-items:center;height:250px;border-bottom:1px solid #e2e8f0}
+        .imagen-area{width:100%;background:white;display:flex;justify-content:center;align-items:center;height:250px}
         .imagen-area img{max-width:100%;max-height:100%;object-fit:contain}
         .sin-imagen{color:#94a3b8;text-align:center}
         .info{padding:20px}
@@ -66,7 +78,12 @@
         .modal-pwd-content input {width:100%; padding:10px; border-radius:20px; border:1px solid #ccc; text-align:center; margin-bottom:15px; font-size:16px;}
         .modal-pwd-content button {background:#002b5c; color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer; font-weight:bold;}
 
-        @media (max-width:600px){.imagen-area{height:200px}.banner{font-size:11px}.btn-enviar-wa{font-size:14px}}
+        @media (max-width:600px){
+            .imagen-area{height:200px}
+            .banner{font-size:11px}
+            .btn-enviar-wa{font-size:14px}
+            .banner-promo-fuera{font-size:12px; padding:10px} /* Compacto en celular */
+        }
     </style>
 </head>
 <body>
@@ -123,8 +140,9 @@ let modoAdmin = false;
 let categoriaActiva = "TODOS";
 let textoBusqueda = "";
 
-const DB_PRODUCTOS = 'gaeto_productos_v4';
-const DB_CARRITO = 'gaeto_carrito_v4';
+// Versión 7 para limpieza total
+const DB_PRODUCTOS = 'gaeto_productos_v7';
+const DB_CARRITO = 'gaeto_carrito_v7';
 
 function guardarProductosEnLocal() { localStorage.setItem(DB_PRODUCTOS, JSON.stringify(productos)); }
 function guardarCarritoEnLocal() { localStorage.setItem(DB_CARRITO, JSON.stringify(carrito)); }
@@ -174,7 +192,9 @@ function renderizarProductos() {
         const tieneDesc = p.descuento > 0;
         const imgHtml = p.imagen ? `<img src="${p.imagen}">` : `<div class="sin-imagen">📷 Sin imagen</div>`;
         const fechaVig = p.vigencia ? formatearFecha(p.vigencia) : "";
-        const promoTag = tieneDesc ? `<div class="etiqueta-promo">🔥 ${p.descuento}% OFF ${fechaVig ? `<span class="vigencia">Válido hasta: ${fechaVig}</span>` : ''}</div>` : '';
+        
+        // AQUÍ USO EL NUEVO NOMBRE
+        const promoTag = tieneDesc ? `<div class="banner-promo-fuera">🔥 ${p.descuento}% OFF ${fechaVig ? `<span class="vigencia">Válido hasta: ${fechaVig}</span>` : ''}</div>` : '';
         const tel = p.telefono || "522282877441";
         
         const div = document.createElement('div');
@@ -334,37 +354,24 @@ function reiniciar() {
     }
 }
 
-// FUNCIÓN NUEVA: COMPARTIR CATÁLOGO POR WHATSAPP
 function compartirCatalogo() {
     let urlActual = window.location.href;
-    
-    // Verificar si está abierto localmente (no hay enlace público)
     if(urlActual.startsWith('file:///')) {
-        alert("⚠️ Estás abriendo el archivo localmente en tu computadora.\n\nNo tienes un enlace público todavía.\n\nPara obtener un enlace que puedas mandar por WhatsApp, primero sube este archivo a GitHub Pages o Netlify.");
+        alert("⚠️ Estás abriendo el archivo localmente.\n\nPara obtener un enlace público, sube este archivo a GitHub o Netlify.");
         return;
     }
-
-    // Limpiar parámetros previos de versión si existen
     let urlLimpia = urlActual.split('?')[0];
-    
-    // Preguntar número de versión para forzar actualización
     let version = prompt("🔢 Ingresa un número de versión (ej: 1, 2, 3) para forzar que los celulares vean la última actualización:", "1");
-    if (version === null) return; // Canceló
-    
+    if (version === null) return;
     let urlFinal = urlLimpia + "?v=" + version;
     let mensaje = "¡Hola! 👋 Te comparto el catálogo actualizado de *GAETO COMERCIOS*. ¡Échale un vistazo a nuestros productos! 🛍️\n\n" + urlFinal;
-
     let opcion = confirm("¿Qué deseas hacer?\n\n✅ ACEPTAR = Enviar el enlace directamente por WhatsApp.\n❌ CANCELAR = Solo copiar el enlace al portapapeles.");
-    
     if(opcion) {
-        // Abrir WhatsApp con el mensaje
         window.open("https://wa.me/?text=" + encodeURIComponent(mensaje), '_blank');
     } else {
-        // Copiar al portapapeles
         navigator.clipboard.writeText(mensaje).then(() => {
             alert("✅ ¡Enlace y mensaje copiados!\n\nAhora pégalo donde quieras enviarlo.");
         }).catch(err => {
-            // Si falla el portapapeles, mostrar en pantalla
             prompt("Copia este texto manualmente:", mensaje);
         });
     }
@@ -433,7 +440,7 @@ window.onload = function() {
         document.getElementById('toggleModoBtn').onclick = toggleModo;
         document.getElementById('agregarProductoBtn').onclick = agregarProducto;
         document.getElementById('reiniciarBtn').onclick = reiniciar;
-        document.getElementById('compartirBtn').onclick = compartirCatalogo; // Evento del nuevo botón
+        document.getElementById('compartirBtn').onclick = compartirCatalogo;
         document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; guardarCarritoEnLocal(); renderizarCarrito(); };
 
     } catch (error) {
