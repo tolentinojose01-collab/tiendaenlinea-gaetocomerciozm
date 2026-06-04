@@ -16,6 +16,7 @@
         .toolbar{background:#1e2a3e;padding:12px;border-radius:20px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:25px;position:sticky;top:0;z-index:150;box-shadow:0 4px 12px rgba(0,0,0,0.2)}
         .toolbar button,.toolbar label{background:#2d3a4e;border:none;padding:8px 16px;border-radius:40px;color:white;cursor:pointer;font-size:13px}
         .toolbar .danger{background:#b91c1c}
+        .toolbar .share{background:#25d366} /* Color verde WhatsApp para el botón de compartir */
         
         .contenedor-busqueda {max-width:500px; margin: 0 auto 20px auto; display: flex; gap: 10px;}
         .busqueda-input {flex: 1; padding: 12px 20px; border-radius: 40px; border: 1px solid #ccc; outline: none; font-size: 14px;}
@@ -85,9 +86,10 @@
 </div>
 
 <div class="toolbar" id="toolbar">
+    <button id="compartirBtn" class="share">📤 COMPARTIR CATÁLOGO</button>
     <button id="toggleModoBtn">👁️ VER COMO CLIENTE</button>
     <button id="agregarProductoBtn">➕ AGREGAR PRODUCTO</button>
-    <button id="reiniciarBtn" class="danger">🗑️ VACIAR CATÁLOGO Y RECARGAR</button>
+    <button id="reiniciarBtn" class="danger">🗑️ VACIAR CATÁLOGO</button>
 </div>
 
 <div class="filtro-categorias" id="filtroCategorias"></div>
@@ -113,7 +115,7 @@
 
 <script>
 const ADMIN_PASSWORD = "1310";
-const PRODUCTOS_INICIALES = []; // Base de datos maestra vacía
+const PRODUCTOS_INICIALES = []; 
 
 let productos = [];
 let carrito = [];
@@ -121,9 +123,8 @@ let modoAdmin = false;
 let categoriaActiva = "TODOS";
 let textoBusqueda = "";
 
-// CAMBIO CRÍTICO: Nuevos nombres de base de datos para evitar el caché fantasma
-const DB_PRODUCTOS = 'gaeto_productos_v3';
-const DB_CARRITO = 'gaeto_carrito_v3';
+const DB_PRODUCTOS = 'gaeto_productos_v4';
+const DB_CARRITO = 'gaeto_carrito_v4';
 
 function guardarProductosEnLocal() { localStorage.setItem(DB_PRODUCTOS, JSON.stringify(productos)); }
 function guardarCarritoEnLocal() { localStorage.setItem(DB_CARRITO, JSON.stringify(carrito)); }
@@ -326,11 +327,46 @@ function agregarProducto() {
 }
 
 function reiniciar() {
-    if (confirm("⚠️ ¿VACIAR todo el catálogo y recargar la página? Esto borrará los productos guardados en este dispositivo.")) {
+    if (confirm("⚠️ ¿VACIAR todo el catálogo? Esto borrará los productos guardados en este dispositivo.")) {
         localStorage.removeItem(DB_PRODUCTOS);
         localStorage.removeItem(DB_CARRITO);
-        // El true fuerza al navegador a recargar la página desde el servidor (GitHub) y no desde su caché
         window.location.reload(true); 
+    }
+}
+
+// FUNCIÓN NUEVA: COMPARTIR CATÁLOGO POR WHATSAPP
+function compartirCatalogo() {
+    let urlActual = window.location.href;
+    
+    // Verificar si está abierto localmente (no hay enlace público)
+    if(urlActual.startsWith('file:///')) {
+        alert("⚠️ Estás abriendo el archivo localmente en tu computadora.\n\nNo tienes un enlace público todavía.\n\nPara obtener un enlace que puedas mandar por WhatsApp, primero sube este archivo a GitHub Pages o Netlify.");
+        return;
+    }
+
+    // Limpiar parámetros previos de versión si existen
+    let urlLimpia = urlActual.split('?')[0];
+    
+    // Preguntar número de versión para forzar actualización
+    let version = prompt("🔢 Ingresa un número de versión (ej: 1, 2, 3) para forzar que los celulares vean la última actualización:", "1");
+    if (version === null) return; // Canceló
+    
+    let urlFinal = urlLimpia + "?v=" + version;
+    let mensaje = "¡Hola! 👋 Te comparto el catálogo actualizado de *GAETO COMERCIOS*. ¡Échale un vistazo a nuestros productos! 🛍️\n\n" + urlFinal;
+
+    let opcion = confirm("¿Qué deseas hacer?\n\n✅ ACEPTAR = Enviar el enlace directamente por WhatsApp.\n❌ CANCELAR = Solo copiar el enlace al portapapeles.");
+    
+    if(opcion) {
+        // Abrir WhatsApp con el mensaje
+        window.open("https://wa.me/?text=" + encodeURIComponent(mensaje), '_blank');
+    } else {
+        // Copiar al portapapeles
+        navigator.clipboard.writeText(mensaje).then(() => {
+            alert("✅ ¡Enlace y mensaje copiados!\n\nAhora pégalo donde quieras enviarlo.");
+        }).catch(err => {
+            // Si falla el portapapeles, mostrar en pantalla
+            prompt("Copia este texto manualmente:", mensaje);
+        });
     }
 }
 
@@ -397,6 +433,7 @@ window.onload = function() {
         document.getElementById('toggleModoBtn').onclick = toggleModo;
         document.getElementById('agregarProductoBtn').onclick = agregarProducto;
         document.getElementById('reiniciarBtn').onclick = reiniciar;
+        document.getElementById('compartirBtn').onclick = compartirCatalogo; // Evento del nuevo botón
         document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; guardarCarritoEnLocal(); renderizarCarrito(); };
 
     } catch (error) {
