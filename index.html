@@ -26,7 +26,6 @@
         .filtro-btn.activo{background:#002b5c;color:white}
         .producto{background:white;border-radius:28px;margin-bottom:30px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,0.08)}
         
-        /* NUEVO NOMBRE PARA DESTRUIR LA MEMORIA VIEJA DEL CELULAR */
         .banner-promo-fuera{
             display:block;
             background:#e11d48;
@@ -35,7 +34,7 @@
             font-weight:bold;
             font-size:14px;
             text-align:center;
-            border-bottom: 3px solid white; /* Separación visual de la foto */
+            border-bottom: 3px solid white;
         }
         .banner-promo-fuera .vigencia{font-size:11px;display:block;margin-top:3px}
         
@@ -82,7 +81,7 @@
             .imagen-area{height:200px}
             .banner{font-size:11px}
             .btn-enviar-wa{font-size:14px}
-            .banner-promo-fuera{font-size:12px; padding:10px} /* Compacto en celular */
+            .banner-promo-fuera{font-size:12px; padding:10px}
         }
     </style>
 </head>
@@ -140,7 +139,6 @@ let modoAdmin = false;
 let categoriaActiva = "TODOS";
 let textoBusqueda = "";
 
-// Versión 7 para limpieza total
 const DB_PRODUCTOS = 'gaeto_productos_v7';
 const DB_CARRITO = 'gaeto_carrito_v7';
 
@@ -192,8 +190,6 @@ function renderizarProductos() {
         const tieneDesc = p.descuento > 0;
         const imgHtml = p.imagen ? `<img src="${p.imagen}">` : `<div class="sin-imagen">📷 Sin imagen</div>`;
         const fechaVig = p.vigencia ? formatearFecha(p.vigencia) : "";
-        
-        // AQUÍ USO EL NUEVO NOMBRE
         const promoTag = tieneDesc ? `<div class="banner-promo-fuera">🔥 ${p.descuento}% OFF ${fechaVig ? `<span class="vigencia">Válido hasta: ${fechaVig}</span>` : ''}</div>` : '';
         const tel = p.telefono || "522282877441";
         
@@ -434,7 +430,6 @@ window.onload = function() {
         };
 
         document.getElementById('btnCancelarAdmin').onclick = () => { document.getElementById('modalPwd').style.display = "none"; };
-
         document.getElementById('busquedaInput').oninput = (e) => { textoBusqueda = e.target.value; renderizarProductos(); };
 
         document.getElementById('toggleModoBtn').onclick = toggleModo;
