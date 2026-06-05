@@ -10,7 +10,6 @@
         .encabezado{text-align:center;background:white;border-radius:40px;padding:15px;margin-bottom:20px;position:relative}
         .logo{max-width:250px;width:80%;cursor:pointer}
         .badge-admin{position:absolute;bottom:5px;right:15px;background:#ff9800;color:#000;font-size:10px;padding:2px 8px;border-radius:20px;display:none}
-        .hint-admin{display:block;text-align:center;font-size:10px;color:#94a3b8;margin-top:-10px;margin-bottom:15px}
         .banner{background:#1e2a3e;color:#ffd966;text-align:center;padding:10px;border-radius:60px;margin-bottom:20px;font-size:13px;line-height:1.4}
         
         .toolbar{background:#1e2a3e;padding:12px;border-radius:20px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:25px;position:sticky;top:0;z-index:150;box-shadow:0 4px 12px rgba(0,0,0,0.2)}
@@ -26,16 +25,7 @@
         .filtro-btn.activo{background:#002b5c;color:white}
         .producto{background:white;border-radius:28px;margin-bottom:30px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,0.08)}
         
-        .banner-promo-fuera{
-            display:block;
-            background:#e11d48;
-            color:white;
-            padding:12px 15px;
-            font-weight:bold;
-            font-size:14px;
-            text-align:center;
-            border-bottom: 3px solid white;
-        }
+        .banner-promo-fuera{display:block; background:#e11d48; color:white; padding:12px 15px; font-weight:bold; font-size:14px; text-align:center; border-bottom: 3px solid white;}
         .banner-promo-fuera .vigencia{font-size:11px;display:block;margin-top:3px}
         
         .codigo{font-size:12px;color:#666;margin-bottom:5px;font-family:monospace}
@@ -90,7 +80,6 @@
     <img src="https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png" class="logo" id="logoAdmin">
     <div class="badge-admin" id="badgeAdmin">🔧 ADMIN</div>
 </div>
-<div class="hint-admin" id="hintAdmin">🔒 Haz clic en el logo e ingresa la clave para administrar</div>
 
 <div class="banner">
     <div>📅 PEDIDOS: LUNES, MARTES, MIÉRCOLES</div>
@@ -139,8 +128,9 @@ let modoAdmin = false;
 let categoriaActiva = "TODOS";
 let textoBusqueda = "";
 
-const DB_PRODUCTOS = 'gaeto_productos_v7';
-const DB_CARRITO = 'gaeto_carrito_v7';
+// Base de datos v9 para limpieza total
+const DB_PRODUCTOS = 'gaeto_productos_v9';
+const DB_CARRITO = 'gaeto_carrito_v9';
 
 function guardarProductosEnLocal() { localStorage.setItem(DB_PRODUCTOS, JSON.stringify(productos)); }
 function guardarCarritoEnLocal() { localStorage.setItem(DB_CARRITO, JSON.stringify(carrito)); }
@@ -155,10 +145,7 @@ function cargarDatosLocales() {
         if (!Array.isArray(productos)) productos = [];
         if (!Array.isArray(carrito)) carrito = [];
     } catch (e) {
-        productos = [];
-        carrito = [];
-        guardarProductosEnLocal();
-        guardarCarritoEnLocal();
+        productos = []; carrito = []; guardarProductosEnLocal(); guardarCarritoEnLocal();
     }
 }
 
@@ -183,7 +170,7 @@ function renderizarProductos() {
 
     const contenedor = document.getElementById('contenedorProductos');
     contenedor.innerHTML = '';
-    if (filtrados.length === 0) { contenedor.innerHTML = '<div style="padding:40px; text-align:center;">📭 No hay productos agregados aún.<br><br>💡 Tip: Haz clic en el logo y entra como Admin para agregar productos.</div>'; return; }
+    if (filtrados.length === 0) { contenedor.innerHTML = '<div style="padding:40px; text-align:center;">📭 No hay productos agregados aún.</div>'; return; }
     
     for (let p of filtrados) {
         const final = precioFinal(p);
@@ -239,10 +226,7 @@ function renderizarProductos() {
                 prod.descuento = parseFloat(document.getElementById(`descuentoInput-${id}`)?.value) || 0;
                 prod.vigencia = document.getElementById(`vigenciaInput-${id}`)?.value || '';
                 prod.imagen = document.getElementById(`urlInput-${id}`)?.value.trim() || '';
-                guardarProductosEnLocal();
-                renderizarFiltros();
-                renderizarProductos();
-                renderizarCarrito();
+                guardarProductosEnLocal(); renderizarFiltros(); renderizarProductos(); renderizarCarrito();
             }
         });
         document.querySelectorAll('.btn-subir-archivo').forEach(btn => btn.onclick = () => {
@@ -253,194 +237,73 @@ function renderizarProductos() {
                 let file = e.target.files[0];
                 if (file) {
                     let reader = new FileReader();
-                    reader.onload = ev => {
-                        let prod = productos.find(p=>p.id===id);
-                        if (prod) prod.imagen = ev.target.result;
-                        guardarProductosEnLocal();
-                        renderizarProductos();
-                    };
+                    reader.onload = ev => { let prod = productos.find(p=>p.id===id); if (prod) prod.imagen = ev.target.result; guardarProductosEnLocal(); renderizarProductos(); };
                     reader.readAsDataURL(file);
                 }
             };
             input.click();
         });
         document.querySelectorAll('.btn-editar').forEach(btn => btn.onclick = () => {
-            let id = btn.dataset.id;
-            let prod = productos.find(p=>p.id===id);
-            if (!prod) return;
+            let id = btn.dataset.id; let prod = productos.find(p=>p.id===id); if (!prod) return;
             prod.titulo = prompt("Título:", prod.titulo) || prod.titulo;
             prod.descripcion = prompt("Descripción:", prod.descripcion) || prod.descripcion;
-            let np = parseFloat(prompt("Precio lista:", prod.precioLista));
-            if (!isNaN(np)) prod.precioLista = np;
+            let np = parseFloat(prompt("Precio lista:", prod.precioLista)); if (!isNaN(np)) prod.precioLista = np;
             prod.unidad = prompt("Unidad:", prod.unidad) || prod.unidad;
             guardarProductosEnLocal(); renderizarProductos();
         });
         document.querySelectorAll('.btn-eliminar').forEach(btn => btn.onclick = () => {
-            if (confirm("¿Eliminar este producto?")) {
-                let id = btn.dataset.id;
-                productos = productos.filter(p=>p.id!==id);
-                carrito = carrito.filter(c=>c.id!==id);
-                guardarProductosEnLocal(); guardarCarritoEnLocal();
-                renderizarFiltros(); renderizarProductos(); renderizarCarrito();
-            }
+            if (confirm("¿Eliminar este producto?")) { let id = btn.dataset.id; productos = productos.filter(p=>p.id!==id); carrito = carrito.filter(c=>c.id!==id); guardarProductosEnLocal(); guardarCarritoEnLocal(); renderizarFiltros(); renderizarProductos(); renderizarCarrito(); }
         });
     }
 }
 
-function agregarAlCarrito(id, cantidad) {
-    let exist = carrito.find(c=>c.id===id);
-    if (exist) exist.cantidad += cantidad;
-    else carrito.push({id, cantidad});
-    guardarCarritoEnLocal(); renderizarCarrito();
-}
+function agregarAlCarrito(id, cantidad) { let exist = carrito.find(c=>c.id===id); if (exist) exist.cantidad += cantidad; else carrito.push({id, cantidad}); guardarCarritoEnLocal(); renderizarCarrito(); }
 
 function renderizarCarrito() {
-    const lista = document.getElementById('carritoLista');
-    const totalDiv = document.getElementById('totalCarrito');
-    const enviarBtn = document.getElementById('enviarPedidoBtn');
-    
-    if (carrito.length===0) { 
-        lista.innerHTML = '<div style="padding:10px;">🛍️ Carrito vacío</div>'; 
-        totalDiv.innerHTML = 'Total: $0.00'; 
-        enviarBtn.href = "#"; enviarBtn.style.opacity = "0.5";
-        return; 
-    }
-    
-    enviarBtn.style.opacity = "1";
-    let total = 0, msg = "🛒 *MI PEDIDO GAETO:*\n\n";
-    let html = '';
-    
+    const lista = document.getElementById('carritoLista'); const totalDiv = document.getElementById('totalCarrito'); const enviarBtn = document.getElementById('enviarPedidoBtn');
+    if (carrito.length===0) { lista.innerHTML = '<div style="padding:10px;">🛍️ Carrito vacío</div>'; totalDiv.innerHTML = 'Total: $0.00'; enviarBtn.href = "#"; enviarBtn.style.opacity = "0.5"; return; }
+    enviarBtn.style.opacity = "1"; let total = 0, msg = "🛒 *MI PEDIDO GAETO:*\n\n", html = '';
     for (let item of carrito) {
-        const prod = productos.find(p=>p.id===item.id);
-        if (!prod) continue;
-        const final = precioFinal(prod);
-        const subtotal = final * item.cantidad;
-        total += subtotal;
-        
+        const prod = productos.find(p=>p.id===item.id); if (!prod) continue; const final = precioFinal(prod); const subtotal = final * item.cantidad; total += subtotal;
         msg += `📦 ${prod.titulo}\n   Código: ${prod.codigo||'N/A'}\n   Cantidad: ${item.cantidad} ${prod.unidad}\n   Precio unit: $${final.toFixed(2)}\n   Subtotal: $${subtotal.toFixed(2)}\n\n`;
         html += `<div class="carrito-item"><span><strong>${prod.titulo}</strong> x${item.cantidad}<br><span style="font-size:10px;">Cód: ${prod.codigo||'N/A'}</span></span><span>$${subtotal.toFixed(2)} <button class="quitar-item" data-id="${item.id}">🗑</button></span></div>`;
     }
-    
     msg += `💰 *TOTAL: $${total.toFixed(2)}*\n\n📅 DÍAS DE PEDIDO: Lunes, Martes y Miércoles\n🚚 ENTREGAS: Viernes y Sábados (9:00 AM - 6:30 PM)\n\n📍 Envío a acordar\n📞 Gracias por tu compra.`;
-    
-    const telefono = productos[0]?.telefono || "522282877441";
-    enviarBtn.href = `https://wa.me/${telefono}?text=${encodeURIComponent(msg)}`;
-    
-    lista.innerHTML = html;
-    totalDiv.innerHTML = `Total: $${total.toFixed(2)}`;
-    document.querySelectorAll('.quitar-item').forEach(btn => btn.onclick = () => {
-        let id = btn.dataset.id;
-        carrito = carrito.filter(i=>i.id!==id);
-        guardarCarritoEnLocal(); renderizarCarrito();
-    });
+    const telefono = productos[0]?.telefono || "522282877441"; enviarBtn.href = `https://wa.me/${telefono}?text=${encodeURIComponent(msg)}`;
+    lista.innerHTML = html; totalDiv.innerHTML = `Total: $${total.toFixed(2)}`;
+    document.querySelectorAll('.quitar-item').forEach(btn => btn.onclick = () => { let id = btn.dataset.id; carrito = carrito.filter(i=>i.id!==id); guardarCarritoEnLocal(); renderizarCarrito(); });
 }
 
-function agregarProducto() {
-    let nuevoId = Date.now().toString();
-    productos.push({ id: nuevoId, codigo: "NUEVO-001", categoria: "General", titulo: "Nuevo producto", descripcion: "Descripción aquí", precioLista: 100, descuento: 0, vigencia: "", unidad: "PIEZA", telefono: "522282877441", imagen: "" });
-    guardarProductosEnLocal(); renderizarFiltros(); renderizarProductos(); renderizarCarrito();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+function agregarProducto() { let nuevoId = Date.now().toString(); productos.push({ id: nuevoId, codigo: "NUEVO-001", categoria: "General", titulo: "Nuevo producto", descripcion: "Descripción aquí", precioLista: 100, descuento: 0, vigencia: "", unidad: "PIEZA", telefono: "522282877441", imagen: "" }); guardarProductosEnLocal(); renderizarFiltros(); renderizarProductos(); renderizarCarrito(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-function reiniciar() {
-    if (confirm("⚠️ ¿VACIAR todo el catálogo? Esto borrará los productos guardados en este dispositivo.")) {
-        localStorage.removeItem(DB_PRODUCTOS);
-        localStorage.removeItem(DB_CARRITO);
-        window.location.reload(true); 
-    }
-}
+function reiniciar() { if (confirm("⚠️ ¿VACIAR todo el catálogo?")) { localStorage.removeItem(DB_PRODUCTOS); localStorage.removeItem(DB_CARRITO); window.location.reload(true); } }
 
 function compartirCatalogo() {
-    let urlActual = window.location.href;
-    if(urlActual.startsWith('file:///')) {
-        alert("⚠️ Estás abriendo el archivo localmente.\n\nPara obtener un enlace público, sube este archivo a GitHub o Netlify.");
-        return;
-    }
-    let urlLimpia = urlActual.split('?')[0];
-    let version = prompt("🔢 Ingresa un número de versión (ej: 1, 2, 3) para forzar que los celulares vean la última actualización:", "1");
-    if (version === null) return;
-    let urlFinal = urlLimpia + "?v=" + version;
-    let mensaje = "¡Hola! 👋 Te comparto el catálogo actualizado de *GAETO COMERCIOS*. ¡Échale un vistazo a nuestros productos! 🛍️\n\n" + urlFinal;
-    let opcion = confirm("¿Qué deseas hacer?\n\n✅ ACEPTAR = Enviar el enlace directamente por WhatsApp.\n❌ CANCELAR = Solo copiar el enlace al portapapeles.");
-    if(opcion) {
-        window.open("https://wa.me/?text=" + encodeURIComponent(mensaje), '_blank');
-    } else {
-        navigator.clipboard.writeText(mensaje).then(() => {
-            alert("✅ ¡Enlace y mensaje copiados!\n\nAhora pégalo donde quieras enviarlo.");
-        }).catch(err => {
-            prompt("Copia este texto manualmente:", mensaje);
-        });
-    }
+    let urlActual = window.location.href; if(urlActual.startsWith('file:///')) { alert("⚠️ Abre el archivo desde GitHub o Netlify."); return; }
+    let urlLimpia = urlActual.split('?')[0]; let version = prompt("🔢 Ingresa un número de versión (ej: 1, 2, 3):", "1"); if (version === null) return;
+    let urlFinal = urlLimpia + "?v=" + version; let mensaje = "¡Hola! 👋 Te comparto el catálogo actualizado de *GAETO COMERCIOS*. ¡Échale un vistazo a nuestros productos! 🛍️\n\n" + urlFinal;
+    let opcion = confirm("✅ ACEPTAR = Enviar por WhatsApp.\n❌ CANCELAR = Copiar enlace.");
+    if(opcion) { window.open("https://wa.me/?text=" + encodeURIComponent(mensaje), '_blank'); } else { navigator.clipboard.writeText(mensaje).then(() => { alert("✅ ¡Enlace copiado!"); }).catch(err => { prompt("Copia este texto:", mensaje); }); }
 }
 
-function activarModoAdmin() {
-    modoAdmin = true;
-    document.body.classList.add('modo-admin');
-    document.body.classList.remove('modo-cliente');
-    document.getElementById('badgeAdmin').style.display = 'block';
-    document.getElementById('toolbar').style.display = 'flex';
-    document.getElementById('hintAdmin').style.display = 'none';
-    renderizarProductos();
-}
-
-function desactivarModoAdmin() {
-    modoAdmin = false;
-    document.body.classList.remove('modo-admin');
-    document.body.classList.add('modo-cliente');
-    document.getElementById('badgeAdmin').style.display = 'none';
-    document.getElementById('toolbar').style.display = 'none';
-    document.getElementById('hintAdmin').style.display = 'block';
-    renderizarProductos();
-}
-
-function toggleModo() {
-    if (modoAdmin) desactivarModoAdmin();
-    else activarModoAdmin();
-}
+function activarModoAdmin() { modoAdmin = true; document.body.classList.add('modo-admin'); document.body.classList.remove('modo-cliente'); document.getElementById('badgeAdmin').style.display = 'block'; document.getElementById('toolbar').style.display = 'flex'; renderizarProductos(); }
+function desactivarModoAdmin() { modoAdmin = false; document.body.classList.remove('modo-admin'); document.body.classList.add('modo-cliente'); document.getElementById('badgeAdmin').style.display = 'none'; document.getElementById('toolbar').style.display = 'none'; renderizarProductos(); }
+function toggleModo() { if (modoAdmin) desactivarModoAdmin(); else activarModoAdmin(); }
 
 window.onload = function() {
     try {
-        cargarDatosLocales();
-        modoAdmin = false;
-        document.body.classList.add('modo-cliente');
-        document.getElementById('toolbar').style.display = 'none';
-        document.getElementById('badgeAdmin').style.display = 'none';
-        
+        cargarDatosLocales(); modoAdmin = false; document.body.classList.add('modo-cliente'); document.getElementById('toolbar').style.display = 'none'; document.getElementById('badgeAdmin').style.display = 'none';
         renderizarFiltros(); renderizarProductos(); renderizarCarrito();
-
-        document.getElementById('logoAdmin').addEventListener('click', () => {
-            if (!modoAdmin) {
-                document.getElementById('modalPwd').style.display = "flex";
-                document.getElementById('pwdInput').value = "";
-                document.getElementById('pwdInput').focus();
-            } else {
-                alert("Ya estás en modo admin. Usa 'VER COMO CLIENTE' para salir.");
-            }
-        });
-
-        document.getElementById('btnEntrarAdmin').onclick = () => {
-            if (document.getElementById('pwdInput').value === ADMIN_PASSWORD) {
-                activarModoAdmin();
-                document.getElementById('modalPwd').style.display = "none";
-            } else {
-                alert("Contraseña incorrecta.");
-                document.getElementById('pwdInput').value = "";
-                document.getElementById('pwdInput').focus();
-            }
-        };
-
+        document.getElementById('logoAdmin').addEventListener('click', () => { if (!modoAdmin) { document.getElementById('modalPwd').style.display = "flex"; document.getElementById('pwdInput').value = ""; document.getElementById('pwdInput').focus(); } else { alert("Ya estás en modo admin."); } });
+        document.getElementById('btnEntrarAdmin').onclick = () => { if (document.getElementById('pwdInput').value === ADMIN_PASSWORD) { activarModoAdmin(); document.getElementById('modalPwd').style.display = "none"; } else { alert("Contraseña incorrecta."); document.getElementById('pwdInput').value = ""; document.getElementById('pwdInput').focus(); } };
         document.getElementById('btnCancelarAdmin').onclick = () => { document.getElementById('modalPwd').style.display = "none"; };
         document.getElementById('busquedaInput').oninput = (e) => { textoBusqueda = e.target.value; renderizarProductos(); };
-
         document.getElementById('toggleModoBtn').onclick = toggleModo;
         document.getElementById('agregarProductoBtn').onclick = agregarProducto;
         document.getElementById('reiniciarBtn').onclick = reiniciar;
         document.getElementById('compartirBtn').onclick = compartirCatalogo;
         document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; guardarCarritoEnLocal(); renderizarCarrito(); };
-
-    } catch (error) {
-        console.error("Error crítico:", error);
-    }
+    } catch (error) { console.error("Error:", error); }
 };
 </script>
 </body>
