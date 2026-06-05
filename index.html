@@ -13,10 +13,8 @@
         .banner{background:#1e2a3e;color:#ffd966;text-align:center;padding:10px;border-radius:60px;margin-bottom:20px;font-size:13px;line-height:1.4}
         
         .toolbar{background:#1e2a3e;padding:12px;border-radius:20px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:25px;position:sticky;top:0;z-index:150;box-shadow:0 4px 12px rgba(0,0,0,0.2)}
-        .toolbar button,.toolbar label{background:#2d3a4e;border:none;padding:8px 16px;border-radius:40px;color:white;cursor:pointer;font-size:13px}
-        .toolbar .danger{background:#b91c1c}
+        .toolbar button{background:#2d3a4e;border:none;padding:8px 16px;border-radius:40px;color:white;cursor:pointer;font-size:13px;font-weight:bold}
         .toolbar .share{background:#25d366}
-        .toolbar .btn-copiar-sistema{background:#0284c7;font-weight:bold;color:white}
         
         .contenedor-busqueda {max-width:500px; margin: 0 auto 20px auto; display: flex; gap: 10px;}
         .busqueda-input {flex: 1; padding: 12px 20px; border-radius: 40px; border: 1px solid #ccc; outline: none; font-size: 14px;}
@@ -43,19 +41,20 @@
         .acciones input{width:70px;padding:8px;border-radius:40px;border:1px solid #ccc;text-align:center}
         .btn-agregar{background:#ff9800;color:white;border:none;padding:8px 15px;border-radius:40px;cursor:pointer;font-weight:bold;flex:1}
         .btn-wa{background:#25d366;color:white;text-decoration:none;text-align:center;padding:8px 15px;border-radius:40px;font-weight:bold;flex:1}
+        
         .editor-area{margin-top:20px;border-top:1px solid #ddd;padding-top:15px;display:none}
         .modo-admin .editor-area{display:block}
         .campo-row{margin-bottom:12px}
         .campo-row label{font-weight:bold;display:block;margin-bottom:5px;font-size:12px}
         .campo-row input{width:100%;padding:10px;border-radius:30px;border:1px solid #ccc}
-        .btn-guardar{background:#2563eb;color:white;border:none;padding:10px;border-radius:40px;width:100%;margin-bottom:8px;cursor:pointer}
-        .btn-subir-archivo{background:#16a34a;color:white;border:none;padding:10px;border-radius:40px;width:100%;margin-bottom:8px;cursor:pointer}
+        
+        .btn-guardar{background:#2563eb;color:white;border:none;padding:10px;border-radius:40px;width:100%;margin-bottom:8px;cursor:pointer;font-weight:bold}
         .botones-edicion{display:flex;gap:10px;margin-top:10px}
-        .btn-editar,.btn-eliminar{flex:1;padding:8px;border-radius:40px;border:none;color:white;cursor:pointer}
-        .btn-editar{background:#334155}
-        .btn-eliminar{background:#b91c1c}
+        .btn-eliminar{flex:1;padding:8px;border-radius:40px;border:none;color:white;cursor:pointer;background:#b91c1c;font-weight:bold}
+        
         .modo-admin .toolbar{display:flex}
         .modo-cliente .toolbar{display:none}
+        
         .carrito-panel{position:fixed;bottom:0;left:0;right:0;background:#1e293b;color:white;padding:15px;border-radius:24px 24px 0 0;max-height:50vh;overflow-y:auto;z-index:200;box-shadow:0 -5px 15px rgba(0,0,0,0.3)}
         .carrito-item{display:flex;justify-content:space-between;border-bottom:1px solid #475569;padding:8px 0}
         .total-carrito{text-align:right;font-size:1.3rem;margin:10px 0;font-weight:bold}
@@ -75,11 +74,15 @@
             .banner-promo-fuera{font-size:12px; padding:10px}
         }
     </style>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 </head>
 <body>
+
 <div class="encabezado">
     <img src="https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png" class="logo" id="logoAdmin">
-    <div class="badge-admin" id="badgeAdmin">🔧 ADMIN</div>
+    <div class="badge-admin" id="badgeAdmin">🔧 MODO ADMIN</div>
 </div>
 
 <div class="banner">
@@ -93,14 +96,12 @@
 
 <div class="toolbar" id="toolbar">
     <button id="compartirBtn" class="share">📤 COMPARTIR CATÁLOGO</button>
-    <button id="btnCopiarCodigoEstructura" class="btn-copiar-sistema">📋 COPIAR CÓDIGO ACTUALIZADO</button>
     <button id="toggleModoBtn">👁️ VER COMO CLIENTE</button>
-    <button id="agregarProductoBtn">➕ AGREGAR PRODUCTO</button>
-    <button id="reiniciarBtn" class="danger">🗑️ VACIAR MEMORIA LOCAL</button>
+    <button id="agregarProductoBtn">➕ CREAR NUEVO PRODUCTO</button>
 </div>
 
 <div class="filtro-categorias" id="filtroCategorias"></div>
-<div id="contenedorProductos" style="text-align:center; padding:40px;">⏳ Cargando catálogo...</div>
+<div id="contenedorProductos" style="text-align:center; padding:40px;">⏳ Conectando con la base de datos de Google...</div>
 
 <div id="carritoPanel" class="carrito-panel">
     <div style="display:flex;justify-content:space-between"><strong>🛒 MI PEDIDO</strong><button id="vaciarCarritoBtn" style="background:#b91c1c;border:none;color:white;padding:4px 12px;border-radius:20px">Vaciar</button></div>
@@ -122,7 +123,21 @@
 
 <script>
 const ADMIN_PASSWORD = "1310";
-const PRODUCTOS_INICIALES = []; 
+
+// CONFIGURACIÓN DE TU BASE DE DATOS INYECTADA DE FORMA PROFESIONAL
+const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "gaeto-comercios...",
+  databaseURL: "https://...",
+  projectId: "gaeto-comercios...",
+  storageBucket: "gaeto-comercios...",
+  messagingSenderId: "...",
+  appId: "..."
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
 let productos = [];
 let carrito = [];
@@ -130,41 +145,34 @@ let modoAdmin = false;
 let categoriaActiva = "TODOS";
 let textoBusqueda = "";
 
-const DB_PRODUCTOS = 'gaeto_productos_v9';
-const DB_CARRITO = 'gaeto_carrito_v9';
-
-function guardarProductosEnLocal() { localStorage.setItem(DB_PRODUCTOS, JSON.stringify(productos)); }
-function guardarCarritoEnLocal() { localStorage.setItem(DB_CARRITO, JSON.stringify(carrito)); }
-
-function cargarDatosLocales() {
-    try {
-        let p = localStorage.getItem(DB_PRODUCTOS);
-        let c = localStorage.getItem(DB_CARRITO);
-        
-        if (PRODUCTOS_INICIALES && PRODUCTOS_INICIALES.length > 0 && (!p || p === "[]")) {
-            productos = [...PRODUCTOS_INICIALES];
-            guardarProductosEnLocal();
-        } else if (p) {
-            productos = JSON.parse(p);
-            if (PRODUCTOS_INICIALES && PRODUCTOS_INICIALES.length > 0 && productos.length === 0) {
-                productos = [...PRODUCTOS_INICIALES];
-                guardarProductosEnLocal();
-            }
-        } else {
-            productos = [];
-        }
-        if (c) carrito = JSON.parse(c);
-        
-        if (!Array.isArray(productos)) productos = [];
-        if (!Array.isArray(carrito)) carrito = [];
-    } catch (e) {
-        productos = []; carrito = []; guardarProductosEnLocal(); guardarCarritoEnLocal();
+// Escuchar cambios de Firebase en tiempo real
+database.ref('productos').on('value', (snapshot) => {
+    const data = snapshot.val();
+    productos = [];
+    if (data) {
+        Object.keys(data).forEach(key => {
+            productos.push({ id: key, ...data[key] });
+        });
     }
+    renderizarFiltros();
+    renderizarProductos();
+});
+
+function precioFinal(p) { 
+    let precio = parseFloat(p.precioLista) || 0;
+    let desc = parseFloat(p.descuento) || 0;
+    return precio - (precio * (desc / 100)); 
 }
 
-function precioFinal(p) { return p.precioLista - (p.precioLista * (p.descuento / 100)); }
-function formatearFecha(f) { if (!f) return ""; let partes = f.split('-'); return partes.length===3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : f; }
-function obtenerCategorias() { return [...new Set(productos.map(p=>p.categoria).filter(c=>c && c.trim()!=""))]; }
+function formatearFecha(f) { 
+    if (!f) return ""; 
+    let partes = f.split('-'); 
+    return partes.length===3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : f; 
+}
+
+function obtenerCategorias() { 
+    return [...new Set(productos.map(p=>p.categoria).filter(c=>c && c.trim()!=""))]; 
+}
 
 function renderizarFiltros() {
     let cats = ["TODOS", ...obtenerCategorias()];
@@ -176,18 +184,19 @@ function renderizarFiltros() {
 function renderizarProductos() {
     let filtrados = productos.filter(p => {
         let matchesCategoria = (categoriaActiva === "TODOS" || p.categoria === categoriaActiva);
-        let texto = (p.titulo + " " + (p.codigo || "") + " " + p.descripcion).toLowerCase();
+        let texto = ((p.titulo || "") + " " + (p.codigo || "") + " " + (p.descripcion || "")).toLowerCase();
         let matchesBusqueda = texto.includes(textoBusqueda.toLowerCase());
         return matchesCategoria && matchesBusqueda;
     });
 
     const contenedor = document.getElementById('contenedorProductos');
     contenedor.innerHTML = '';
-    if (filtrados.length === 0) { contenedor.innerHTML = '<div style="padding:40px; text-align:center;">📭 No hay productos agregados aún.</div>'; return; }
+    if (filtrados.length === 0) { contenedor.innerHTML = '<div style="padding:40px; text-align:center; background:white; border-radius:20px;">📭 No hay productos en la base de datos. Entra como Admin para agregar el primero.</div>'; return; }
     
     for (let p of filtrados) {
+        const pLista = parseFloat(p.precioLista) || 0;
         const final = precioFinal(p);
-        const tieneDesc = p.descuento > 0;
+        const tieneDesc = parseFloat(p.descuento) > 0;
         const imgHtml = p.imagen ? `<img src="${p.imagen}">` : `<div class="sin-imagen">📷 Sin imagen</div>`;
         const fechaVig = p.vigencia ? formatearFecha(p.vigencia) : "";
         const promoTag = tieneDesc ? `<div class="banner-promo-fuera">🔥 ${p.descuento}% OFF ${fechaVig ? `<span class="vigencia">Válido hasta: ${fechaVig}</span>` : ''}</div>` : '';
@@ -200,26 +209,36 @@ function renderizarProductos() {
             <div class="imagen-area">${imgHtml}</div>
             <div class="info">
                 <div class="codigo">📦 ${p.codigo || 'Sin código'}</div>
-                <div class="titulo">${p.titulo}</div>
-                <div class="descripcion">${p.descripcion}</div>
-                <div class="precio">${tieneDesc ? `<span class="precio-antes">$${p.precioLista.toFixed(2)}</span>` : ''}$${final.toFixed(2)} / ${p.unidad}</div>
+                <div class="campo-row-ver modo-admin-solo"><input type="text" id="titulo-${p.id}" value="${p.titulo || ''}" style="font-size:16px; font-weight:bold; width:100%; padding:5px; margin-bottom:5px;"></div>
+                <div class="titulo modo-cliente-solo">${p.titulo || ''}</div>
+                
+                <div class="campo-row-ver modo-admin-solo"><input type="text" id="desc-${p.id}" value="${p.descripcion || ''}" style="width:100%; padding:5px; margin-bottom:5px;"></div>
+                <div class="descripcion modo-cliente-solo">${p.descripcion || ''}</div>
+                
+                <div class="precio">
+                    ${tieneDesc ? `<span class="precio-antes">$${pLista.toFixed(2)}</span>` : ''}$${final.toFixed(2)} / 
+                    <span class="modo-cliente-solo">${p.unidad || 'PIEZA'}</span>
+                    <input type="text" id="unidad-${p.id}" value="${p.unidad || 'PIEZA'}" class="modo-admin-solo" style="width:70px; display:inline; font-size:14px; padding:2px;">
+                </div>
+                
                 <div class="categoria-texto">📁 ${p.categoria || 'General'}</div>
+                
                 <div class="acciones">
                     <input type="number" id="cant-${p.id}" value="1" min="1">
                     <button class="agregar-carrito btn-agregar" data-id="${p.id}">➕ Agregar</button>
                     <a href="https://wa.me/${tel}?text=${encodeURIComponent(`Hola, me interesa: ${p.titulo} - $${final.toFixed(2)}`)}" target="_blank" class="btn-wa">💬 WhatsApp</a>
                 </div>
+                
                 <div class="editor-area">
                     <div class="campo-row"><label>🔢 Código:</label><input type="text" id="codigoInput-${p.id}" value="${p.codigo || ''}"></div>
-                    <div class="campo-row"><label>📂 Categoría:</label><input type="text" id="categoriaInput-${p.id}" value="${p.categoria || ''}"></div>
-                    <div class="campo-row"><label>🏷️ % Promoción:</label><input type="number" id="descuentoInput-${p.id}" value="${p.descuento}" min="0" max="100"></div>
+                    <div class="campo-row"><label>📂 Categoría:</label><input type="text" id="categoriaInput-${p.id}" value="${p.categoria || 'General'}"></div>
+                    <div class="campo-row"><label>💵 Precio Lista ($):</label><input type="number" id="precioInput-${p.id}" value="${pLista}"></div>
+                    <div class="campo-row"><label>🏷️ % Promoción (Solo número):</label><input type="number" id="descuentoInput-${p.id}" value="${p.descuento || 0}" min="0" max="100"></div>
                     <div class="campo-row"><label>📅 Vigencia:</label><input type="date" id="vigenciaInput-${p.id}" value="${p.vigencia || ''}"></div>
-                    <div class="campo-row"><label>🖼️ URL imagen:</label><input type="text" id="urlInput-${p.id}" value="${p.imagen || ''}"></div>
-                    <button class="btn-guardar" data-id="${p.id}">💾 GUARDAR CAMBIOS</button>
-                    <button class="btn-subir-archivo" data-id="${p.id}">📂 SUBIR IMAGEN DESDE ARCHIVO</button>
+                    <div class="campo-row"><label>🖼️ URL de la Imagen (PostImg / Imgur):</label><input type="text" id="urlInput-${p.id}" value="${p.imagen || ''}"></div>
+                    <button class="btn-guardar" data-id="${p.id}">💾 GUARDAR EN LA BASE DE DATOS</button>
                     <div class="botones-edicion">
-                        <button class="btn-editar" data-id="${p.id}">✏️ Editar otros</button>
-                        <button class="btn-eliminar" data-id="${p.id}">🗑 Eliminar</button>
+                        <button class="btn-eliminar" data-id="${p.id}">🗑 Eliminar por completo</button>
                     </div>
                 </div>
             </div>
@@ -227,51 +246,61 @@ function renderizarProductos() {
         contenedor.appendChild(div);
     }
     
+    // Control de visibilidad según modo
+    actualizarVisibilidadModo();
+
     document.querySelectorAll('.agregar-carrito').forEach(btn => btn.onclick = () => { let id = btn.dataset.id; let cant = parseInt(document.getElementById(`cant-${id}`).value)||1; agregarAlCarrito(id, cant); });
     
     if (modoAdmin) {
         document.querySelectorAll('.btn-guardar').forEach(btn => btn.onclick = () => {
             let id = btn.dataset.id;
-            let prod = productos.find(p=>p.id===id);
-            if (prod) {
-                prod.codigo = document.getElementById(`codigoInput-${id}`)?.value.trim() || '';
-                prod.categoria = document.getElementById(`categoriaInput-${id}`)?.value.trim() || 'General';
-                prod.descuento = parseFloat(document.getElementById(`descuentoInput-${id}`)?.value) || 0;
-                prod.vigencia = document.getElementById(`vigenciaInput-${id}`)?.value || '';
-                prod.imagen = document.getElementById(`urlInput-${id}`)?.value.trim() || '';
-                guardarProductosEnLocal(); renderizarFiltros(); renderizarProductos(); renderizarCarrito();
-                alert("✅ Guardado temporalmente en pantalla.");
-            }
-        });
-        document.querySelectorAll('.btn-subir-archivo').forEach(btn => btn.onclick = () => {
-            let id = btn.dataset.id;
-            let input = document.createElement('input');
-            input.type = 'file'; input.accept = 'image/*';
-            input.onchange = e => {
-                let file = e.target.files[0];
-                if (file) {
-                    let reader = new FileReader();
-                    reader.onload = ev => { let prod = productos.find(p=>p.id===id); if (prod) prod.imagen = ev.target.result; guardarProductosEnLocal(); renderizarProductos(); };
-                    reader.readAsDataURL(file);
-                }
+            let updates = {
+                titulo: document.getElementById(`titulo-${id}`).value.trim(),
+                descripcion: document.getElementById(`desc-${id}`).value.trim(),
+                unidad: document.getElementById(`unidad-${id}`).value.trim().toUpperCase(),
+                codigo: document.getElementById(`codigoInput-${id}`).value.trim(),
+                categoria: document.getElementById(`categoriaInput-${id}`).value.trim() || 'General',
+                precioLista: parseFloat(document.getElementById(`precioInput-${id}`).value) || 0,
+                descuento: parseFloat(document.getElementById(`descuentoInput-${id}`).value) || 0,
+                vigencia: document.getElementById(`vigenciaInput-${id}`).value,
+                imagen: document.getElementById(`urlInput-${id}`).value.trim(),
+                telefono: "522282877441"
             };
-            input.click();
+            database.ref('productos/' + id).update(updates).then(() => {
+                alert("🚀 ¡Sincronizado con Google al instante!");
+            });
         });
-        document.querySelectorAll('.btn-editar').forEach(btn => btn.onclick = () => {
-            let id = btn.dataset.id; let prod = productos.find(p=>p.id===id); if (!prod) return;
-            prod.titulo = prompt("Título:", prod.titulo) || prod.titulo;
-            prod.descripcion = prompt("Descripción:", prod.descripcion) || prod.descripcion;
-            let np = parseFloat(prompt("Precio lista:", prod.precioLista)); if (!isNaN(np)) prod.precioLista = np;
-            prod.unidad = prompt("Unidad:", prod.unidad) || prod.unidad;
-            guardarProductosEnLocal(); renderizarProductos();
-        });
+
         document.querySelectorAll('.btn-eliminar').forEach(btn => btn.onclick = () => {
-            if (confirm("¿Eliminar este producto?")) { let id = btn.dataset.id; productos = productos.filter(p=>p.id!==id); carrito = carrito.filter(c=>c.id!==id); guardarProductosEnLocal(); guardarCarritoEnLocal(); renderizarFiltros(); renderizarProductos(); renderizarCarrito(); }
+            if (confirm("¿Borrar este producto definitivamente de la nube?")) {
+                let id = btn.dataset.id;
+                database.ref('productos/' + id).remove().then(() => {
+                    carrito = carrito.filter(c=>c.id!==id);
+                    renderizarCarrito();
+                });
+            }
         });
     }
 }
 
-function agregarAlCarrito(id, cantidad) { let exist = carrito.find(c=>c.id===id); if (exist) exist.cantidad += cantidad; else carrito.push({id, cantidad}); guardarCarritoEnLocal(); renderizarCarrito(); }
+function actualizarVisibilidadModo() {
+    let adminElems = document.querySelectorAll('.modo-admin-solo');
+    let clientElems = document.querySelectorAll('.modo-cliente-solo');
+    if(modoAdmin) {
+        adminElems.forEach(e => e.style.display = 'block');
+        clientElems.forEach(e => e.style.display = 'none');
+    } else {
+        adminElems.forEach(e => e.style.display = 'none');
+        clientElems.forEach(e => e.style.display = 'block');
+    }
+}
+
+function agregarAlCarrito(id, cantidad) { 
+    let exist = carrito.find(c=>c.id===id); 
+    if (exist) exist.cantidad += cantidad; 
+    else carrito.push({id, cantidad}); 
+    renderizarCarrito(); 
+}
 
 function renderizarCarrito() {
     const lista = document.getElementById('carritoLista'); const totalDiv = document.getElementById('totalCarrito'); const enviarBtn = document.getElementById('enviarPedidoBtn');
@@ -279,71 +308,56 @@ function renderizarCarrito() {
     enviarBtn.style.opacity = "1"; let total = 0, msg = "🛒 *MI PEDIDO GAETO:*\n\n", html = '';
     for (let item of carrito) {
         const prod = productos.find(p=>p.id===item.id); if (!prod) continue; const final = precioFinal(prod); const subtotal = final * item.cantidad; total += subtotal;
-        msg += `📦 ${prod.titulo}\n   Código: ${prod.codigo||'N/A'}\n   Cantidad: ${item.cantidad} ${prod.unidad}\n   Precio unit: $${final.toFixed(2)}\n   Subtotal: $${subtotal.toFixed(2)}\n\n`;
-        html += `<div class="carrito-item"><span><strong>${prod.titulo}</strong> x${item.cantidad}<br><span style="font-size:10px;">Cód: ${prod.codigo||'N/A'}</span></span><span>$${subtotal.toFixed(2)} <button class="quitar-item" data-id="${item.id}">🗑</button></span></div>`;
+        msg += `📦 ${prod.titulo}\n   Código: ${prod.codigo||'N/A'}\n   Cantidad: ${item.cantidad} ${prod.unidad||'PIEZA'}\n   Precio unit: $${final.toFixed(2)}\n   Subtotal: $${subtotal.toFixed(2)}\n\n`;
+        html += `<div class="carrito-item"><span><strong>${prod.titulo}</strong> x${item.cantidad}<br><span style="font-size:10px;">Cód: ${prod.codigo||'N/A'}</span></span><span>$${subtotal.toFixed(2)} <button class="quitar-item" data-id="${item.id}" style="background:none; border:none; color:red; cursor:pointer; margin-left:10px;">🗑</button></span></div>`;
     }
     msg += `💰 *TOTAL: $${total.toFixed(2)}*\n\n📅 DÍAS DE PEDIDO: Lunes, Martes y Miércoles\n🚚 ENTREGAS: Viernes y Sábados (9:00 AM - 6:30 PM)\n\n📍 Envío a acordar\n📞 Gracias por tu compra.`;
-    const telefono = productos[0]?.telefono || "522282877441"; enviarBtn.href = `https://wa.me/${telefono}?text=${encodeURIComponent(msg)}`;
+    enviarBtn.href = `https://wa.me/522282877441?text=${encodeURIComponent(msg)}`;
     lista.innerHTML = html; totalDiv.innerHTML = `Total: $${total.toFixed(2)}`;
-    document.querySelectorAll('.quitar-item').forEach(btn => btn.onclick = () => { let id = btn.dataset.id; carrito = carrito.filter(i=>i.id!==id); guardarCarritoEnLocal(); renderizarCarrito(); });
+    document.querySelectorAll('.quitar-item').forEach(btn => btn.onclick = () => { let id = btn.dataset.id; carrito = carrito.filter(i=>i.id!==id); renderizarCarrito(); });
 }
 
-function agregarProducto() { let nuevoId = Date.now().toString(); productos.push({ id: nuevoId, codigo: "NUEVO-001", categoria: "General", titulo: "Nuevo producto", descripcion: "Descripción aquí", precioLista: 100, descuento: 0, vigencia: "", unidad: "PIEZA", telefono: "522282877441", imagen: "" }); guardarProductosEnLocal(); renderizarFiltros(); renderizarProductos(); renderizarCarrito(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-
-function reiniciar() { if (confirm("⚠️ ¿VACIAR la memoria local del navegador?")) { localStorage.removeItem(DB_PRODUCTOS); localStorage.removeItem(DB_CARRITO); window.location.reload(true); } }
-
-function copiarCodigoEstructuraCompleta() {
-    if(productos.length === 0) {
-        alert("❌ Agrega y guarda cambios en tus productos antes de copiar.");
-        return;
-    }
-    let htmlLimpio = document.documentElement.outerHTML;
-    let jsonProductos = JSON.stringify(productos, null, 4);
-    let buscarConstante = "const PRODUCTOS_INICIALES = [];";
-    let reemplazoConstante = "const PRODUCTOS_INICIALES = " + jsonProductos + ";";
-    let contenidoFinal = "<!DOCTYPE html>\n" + htmlLimpio.replace(buscarConstante, reemplazoConstante);
-    
-    navigator.clipboard.writeText(contenidoFinal).then(() => {
-        alert("📋 ¡CÓDIGO COPIADO CON ÉXITO!\n\nTodos tus productos e imágenes ya se guardaron mágicamente dentro del código.\n\nAhora ve a GitHub, edita tu 'index.html', borra todo, PEGA y guarda.");
-    }).catch(err => {
-        alert("Error al copiar automáticamente. Intentaremos descargarlo.");
-        let blob = new Blob([contenidoFinal], { type: "text/html" });
-        let a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "index.html";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+function agregarProductoNuevoVacio() { 
+    let nuevoRef = database.ref('productos').push();
+    nuevoRef.set({
+        codigo: "GAETO-001",
+        categoria: "General",
+        titulo: "Nuevo producto editables",
+        descripcion: "Escribe la descripción",
+        precioLista: 100,
+        descuento: 0,
+        vigencia: "",
+        unidad: "PIEZA",
+        telefono: "522282877441",
+        imagen: ""
+    }).then(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     });
 }
 
 function compartirCatalogo() {
-    let urlActual = window.location.href; if(urlActual.startsWith('file:///')) { alert("⚠️ Abre el archivo desde GitHub o Netlify."); return; }
-    let urlLimpia = urlActual.split('?')[0]; let version = prompt("🔢 Ingresa un número de versión (ej: 1, 2, 3):", "1"); if (version === null) return;
-    let urlFinal = urlLimpia + "?v=" + version; let mensaje = "¡Hola! 👋 Te comparto el catálogo actualizado de *GAETO COMERCIOS*. ¡Échale un vistazo a nuestros productos! 🛍️\n\n" + urlFinal;
+    let urlActual = window.location.href.split('?')[0]; 
+    let mensaje = "¡Hola! 👋 Te comparto el catálogo actualizado de *GAETO COMERCIOS*. ¡Échale un vistazo a nuestros productos! 🛍️\n\n" + urlActual;
     let opcion = confirm("✅ ACEPTAR = Enviar por WhatsApp.\n❌ CANCELAR = Copiar enlace.");
-    if(opcion) { window.open("https://wa.me/?text=" + encodeURIComponent(mensaje), '_blank'); } else { navigator.clipboard.writeText(mensaje).then(() => { alert("✅ ¡Enlace copiado!"); }).catch(err => { prompt("Copia este texto:", mensaje); }); }
+    if(opcion) { window.open("https://wa.me/?text=" + encodeURIComponent(mensaje), '_blank'); } else { navigator.clipboard.writeText(mensaje).then(() => { alert("✅ ¡Enlace copiado!"); }); }
 }
 
 function activarModoAdmin() { modoAdmin = true; document.body.classList.add('modo-admin'); document.body.classList.remove('modo-cliente'); document.getElementById('badgeAdmin').style.display = 'block'; document.getElementById('toolbar').style.display = 'flex'; renderizarProductos(); }
 function desactivarModoAdmin() { modoAdmin = false; document.body.classList.remove('modo-admin'); document.body.classList.add('modo-cliente'); document.getElementById('badgeAdmin').style.display = 'none'; document.getElementById('toolbar').style.display = 'none'; renderizarProductos(); }
-function toggleModo() { if (modoAdmin) desactivarModoAdmin(); else activarModoAdmin(); }
 
 window.onload = function() {
     try {
-        cargarDatosLocales(); modoAdmin = false; document.body.classList.add('modo-cliente'); document.getElementById('toolbar').style.display = 'none'; document.getElementById('badgeAdmin').style.display = 'none';
-        renderizarFiltros(); renderizarProductos(); renderizarCarrito();
-        document.getElementById('logoAdmin').addEventListener('click', () => { if (!modoAdmin) { document.getElementById('modalPwd').style.display = "flex"; document.getElementById('pwdInput').value = ""; document.getElementById('pwdInput').focus(); } else { alert("Ya estás en modo admin."); } });
-        document.getElementById('btnEntrarAdmin').onclick = () => { if (document.getElementById('pwdInput').value === ADMIN_PASSWORD) { activarModoAdmin(); document.getElementById('modalPwd').style.display = "none"; } else { alert("Contraseña incorrecta."); document.getElementById('pwdInput').value = ""; document.getElementById('pwdInput').focus(); } };
+        desactivarModoAdmin();
+        document.getElementById('logoAdmin').onclick = () => { if (!modoAdmin) { document.getElementById('modalPwd').style.display = "flex"; document.getElementById('pwdInput').value = ""; document.getElementById('pwdInput').focus(); } };
+        document.getElementById('btnEntrarAdmin').onclick = () => { if (document.getElementById('pwdInput').value === ADMIN_PASSWORD) { activarModoAdmin(); document.getElementById('modalPwd').style.display = "none"; } else { alert("Clave incorrecta."); } };
         document.getElementById('btnCancelarAdmin').onclick = () => { document.getElementById('modalPwd').style.display = "none"; };
         document.getElementById('busquedaInput').oninput = (e) => { textoBusqueda = e.target.value; renderizarProductos(); };
-        document.getElementById('toggleModoBtn').onclick = toggleModo;
-        document.getElementById('agregarProductoBtn').onclick = agregarProducto;
-        document.getElementById('btnCopiarCodigoEstructura').onclick = copiarCodigoEstructuraCompleta;
-        document.getElementById('reiniciarBtn').onclick = reiniciar;
+        document.getElementById('toggleModoBtn').onclick = () => { if(modoAdmin) desactivarModoAdmin(); else activarModoAdmin(); };
+        document.getElementById('agregarProductoBtn').onclick = agregarProductoNuevoVacio;
         document.getElementById('compartirBtn').onclick = compartirCatalogo;
-        document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; guardarCarritoEnLocal(); renderizarCarrito(); };
-    } catch (error) { console.error("Error:", error); }
+        document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; renderizarCarrito(); };
+        renderizarCarrito();
+    } catch (error) { console.error("Error general:", error); }
 };
 </script>
 </body>
