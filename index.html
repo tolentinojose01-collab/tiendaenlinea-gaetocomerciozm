@@ -16,7 +16,7 @@
         .toolbar button,.toolbar label{background:#2d3a4e;border:none;padding:8px 16px;border-radius:40px;color:white;cursor:pointer;font-size:13px}
         .toolbar .danger{background:#b91c1c}
         .toolbar .share{background:#25d366}
-        .toolbar .btn-descargar{background:#2563eb;font-weight:bold;color:white}
+        .toolbar .btn-copiar-sistema{background:#0284c7;font-weight:bold;color:white}
         
         .contenedor-busqueda {max-width:500px; margin: 0 auto 20px auto; display: flex; gap: 10px;}
         .busqueda-input {flex: 1; padding: 12px 20px; border-radius: 40px; border: 1px solid #ccc; outline: none; font-size: 14px;}
@@ -93,7 +93,7 @@
 
 <div class="toolbar" id="toolbar">
     <button id="compartirBtn" class="share">📤 COMPARTIR CATÁLOGO</button>
-    <button id="btnDescargarArchivo" class="btn-descargar">💾 DESCARGAR ARCHIVO CON PRODUCTOS</button>
+    <button id="btnCopiarCodigoEstructura" class="btn-copiar-sistema">📋 COPIAR CÓDIGO ACTUALIZADO</button>
     <button id="toggleModoBtn">👁️ VER COMO CLIENTE</button>
     <button id="agregarProductoBtn">➕ AGREGAR PRODUCTO</button>
     <button id="reiniciarBtn" class="danger">🗑️ VACIAR MEMORIA LOCAL</button>
@@ -292,9 +292,9 @@ function agregarProducto() { let nuevoId = Date.now().toString(); productos.push
 
 function reiniciar() { if (confirm("⚠️ ¿VACIAR la memoria local del navegador?")) { localStorage.removeItem(DB_PRODUCTOS); localStorage.removeItem(DB_CARRITO); window.location.reload(true); } }
 
-function descargarArchivoConProductos() {
+function copiarCodigoEstructuraCompleta() {
     if(productos.length === 0) {
-        alert("❌ Agrega productos antes de descargar el archivo.");
+        alert("❌ Agrega y guarda cambios en tus productos antes de copiar.");
         return;
     }
     let htmlLimpio = document.documentElement.outerHTML;
@@ -303,15 +303,18 @@ function descargarArchivoConProductos() {
     let reemplazoConstante = "const PRODUCTOS_INICIALES = " + jsonProductos + ";";
     let contenidoFinal = "<!DOCTYPE html>\n" + htmlLimpio.replace(buscarConstante, reemplazoConstante);
     
-    let blob = new Blob([contenidoFinal], { type: "text/html" });
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "index.html";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    
-    alert("💾 ¡ARCHIVO GENERADO CON ÉXITO!\nSe descargó tu nuevo 'index.html'. Ahora ve a GitHub y arrástralo para reemplazar el viejo.");
+    navigator.clipboard.writeText(contenidoFinal).then(() => {
+        alert("📋 ¡CÓDIGO COPIADO CON ÉXITO!\n\nTodos tus productos e imágenes ya se guardaron mágicamente dentro del código.\n\nAhora ve a GitHub, edita tu 'index.html', borra todo, PEGA y guarda.");
+    }).catch(err => {
+        alert("Error al copiar automáticamente. Intentaremos descargarlo.");
+        let blob = new Blob([contenidoFinal], { type: "text/html" });
+        let a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "index.html";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    });
 }
 
 function compartirCatalogo() {
@@ -336,7 +339,7 @@ window.onload = function() {
         document.getElementById('busquedaInput').oninput = (e) => { textoBusqueda = e.target.value; renderizarProductos(); };
         document.getElementById('toggleModoBtn').onclick = toggleModo;
         document.getElementById('agregarProductoBtn').onclick = agregarProducto;
-        document.getElementById('btnDescargarArchivo').onclick = descargarArchivoConProductos;
+        document.getElementById('btnCopiarCodigoEstructura').onclick = copiarCodigoEstructuraCompleta;
         document.getElementById('reiniciarBtn').onclick = reiniciar;
         document.getElementById('compartirBtn').onclick = compartirCatalogo;
         document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; guardarCarritoEnLocal(); renderizarCarrito(); };
