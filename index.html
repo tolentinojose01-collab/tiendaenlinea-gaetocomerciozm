@@ -50,7 +50,6 @@
         .campo-row input, .campo-row textarea, .campo-row select{width:100%;padding:10px;border-radius:30px;border:1px solid #ccc;font-size:14px;outline:none}
         .campo-row textarea{border-radius:15px;height:60px;resize:none}
         
-        /* ESTILO PARA EL BOTON DE SELECCIONAR ARCHIVO LOCAL */
         .campo-row input[type="file"] {
             border: 1px dashed #2563eb;
             background: #eff6ff;
@@ -75,6 +74,29 @@
         .modal-pwd-content input {width:100%; padding:10px; border-radius:20px; border:1px solid #ccc; text-align:center; margin-bottom:15px; font-size:16px;}
         .modal-pwd-content button {background:#002b5c; color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer; font-weight:bold;}
 
+        .toast-notificacion {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #065f46;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            z-index: 9999;
+            display: none;
+            animation: slideDown 0.4s ease;
+            text-align: center;
+            max-width: 90%;
+        }
+        @keyframes slideDown {
+            0% { transform: translateX(-50%) translateY(-80px); opacity: 0; }
+            100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
         @media (max-width:600px){
             .imagen-area{height:200px}
             .banner{font-size:11px}
@@ -87,6 +109,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 </head>
 <body>
+
+<div id="toastNotificacion" class="toast-notificacion">✅ Mensaje enviado</div>
 
 <div class="encabezado">
     <img src="https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png" class="logo" id="logoAdmin">
@@ -155,6 +179,16 @@ let modoAdmin = false;
 let categoriaActiva = "TODOS";
 let textoBusqueda = "";
 
+function mostrarNotificacion(mensaje, duracion = 4000) {
+    const toast = document.getElementById('toastNotificacion');
+    toast.textContent = mensaje;
+    toast.style.display = 'block';
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => {
+        toast.style.display = 'none';
+    }, duracion);
+}
+
 database.ref('productos').on('value', (snapshot) => {
     const data = snapshot.val();
     productos = [];
@@ -213,7 +247,7 @@ function renderizarProductos() {
     });
 
     if (filtrados.length === 0) {
-        contenedor.innerHTML = '<div style="padding:40px; text-align:center; background:white; border-radius:28px; color:#64748b;">🔍 Sincoincidencias.</div>';
+        contenedor.innerHTML = '<div style="padding:40px; text-align:center; background:white; border-radius:28px; color:#64748b;">🔍 Sin coincidencias.</div>';
         return;
     }
 
@@ -284,28 +318,30 @@ function renderizarProductos() {
     }).join('');
 }
 
-// PROCESADOR BLINDADO DE IMÁGENES EN TIEMPO REAL
 window.procesarFotoLocal = function(input, id) {
     const archivo = input.files[0];
     if (!archivo) return;
 
-    // Validación de tamaño para no saturar la base de datos (Max 1.5MB recomendado)
     if (archivo.size > 1572864) {
-        alert("⚠️ La imagen es demasiado pesada. Elige una foto de menor resolución o recortada para guardarla rápido.");
+        alert("⚠️ La imagen es demasiado pesada. Elige una foto de menor resolución o recortada.");
         input.value = "";
         return;
     }
 
     const lector = new FileReader();
     lector.onloadend = function() {
-        // Coloca el resultado directamente en el cuadro de la URL listo para guardar
         document.getElementById(`edit-imagen-${id}`).value = lector.result;
+        mostrarNotificacion("📸 Imagen cargada correctamente. ¡Guarda los cambios!");
     };
     lector.readAsDataURL(archivo);
 };
 
 window.agregarAlCarrito = function(id) {
     let prod = productos.find(p => p.id === id);
+    console.log("Producto agregado:", prod);
+    console.log("Código:", prod.codigo);
+    console.log("Categoría:", prod.categoria);
+    
     let cantInput = document.getElementById(`cant-${id}`);
     let cantidad = parseInt(cantInput.value) || 1;
     let itemExiste = carrito.find(item => item.id === id);
@@ -313,6 +349,7 @@ window.agregarAlCarrito = function(id) {
     else carrito.push({ id: id, producto: prod, cantidad: cantidad });
     cantInput.value = "1";
     renderizarCarrito();
+    mostrarNotificacion(`✅ Agregado: ${cantidad}x ${prod.nombre}`);
 };
 
 function eliminarDelCarrito(id) {
@@ -320,6 +357,9 @@ function eliminarDelCarrito(id) {
     renderizarCarrito();
 }
 
+// ============================================================
+//  RENDERIZAR CARRITO - CON CÓDIGO Y CATEGORÍA FORZADOS
+// ============================================================
 function renderizarCarrito() {
     const lista = document.getElementById('carritoLista');
     const totalCont = document.getElementById('totalCarrito');
@@ -333,18 +373,63 @@ function renderizarCarrito() {
     }
 
     let total = 0;
-    let textoWhatsApp = "*NUEVO PEDIDO - GAETO COMERCIOS*\n\n";
+    let textoWhatsApp = "*📦 NUEVO PEDIDO - GAETO COMERCIOS*\n\n";
+    textoWhatsApp += "*🛒 PRODUCTOS SOLICITADOS:*\n";
+    textoWhatsApp += "───────────────────────────\n";
 
-    lista.innerHTML = carrito.map(item => {
+    lista.innerHTML = carrito.map((item, index) => {
         let pFinal = precioFinal(item.producto);
         let subtotal = pFinal * item.cantidad;
         total += subtotal;
-        textoWhatsApp += `• ${item.cantidad}x ${item.producto.nombre} - $${pFinal.toFixed(2)} c/u\n`;
-        return `<div class="carrito-item"><span>${item.cantidad}x ${item.producto.nombre}</span><span>$${subtotal.toFixed(2)} <button onclick="eliminarDelCarrito('${item.id}')" style="background:none; border:none; color:#f43f5e; cursor:pointer;">X</button></span></div>`;
+        
+        // ====== FORZAR CÓDIGO Y CATEGORÍA ======
+        const codigo = (item.producto.codigo && item.producto.codigo.trim() !== '') 
+            ? item.producto.codigo 
+            : 'S/C';
+        
+        const categoria = (item.producto.categoria && item.producto.categoria.trim() !== '') 
+            ? item.producto.categoria 
+            : 'General';
+        
+        const nombre = item.producto.nombre || 'Producto sin nombre';
+        
+        textoWhatsApp += `${index + 1}. [${codigo}] ${nombre}\n`;
+        textoWhatsApp += `   Categoría: ${categoria}\n`;
+        textoWhatsApp += `   Cantidad: ${item.cantidad}  |  $${pFinal.toFixed(2)} c/u  |  Subtotal: $${subtotal.toFixed(2)}\n\n`;
+        
+        return `<div class="carrito-item">
+            <span>${item.cantidad}x ${item.producto.nombre}</span>
+            <span>$${subtotal.toFixed(2)} <button onclick="eliminarDelCarrito('${item.id}')" style="background:none; border:none; color:#f43f5e; cursor:pointer;">X</button></span>
+        </div>`;
     }).join('');
 
+    textoWhatsApp += "───────────────────────────\n";
+    textoWhatsApp += `\n*💰 TOTAL DEL PEDIDO: $${total.toFixed(2)}*\n\n`;
+    
+    textoWhatsApp += `📅 *DÍAS PARA HACER PEDIDOS:*\n`;
+    textoWhatsApp += `• Lunes, Martes y Miércoles\n\n`;
+    
+    textoWhatsApp += `🚚 *DÍAS DE ENTREGA:*\n`;
+    textoWhatsApp += `• Viernes y Sábados\n\n`;
+    
+    textoWhatsApp += `⏰ *HORARIOS DE ATENCIÓN:*\n`;
+    textoWhatsApp += `• Lunes a Viernes: 9:00 AM - 8:00 PM\n`;
+    textoWhatsApp += `• Sábados: 9:00 AM - 5:00 PM\n`;
+    textoWhatsApp += `• Domingos: Cerrado\n\n`;
+    
+    textoWhatsApp += `🙏 *¡MUCHAS GRACIAS POR TU PEDIDO!*\n`;
+    textoWhatsApp += `✅ En menos de 1 hora te enviaremos la confirmación y los datos de pago.\n\n`;
+    
+    textoWhatsApp += `📋 *DATOS PARA COMPLETAR:*\n`;
+    textoWhatsApp += `• Nombre completo:\n`;
+    textoWhatsApp += `• Dirección de entrega:\n`;
+    textoWhatsApp += `• Teléfono de contacto:\n`;
+    textoWhatsApp += `• Referencias de ubicación:\n\n`;
+    
+    textoWhatsApp += `💬 ¿Tienes dudas? Contáctanos por este mismo chat.\n`;
+    textoWhatsApp += `¡Gracias por preferir GAETO COMERCIOS! 🛒`;
+
     totalCont.innerText = `Total: $${total.toFixed(2)}`;
-    textoWhatsApp += `\n*TOTAL: $${total.toFixed(2)}*`;
     btnEnviar.href = `https://wa.me/522282877441?text=${encodeURIComponent(textoWhatsApp)}`;
 }
 
@@ -363,14 +448,14 @@ window.guardarCambios = function(id) {
     };
 
     database.ref('productos/' + id).update(actualizaciones)
-        .then(() => alert("💾 ¡Producto e Imagen actualizados correctamente!"))
+        .then(() => mostrarNotificacion("💾 ¡Producto actualizado correctamente!"))
         .catch(err => alert("Error: " + err.message));
 };
 
 window.eliminarProducto = function(id) {
     if (confirm("⚠️ ¿Deseas eliminar este producto?")) {
         database.ref('productos/' + id).remove()
-            .then(() => alert("🗑️ Removido."))
+            .then(() => mostrarNotificacion("🗑️ Producto eliminado."))
             .catch(err => alert("Error: " + err.message));
     }
 };
@@ -416,12 +501,40 @@ window.onload = function() {
             promoFuera: "NO",
             textoPromo: "",
             vigenciaPromo: ""
-        }).then(() => alert("➕ Plantilla creada al final.")).catch(err => alert(err.message));
+        }).then(() => mostrarNotificacion("➕ Plantilla creada al final.")).catch(err => alert(err.message));
     };
 
+    // ====== COMPARTIR CATÁLOGO CON GAETO COMERCIOS ======
     document.getElementById('compartirBtn').onclick = () => {
-        if (navigator.share) navigator.share({ title: 'Gaeto Comercios', url: window.location.href });
-        else { navigator.clipboard.writeText(window.location.href); alert("🔗 ¡Copiado!"); }
+        const urlActual = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
+        
+        let mensaje = `📦 *¡HOLA! GRACIAS POR CONTACTARNOS - GAETO COMERCIOS* 🛒\n\n`;
+        mensaje += `Aquí tienes nuestro catálogo completo:\n`;
+        mensaje += `👉 ${urlActual}\n\n`;
+        
+        mensaje += `📅 *DÍAS PARA HACER PEDIDOS:*\n`;
+        mensaje += `• Lunes, Martes y Miércoles\n\n`;
+        
+        mensaje += `🚚 *DÍAS DE ENTREGA:*\n`;
+        mensaje += `• Viernes y Sábados\n\n`;
+        
+        mensaje += `⏰ *HORARIOS DE ATENCIÓN:*\n`;
+        mensaje += `• Lunes a Viernes: 9:00 AM - 8:00 PM\n`;
+        mensaje += `• Sábados: 9:00 AM - 5:00 PM\n`;
+        mensaje += `• Domingos: Cerrado\n\n`;
+        
+        mensaje += `🙏 *¡GRACIAS POR PREFERIRNOS!*\n`;
+        mensaje += `Para hacer tu pedido:\n`;
+        mensaje += `1. Elige los productos del catálogo.\n`;
+        mensaje += `2. Envíanos captura o lista con cantidades.\n`;
+        mensaje += `3. Confirma tu dirección y teléfono.\n`;
+        mensaje += `4. Te enviaremos el total y datos de pago.\n\n`;
+        mensaje += `✅ ¡En menos de 1 hora tendrás tu cotización!\n\n`;
+        mensaje += `¿Tienes dudas? ¡Estamos para ayudarte! 💬`;
+        
+        const numero = "522282877441";
+        const urlWhatsApp = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+        window.open(urlWhatsApp, '_blank');
     };
 };
 </script>
