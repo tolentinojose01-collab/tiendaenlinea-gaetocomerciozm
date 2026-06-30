@@ -802,7 +802,6 @@ function abrirModalStock(id) {
     document.getElementById('modalStockProducto').textContent = `${prod.nombre} (${prod.codigo || 'S/C'}) - Stock actual: ${prod.stock || 0}`;
     document.getElementById('modalStockInput').value = '';
     document.getElementById('modalStockInput').placeholder = 'Cantidad';
-    // Resetear a modo sumar por defecto
     modoStock = 'sumar';
     document.getElementById('btnStockSumar').classList.add('active');
     document.getElementById('btnStockPoner').classList.remove('active');
@@ -1355,7 +1354,7 @@ function generarCotizacion(pedido, pedidoId) {
 }
 
 // ============================================================
-//  ENVIAR COTIZACIÓN POR WHATSAPP (CON OPCIÓN DE DESTINO)
+//  ENVIAR COTIZACIÓN POR WHATSAPP
 // ============================================================
 function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     let telefonoDestino = telefono;
@@ -1388,23 +1387,9 @@ function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
 }
 
 // ============================================================
-//  COMPARTIR CATÁLOGO - CON SELECCIÓN DE DESTINO
+//  COMPARTIR CATÁLOGO - CON LISTA DE CONTACTOS DE WHATSAPP
 // ============================================================
 document.getElementById('compartirBtn').onclick = () => {
-    const telefonoDestino = prompt("📱 Escribe el número de teléfono a quien quieres enviar el catálogo (10 dígitos):", "2282877441");
-    
-    if (!telefonoDestino) {
-        mostrarNotificacion("❌ Envío cancelado");
-        return;
-    }
-    
-    const telefonoLimpio = telefonoDestino.replace(/\D/g, '');
-    if (telefonoLimpio.length < 10) {
-        mostrarNotificacion("❌ Número inválido. Debe tener 10 dígitos.");
-        return;
-    }
-    
-    const numeroCompleto = '52' + telefonoLimpio;
     const urlActual = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
     
     let mensaje = `📦 *¡HOLA! GRACIAS POR CONTACTARNOS - GAETO COMERCIOS* 🛒\n\n`;
@@ -1431,12 +1416,29 @@ document.getElementById('compartirBtn').onclick = () => {
     mensaje += `✅ ¡En menos de 1 hora tendrás tu cotización!\n\n`;
     mensaje += `¿Tienes dudas? ¡Estamos para ayudarte! 💬`;
     
-    const urlWhatsApp = `https://wa.me/${numeroCompleto}?text=${encodeURIComponent(mensaje)}`;
-    window.open(urlWhatsApp, '_blank');
+    // ====== USAR COMPARTIR NATIVO (SMARTPHONE) ======
+    if (navigator.share) {
+        navigator.share({
+            title: 'GAETO COMERCIOS - Catálogo',
+            text: mensaje,
+        })
+        .then(() => mostrarNotificacion("✅ Mensaje compartido"))
+        .catch(() => mostrarNotificacion("❌ Compartir cancelado"));
+    } else {
+        // ====== FALLBACK PARA PC ======
+        // Opción 1: Copiar al portapapeles
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(mensaje + '\n\n' + urlActual)
+                .then(() => mostrarNotificacion("📋 Mensaje copiado al portapapeles. Pégarlo en WhatsApp Web."))
+                .catch(() => fallbackWhatsApp(mensaje));
+        } else {
+            fallbackWhatsApp(mensaje);
+        }
+    }
 };
 
 // ============================================================
-//  ENVIAR PROMOCIONES - CON SELECCIÓN DE DESTINO
+//  ENVIAR PROMOCIONES - CON LISTA DE CONTACTOS DE WHATSAPP
 // ============================================================
 document.getElementById('promocionesBtn').onclick = () => {
     const promociones = productos.filter(p => {
@@ -1450,20 +1452,6 @@ document.getElementById('promocionesBtn').onclick = () => {
         return;
     }
     
-    const telefonoDestino = prompt("📱 Escribe el número de teléfono a quien quieres enviar las promociones (10 dígitos):", "2282877441");
-    
-    if (!telefonoDestino) {
-        mostrarNotificacion("❌ Envío cancelado");
-        return;
-    }
-    
-    const telefonoLimpio = telefonoDestino.replace(/\D/g, '');
-    if (telefonoLimpio.length < 10) {
-        mostrarNotificacion("❌ Número inválido. Debe tener 10 dígitos.");
-        return;
-    }
-    
-    const numeroCompleto = '52' + telefonoLimpio;
     const urlActual = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
     
     let mensaje = `🎯 *¡PROMOCIONES ESPECIALES - GAETO COMERCIOS!* 🎉\n\n`;
@@ -1506,9 +1494,34 @@ document.getElementById('promocionesBtn').onclick = () => {
     mensaje += `🙏 *¡GRACIAS POR PREFERIRNOS!*\n`;
     mensaje += `📲 Contáctanos para apartar tus productos.`;
     
-    const urlWhatsApp = `https://wa.me/${numeroCompleto}?text=${encodeURIComponent(mensaje)}`;
-    window.open(urlWhatsApp, '_blank');
+    // ====== USAR COMPARTIR NATIVO (SMARTPHONE) ======
+    if (navigator.share) {
+        navigator.share({
+            title: 'GAETO COMERCIOS - Promociones',
+            text: mensaje,
+        })
+        .then(() => mostrarNotificacion("✅ Promociones compartidas"))
+        .catch(() => mostrarNotificacion("❌ Compartir cancelado"));
+    } else {
+        // ====== FALLBACK PARA PC ======
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(mensaje)
+                .then(() => mostrarNotificacion("📋 Mensaje copiado al portapapeles. Pégarlo en WhatsApp Web."))
+                .catch(() => fallbackWhatsApp(mensaje));
+        } else {
+            fallbackWhatsApp(mensaje);
+        }
+    }
 };
+
+// ============================================================
+//  FALLBACK PARA WHATSAPP (CUANDO NO HAY COMPARTIR NATIVO)
+// ============================================================
+function fallbackWhatsApp(mensaje) {
+    const numero = "522282877441";
+    const urlWhatsApp = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlWhatsApp, '_blank');
+}
 
 // ============================================================
 //  GUARDAR CAMBIOS PRODUCTO
