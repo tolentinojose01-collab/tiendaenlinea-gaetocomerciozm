@@ -196,12 +196,84 @@
             100% { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
 
-        .modal-stock {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:3001;}
-        .modal-stock-content {background:white; padding:25px; border-radius:24px; text-align:center; width:90%; max-width:350px;}
-        .modal-stock-content input {width:100%; padding:10px; border-radius:20px; border:1px solid #ccc; text-align:center; margin:10px 0; font-size:16px;}
-        .modal-stock-content button {background:#002b5c; color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer; font-weight:bold;}
+        /* ====== MODAL STOCK MEJORADO ====== */
+        .modal-stock {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 3001;
+            padding: 20px;
+        }
+        .modal-stock-content {
+            background: white;
+            padding: 25px;
+            border-radius: 24px;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            animation: slideUp 0.4s ease;
+        }
+        .modal-stock-content h3 { color: #002b5c; margin-bottom: 5px; }
+        .modal-stock-content .producto-nombre { font-size: 14px; color: #64748b; margin-bottom: 15px; }
+        .modal-stock-content .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .modal-stock-content .btn-group button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .modal-stock-content .btn-group .btn-sumar { background: #2563eb; color: white; }
+        .modal-stock-content .btn-group .btn-sumar.active { background: #1d4ed8; box-shadow: 0 0 0 2px #2563eb; }
+        .modal-stock-content .btn-group .btn-poner { background: #e2e8f0; color: #334155; }
+        .modal-stock-content .btn-group .btn-poner.active { background: #f59e0b; color: white; box-shadow: 0 0 0 2px #f59e0b; }
+        .modal-stock-content .instruccion { font-size: 13px; color: #64748b; margin: 10px 0; }
+        .modal-stock-content input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 20px;
+            border: 2px solid #e2e8f0;
+            text-align: center;
+            margin: 10px 0;
+            font-size: 18px;
+            outline: none;
+            transition: border 0.3s;
+        }
+        .modal-stock-content input:focus { border-color: #2563eb; }
+        .modal-stock-content .btn-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .modal-stock-content .btn-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            transition: background 0.3s;
+        }
+        .modal-stock-content .btn-actions .btn-guardar { background: #2563eb; color: white; }
+        .modal-stock-content .btn-actions .btn-guardar:hover { background: #1d4ed8; }
+        .modal-stock-content .btn-actions .btn-cancelar { background: #e2e8f0; color: #64748b; }
+        .modal-stock-content .btn-actions .btn-cancelar:hover { background: #cbd5e1; }
 
-        /* ====== MODAL DE REGISTRO ====== */
+        /* ====== MODAL DE REGISTRO CON AUTOFILL ====== */
         .modal-registro {
             display: none;
             position: fixed;
@@ -303,6 +375,41 @@
             text-align: center;
             margin-top: 15px;
         }
+        .btn-buscar-cliente {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 22px;
+            white-space: nowrap;
+            transition: background 0.3s;
+        }
+        .btn-buscar-cliente:hover { background: #1d4ed8; }
+        .mensaje-cliente-encontrado {
+            display: none;
+            background: #bbf7d0;
+            color: #166534;
+            padding: 10px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .mensaje-cliente-no-encontrado {
+            display: none;
+            background: #fecaca;
+            color: #b91c1c;
+            padding: 10px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: bold;
+        }
 
         @media (max-width:600px){
             .imagen-area{height:200px}
@@ -311,6 +418,8 @@
             .banner-promo-fuera{font-size:12px; padding:10px}
             .stats-grid { grid-template-columns: 1fr 1fr; }
             .modal-registro-content { padding: 20px; }
+            .modal-stock-content { padding: 20px; }
+            .btn-buscar-cliente { font-size:12px; padding:10px 14px; }
         }
     </style>
 
@@ -322,20 +431,28 @@
 <!-- NOTIFICACIÓN FLOTANTE -->
 <div id="toastNotificacion" class="toast-notificacion">✅ Mensaje enviado</div>
 
-<!-- MODAL STOCK -->
+<!-- ====== MODAL STOCK MEJORADO ====== -->
 <div class="modal-stock" id="modalStock">
     <div class="modal-stock-content">
         <h3>📦 Ajustar Inventario</h3>
-        <p style="font-size:13px; color:#666; margin-bottom:10px;" id="modalStockProducto">Producto</p>
-        <input type="number" id="modalStockInput" placeholder="Cantidad en stock" min="0">
-        <div>
-            <button id="btnStockGuardar" style="background:#2563eb;">Guardar</button>
-            <button id="btnStockCancelar" style="background:#666; margin-left:5px;">Cancelar</button>
+        <p class="producto-nombre" id="modalStockProducto">Producto</p>
+        
+        <div class="btn-group">
+            <button class="btn-sumar active" id="btnStockSumar">➕ Agregar</button>
+            <button class="btn-poner" id="btnStockPoner">📝 Poner Total</button>
+        </div>
+        
+        <p class="instruccion" id="modalStockInstruccion">Ingresa la cantidad a AGREGAR al stock actual</p>
+        <input type="number" id="modalStockInput" placeholder="Cantidad" min="0">
+        
+        <div class="btn-actions">
+            <button class="btn-guardar" id="btnStockGuardar">💾 Guardar</button>
+            <button class="btn-cancelar" id="btnStockCancelar">❌ Cancelar</button>
         </div>
     </div>
 </div>
 
-<!-- ====== MODAL DE REGISTRO DE CLIENTE ====== -->
+<!-- ====== MODAL DE REGISTRO DE CLIENTE CON AUTOFILL ====== -->
 <div class="modal-registro" id="modalRegistro">
     <div class="modal-registro-content">
         <div class="logo-modal">
@@ -343,7 +460,18 @@
         </div>
         
         <h2>📝 Registro de Pedido</h2>
-        <p class="subtitulo">Completa tus datos para recibir tu cotización formal</p>
+        <p class="subtitulo">Ingresa tu teléfono para cargar tus datos automáticamente</p>
+        
+        <div class="campo-row" style="display:flex; gap:10px; align-items:center;">
+            <div style="flex:1;">
+                <label>📱 Teléfono (10 dígitos) *</label>
+                <input type="tel" id="regTelefono" placeholder="Ej: 2281234567" style="width:100%; padding:12px 16px; border-radius:30px; border:2px solid #e2e8f0; font-size:14px; outline:none;">
+            </div>
+            <button id="btnBuscarCliente" class="btn-buscar-cliente">🔍 Buscar</button>
+        </div>
+        
+        <div id="clienteEncontrado" class="mensaje-cliente-encontrado">✅ Cliente encontrado - Datos cargados automáticamente</div>
+        <div id="clienteNoEncontrado" class="mensaje-cliente-no-encontrado">❌ Cliente no encontrado - Completa los datos para registrarlo</div>
         
         <div class="campo-row">
             <label>👤 Nombre completo *</label>
@@ -353,11 +481,6 @@
         <div class="campo-row">
             <label>🏢 Nombre del negocio (opcional)</label>
             <input type="text" id="regNegocio" placeholder="Ej: Tienda El Sol">
-        </div>
-        
-        <div class="campo-row">
-            <label>📱 Teléfono (10 dígitos) *</label>
-            <input type="tel" id="regTelefono" placeholder="Ej: 2281234567">
         </div>
         
         <div class="campo-row">
@@ -553,6 +676,8 @@ let chartCategorias = null;
 let chartTopProductos = null;
 let chartVentasMes = null;
 let ivaActivado = true;
+let productoStockActual = '';
+let modoStock = 'sumar';
 
 function mostrarNotificacion(mensaje, duracion = 4000) {
     const toast = document.getElementById('toastNotificacion');
@@ -610,6 +735,81 @@ document.getElementById('toggleIvaBtn').onclick = function() {
     this.style.background = ivaActivado ? '#8b5cf6' : '#6b7280';
     mostrarNotificacion(ivaActivado ? '✅ IVA activado para las cotizaciones' : '❌ IVA desactivado para las cotizaciones');
 };
+
+// ============================================================
+//  MODAL STOCK MEJORADO - AGREGAR / PONER TOTAL
+// ============================================================
+document.getElementById('btnStockSumar').onclick = function() {
+    modoStock = 'sumar';
+    document.getElementById('btnStockSumar').classList.add('active');
+    document.getElementById('btnStockPoner').classList.remove('active');
+    document.getElementById('modalStockInstruccion').textContent = 'Ingresa la cantidad a AGREGAR al stock actual';
+    document.getElementById('modalStockInput').placeholder = 'Cantidad a agregar';
+    document.getElementById('modalStockInput').value = '';
+};
+
+document.getElementById('btnStockPoner').onclick = function() {
+    modoStock = 'poner';
+    document.getElementById('btnStockPoner').classList.add('active');
+    document.getElementById('btnStockSumar').classList.remove('active');
+    document.getElementById('modalStockInstruccion').textContent = 'Ingresa la NUEVA cantidad TOTAL en stock';
+    document.getElementById('modalStockInput').placeholder = 'Nuevo stock total';
+    document.getElementById('modalStockInput').value = '';
+};
+
+document.getElementById('btnStockGuardar').onclick = () => {
+    const cantidad = parseInt(document.getElementById('modalStockInput').value);
+    if (isNaN(cantidad) || cantidad < 0) {
+        mostrarNotificacion('❌ Ingresa un número válido');
+        return;
+    }
+    
+    const prod = productos.find(p => p.id === productoStockActual);
+    if (!prod) {
+        mostrarNotificacion('❌ Producto no encontrado');
+        return;
+    }
+    
+    let nuevoStock;
+    let mensaje;
+    
+    if (modoStock === 'sumar') {
+        nuevoStock = (parseInt(prod.stock) || 0) + cantidad;
+        mensaje = `📦 Agregado ${cantidad} unidades. Nuevo stock: ${nuevoStock}`;
+    } else {
+        nuevoStock = cantidad;
+        mensaje = `📦 Stock actualizado a ${nuevoStock}`;
+    }
+    
+    database.ref('productos/' + productoStockActual + '/stock').set(nuevoStock)
+        .then(() => {
+            mostrarNotificacion(mensaje);
+            document.getElementById('modalStock').style.display = 'none';
+            actualizarPanelAdmin();
+            renderizarProductos();
+        })
+        .catch(err => mostrarNotificacion('❌ Error: ' + err.message));
+};
+
+document.getElementById('btnStockCancelar').onclick = () => {
+    document.getElementById('modalStock').style.display = 'none';
+};
+
+function abrirModalStock(id) {
+    const prod = productos.find(p => p.id === id);
+    if (!prod) return;
+    productoStockActual = id;
+    document.getElementById('modalStockProducto').textContent = `${prod.nombre} (${prod.codigo || 'S/C'}) - Stock actual: ${prod.stock || 0}`;
+    document.getElementById('modalStockInput').value = '';
+    document.getElementById('modalStockInput').placeholder = 'Cantidad';
+    // Resetear a modo sumar por defecto
+    modoStock = 'sumar';
+    document.getElementById('btnStockSumar').classList.add('active');
+    document.getElementById('btnStockPoner').classList.remove('active');
+    document.getElementById('modalStockInstruccion').textContent = 'Ingresa la cantidad a AGREGAR al stock actual';
+    document.getElementById('modalStock').style.display = 'flex';
+    setTimeout(() => document.getElementById('modalStockInput').focus(), 100);
+}
 
 // ============================================================
 //  FUNCIONES PRINCIPALES
@@ -682,7 +882,6 @@ function renderizarProductos() {
         let descNum = parseFloat(p.descuento) || 0;
         let esPromoValida = (p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "");
         
-        // ====== STOCK SOLO PARA ADMIN ======
         let stockHTML = '';
         if (modoAdmin) {
             let stock = p.stock !== undefined ? p.stock : '-';
@@ -881,7 +1080,58 @@ function renderizarCarrito() {
 }
 
 // ============================================================
-//  BOTÓN ENVIAR PEDIDO - CON MODAL DE REGISTRO
+//  BUSCAR CLIENTE POR TELÉFONO (AUTOFILL)
+// ============================================================
+document.getElementById('btnBuscarCliente').onclick = function() {
+    const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
+    
+    if (telefono.length < 10) {
+        mostrarNotificacion("⚠️ Escribe un teléfono válido (10 dígitos)");
+        return;
+    }
+    
+    mostrarNotificacion("🔍 Buscando cliente...");
+    
+    database.ref('clientes/' + telefono).once('value')
+        .then((snapshot) => {
+            const data = snapshot.val();
+            
+            if (data) {
+                document.getElementById('clienteEncontrado').style.display = 'block';
+                document.getElementById('clienteNoEncontrado').style.display = 'none';
+                
+                document.getElementById('regNombre').value = data.nombre || '';
+                document.getElementById('regNegocio').value = data.negocio || '';
+                document.getElementById('regDireccion').value = data.direccion || '';
+                document.getElementById('regReferencia').value = data.referencia || '';
+                
+                mostrarNotificacion(`✅ Cliente encontrado: ${data.nombre || 'Sin nombre'}`);
+                document.getElementById('regTelefono').dataset.clienteId = telefono;
+            } else {
+                document.getElementById('clienteEncontrado').style.display = 'none';
+                document.getElementById('clienteNoEncontrado').style.display = 'block';
+                
+                document.getElementById('regNombre').value = '';
+                document.getElementById('regNegocio').value = '';
+                document.getElementById('regDireccion').value = '';
+                document.getElementById('regReferencia').value = '';
+                
+                mostrarNotificacion("ℹ️ Cliente no registrado. Completa tus datos.");
+            }
+        })
+        .catch(err => {
+            mostrarNotificacion("❌ Error al buscar cliente: " + err.message);
+        });
+};
+
+document.getElementById('regTelefono').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('btnBuscarCliente').click();
+    }
+});
+
+// ============================================================
+//  BOTÓN ENVIAR PEDIDO - CON MODAL DE REGISTRO Y AUTOFILL
 // ============================================================
 document.getElementById('enviarPedidoBtn').onclick = function(e) {
     e.preventDefault();
@@ -891,28 +1141,44 @@ document.getElementById('enviarPedidoBtn').onclick = function(e) {
         return;
     }
     
+    document.getElementById('clienteEncontrado').style.display = 'none';
+    document.getElementById('clienteNoEncontrado').style.display = 'none';
+    
+    const telefonoActual = document.getElementById('regTelefono').value;
+    if (!telefonoActual) {
+        document.getElementById('regNombre').value = '';
+        document.getElementById('regNegocio').value = '';
+        document.getElementById('regDireccion').value = '';
+        document.getElementById('regReferencia').value = '';
+    }
+    
     document.getElementById('modalRegistro').style.display = 'flex';
+    
+    setTimeout(() => {
+        document.getElementById('regTelefono').focus();
+        document.getElementById('regTelefono').select();
+    }, 300);
 };
 
 // ============================================================
 //  CONFIRMAR REGISTRO Y PROCESAR PEDIDO
 // ============================================================
 document.getElementById('btnRegistroConfirmar').onclick = function() {
+    const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
     const nombre = document.getElementById('regNombre').value.trim();
     const negocio = document.getElementById('regNegocio').value.trim();
-    const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
     const direccion = document.getElementById('regDireccion').value.trim();
     const referencia = document.getElementById('regReferencia').value.trim();
-    
-    if (!nombre) {
-        mostrarNotificacion("❌ Escribe tu nombre completo");
-        document.getElementById('regNombre').focus();
-        return;
-    }
     
     if (telefono.length < 10) {
         mostrarNotificacion("❌ Escribe un teléfono válido (10 dígitos)");
         document.getElementById('regTelefono').focus();
+        return;
+    }
+    
+    if (!nombre) {
+        mostrarNotificacion("❌ Escribe tu nombre completo");
+        document.getElementById('regNombre').focus();
         return;
     }
     
@@ -976,7 +1242,6 @@ function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
         .then((snapshot) => {
             const pedidoId = snapshot.key;
             
-            // ACTUALIZAR INVENTARIO (RESTAR STOCK)
             productosPedido.forEach(item => {
                 let prod = productos.find(p => p.codigo === item.codigo);
                 if (prod && prod.stock !== undefined) {
@@ -986,7 +1251,6 @@ function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
                 }
             });
             
-            // REGISTRAR CLIENTE CON NEGOCIO Y DIRECCIÓN COMPLETA
             database.ref('clientes/' + telefono).update({
                 nombre: nombre,
                 negocio: negocio || 'Particular',
@@ -1091,16 +1355,30 @@ function generarCotizacion(pedido, pedidoId) {
 }
 
 // ============================================================
-//  ENVIAR COTIZACIÓN POR WHATSAPP
+//  ENVIAR COTIZACIÓN POR WHATSAPP (CON OPCIÓN DE DESTINO)
 // ============================================================
 function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
-    const telefonoLimpio = telefono.replace(/\D/g, '');
-    const numeroCompleto = '52' + telefonoLimpio;
+    let telefonoDestino = telefono;
+    
+    if (!telefonoDestino || telefonoDestino.length < 10) {
+        telefonoDestino = prompt("📱 Escribe el número de teléfono del cliente (10 dígitos):", "2282877441");
+        if (!telefonoDestino) {
+            mostrarNotificacion("❌ Envío cancelado");
+            return;
+        }
+        telefonoDestino = telefonoDestino.replace(/\D/g, '');
+        if (telefonoDestino.length < 10) {
+            mostrarNotificacion("❌ Número inválido. Debe tener 10 dígitos.");
+            return;
+        }
+    }
+    
+    const numeroCompleto = '52' + telefonoDestino;
     
     const logoTexto = "🖼️ *GAETO COMERCIOS*\n🔗 Logo: https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png\n\n";
     
     let mensaje = `📄 *COTIZACIÓN GAETO COMERCIOS*\n\n`;
-    mensaje += `Hola ${nombreCliente}, ¡gracias por tu pedido!\n\n`;
+    mensaje += `Hola ${nombreCliente || 'cliente'}, ¡gracias por tu pedido!\n\n`;
     mensaje += logoTexto;
     mensaje += cotizacion;
     mensaje += `\n\n💬 ¿Tienes dudas? Estamos aquí para ayudarte.`;
@@ -1110,7 +1388,55 @@ function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
 }
 
 // ============================================================
-//  PROMOCIONES
+//  COMPARTIR CATÁLOGO - CON SELECCIÓN DE DESTINO
+// ============================================================
+document.getElementById('compartirBtn').onclick = () => {
+    const telefonoDestino = prompt("📱 Escribe el número de teléfono a quien quieres enviar el catálogo (10 dígitos):", "2282877441");
+    
+    if (!telefonoDestino) {
+        mostrarNotificacion("❌ Envío cancelado");
+        return;
+    }
+    
+    const telefonoLimpio = telefonoDestino.replace(/\D/g, '');
+    if (telefonoLimpio.length < 10) {
+        mostrarNotificacion("❌ Número inválido. Debe tener 10 dígitos.");
+        return;
+    }
+    
+    const numeroCompleto = '52' + telefonoLimpio;
+    const urlActual = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
+    
+    let mensaje = `📦 *¡HOLA! GRACIAS POR CONTACTARNOS - GAETO COMERCIOS* 🛒\n\n`;
+    mensaje += `Aquí tienes nuestro catálogo completo:\n`;
+    mensaje += `👉 ${urlActual}\n\n`;
+    
+    mensaje += `📅 *DÍAS PARA HACER PEDIDOS:*\n`;
+    mensaje += `• Lunes, Martes y Miércoles\n\n`;
+    
+    mensaje += `🚚 *DÍAS DE ENTREGA:*\n`;
+    mensaje += `• Viernes y Sábados\n\n`;
+    
+    mensaje += `⏰ *HORARIOS DE ATENCIÓN:*\n`;
+    mensaje += `• Lunes a Viernes: 9:00 AM - 8:00 PM\n`;
+    mensaje += `• Sábados: 9:00 AM - 5:00 PM\n`;
+    mensaje += `• Domingos: Cerrado\n\n`;
+    
+    mensaje += `🙏 *¡GRACIAS POR PREFERIRNOS!*\n`;
+    mensaje += `Para hacer tu pedido:\n`;
+    mensaje += `1. Elige los productos del catálogo.\n`;
+    mensaje += `2. Envíanos captura o lista con cantidades.\n`;
+    mensaje += `3. Confirma tu dirección y teléfono.\n`;
+    mensaje += `4. Te enviaremos el total y datos de pago.\n\n`;
+    mensaje += `✅ ¡En menos de 1 hora tendrás tu cotización!\n\n`;
+    mensaje += `¿Tienes dudas? ¡Estamos para ayudarte! 💬`;
+    
+    const urlWhatsApp = `https://wa.me/${numeroCompleto}?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlWhatsApp, '_blank');
+};
+
+// ============================================================
+//  ENVIAR PROMOCIONES - CON SELECCIÓN DE DESTINO
 // ============================================================
 document.getElementById('promocionesBtn').onclick = () => {
     const promociones = productos.filter(p => {
@@ -1124,6 +1450,20 @@ document.getElementById('promocionesBtn').onclick = () => {
         return;
     }
     
+    const telefonoDestino = prompt("📱 Escribe el número de teléfono a quien quieres enviar las promociones (10 dígitos):", "2282877441");
+    
+    if (!telefonoDestino) {
+        mostrarNotificacion("❌ Envío cancelado");
+        return;
+    }
+    
+    const telefonoLimpio = telefonoDestino.replace(/\D/g, '');
+    if (telefonoLimpio.length < 10) {
+        mostrarNotificacion("❌ Número inválido. Debe tener 10 dígitos.");
+        return;
+    }
+    
+    const numeroCompleto = '52' + telefonoLimpio;
     const urlActual = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
     
     let mensaje = `🎯 *¡PROMOCIONES ESPECIALES - GAETO COMERCIOS!* 🎉\n\n`;
@@ -1166,8 +1506,7 @@ document.getElementById('promocionesBtn').onclick = () => {
     mensaje += `🙏 *¡GRACIAS POR PREFERIRNOS!*\n`;
     mensaje += `📲 Contáctanos para apartar tus productos.`;
     
-    const numero = "522282877441";
-    const urlWhatsApp = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+    const urlWhatsApp = `https://wa.me/${numeroCompleto}?text=${encodeURIComponent(mensaje)}`;
     window.open(urlWhatsApp, '_blank');
 };
 
@@ -1436,35 +1775,6 @@ function cambiarEstadoPedido(id, estado) {
         .catch(err => alert("Error: " + err.message));
 }
 
-let productoStockActual = '';
-
-function abrirModalStock(id) {
-    const prod = productos.find(p => p.id === id);
-    if (!prod) return;
-    productoStockActual = id;
-    document.getElementById('modalStockProducto').textContent = `${prod.nombre} (${prod.codigo || 'S/C'})`;
-    document.getElementById('modalStockInput').value = prod.stock || 0;
-    document.getElementById('modalStock').style.display = 'flex';
-}
-
-document.getElementById('btnStockGuardar').onclick = () => {
-    const nuevoStock = parseInt(document.getElementById('modalStockInput').value);
-    if (isNaN(nuevoStock) || nuevoStock < 0) {
-        alert('Ingresa un número válido');
-        return;
-    }
-    database.ref('productos/' + productoStockActual + '/stock').set(nuevoStock)
-        .then(() => {
-            mostrarNotificacion(`📦 Stock actualizado a ${nuevoStock}`);
-            document.getElementById('modalStock').style.display = 'none';
-        })
-        .catch(err => alert("Error: " + err.message));
-};
-
-document.getElementById('btnStockCancelar').onclick = () => {
-    document.getElementById('modalStock').style.display = 'none';
-};
-
 function activarModoAdmin() { 
     modoAdmin = true; 
     document.getElementById('badgeAdmin').style.display = 'block'; 
@@ -1537,38 +1847,6 @@ window.onload = function() {
         } else {
             document.getElementById('modalPwd').style.display = "flex";
         }
-    };
-
-    document.getElementById('compartirBtn').onclick = () => {
-        const urlActual = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
-        
-        let mensaje = `📦 *¡HOLA! GRACIAS POR CONTACTARNOS - GAETO COMERCIOS* 🛒\n\n`;
-        mensaje += `Aquí tienes nuestro catálogo completo:\n`;
-        mensaje += `👉 ${urlActual}\n\n`;
-        
-        mensaje += `📅 *DÍAS PARA HACER PEDIDOS:*\n`;
-        mensaje += `• Lunes, Martes y Miércoles\n\n`;
-        
-        mensaje += `🚚 *DÍAS DE ENTREGA:*\n`;
-        mensaje += `• Viernes y Sábados\n\n`;
-        
-        mensaje += `⏰ *HORARIOS DE ATENCIÓN:*\n`;
-        mensaje += `• Lunes a Viernes: 9:00 AM - 8:00 PM\n`;
-        mensaje += `• Sábados: 9:00 AM - 5:00 PM\n`;
-        mensaje += `• Domingos: Cerrado\n\n`;
-        
-        mensaje += `🙏 *¡GRACIAS POR PREFERIRNOS!*\n`;
-        mensaje += `Para hacer tu pedido:\n`;
-        mensaje += `1. Elige los productos del catálogo.\n`;
-        mensaje += `2. Envíanos captura o lista con cantidades.\n`;
-        mensaje += `3. Confirma tu dirección y teléfono.\n`;
-        mensaje += `4. Te enviaremos el total y datos de pago.\n\n`;
-        mensaje += `✅ ¡En menos de 1 hora tendrás tu cotización!\n\n`;
-        mensaje += `¿Tienes dudas? ¡Estamos para ayudarte! 💬`;
-        
-        const numero = "522282877441";
-        const urlWhatsApp = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
-        window.open(urlWhatsApp, '_blank');
     };
 };
 </script>
