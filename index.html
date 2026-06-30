@@ -19,6 +19,7 @@
         .toolbar .share{background:#25d366}
         .toolbar .admin-btn{background:#2563eb}
         .toolbar .promo-btn{background:#e11d48}
+        .toolbar .iva-btn{background:#8b5cf6}
         
         .contenedor-busqueda {max-width:500px; margin: 0 auto 20px auto; display: flex; gap: 10px;}
         .busqueda-input {flex: 1; padding: 12px 20px; border-radius: 40px; border: 1px solid #ccc; outline: none; font-size: 14px;}
@@ -350,13 +351,18 @@
         </div>
         
         <div class="campo-row">
+            <label>🏢 Nombre del negocio (opcional)</label>
+            <input type="text" id="regNegocio" placeholder="Ej: Tienda El Sol">
+        </div>
+        
+        <div class="campo-row">
             <label>📱 Teléfono (10 dígitos) *</label>
             <input type="tel" id="regTelefono" placeholder="Ej: 2281234567">
         </div>
         
         <div class="campo-row">
-            <label>📍 Dirección de entrega *</label>
-            <input type="text" id="regDireccion" placeholder="Ej: Calle Principal #123, Colonia Centro">
+            <label>📍 Dirección completa *</label>
+            <input type="text" id="regDireccion" placeholder="Ej: Calle Principal #123, Colonia Centro, Ciudad">
         </div>
         
         <div class="campo-row">
@@ -395,6 +401,7 @@
     <button id="toggleModoBtn">👁️ VER COMO CLIENTE</button>
     <button id="agregarProductoBtn" style="background:#2563eb;">➕ CREAR PRODUCTO</button>
     <button id="adminPanelBtn" class="admin-btn">📊 PANEL ADMIN</button>
+    <button id="toggleIvaBtn" class="iva-btn">🧾 IVA: ACTIVADO</button>
 </div>
 
 <!-- FILTROS -->
@@ -460,8 +467,20 @@
     <div class="tab-content" id="tabClientes">
         <div class="tabla-container">
             <table>
-                <thead><tr><th>Nombre</th><th>Teléfono</th><th>Compras</th><th>Total Gastado</th><th>Última Compra</th></tr></thead>
-                <tbody id="clientesTabla"><tr><td colspan="5" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr></tbody>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Negocio</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
+                        <th>Compras</th>
+                        <th>Total Gastado</th>
+                        <th>Última Compra</th>
+                    </tr>
+                </thead>
+                <tbody id="clientesTabla">
+                    <tr><td colspan="7" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
@@ -533,6 +552,7 @@ let chartVentas = null;
 let chartCategorias = null;
 let chartTopProductos = null;
 let chartVentasMes = null;
+let ivaActivado = true;
 
 function mostrarNotificacion(mensaje, duracion = 4000) {
     const toast = document.getElementById('toastNotificacion');
@@ -581,6 +601,19 @@ database.ref('clientes').on('value', (snapshot) => {
     if (modoAdmin) actualizarPanelAdmin();
 });
 
+// ============================================================
+//  CONTROL DE IVA (ACTIVAR/DESACTIVAR)
+// ============================================================
+document.getElementById('toggleIvaBtn').onclick = function() {
+    ivaActivado = !ivaActivado;
+    this.textContent = ivaActivado ? '🧾 IVA: ACTIVADO' : '🧾 IVA: DESACTIVADO';
+    this.style.background = ivaActivado ? '#8b5cf6' : '#6b7280';
+    mostrarNotificacion(ivaActivado ? '✅ IVA activado para las cotizaciones' : '❌ IVA desactivado para las cotizaciones');
+};
+
+// ============================================================
+//  FUNCIONES PRINCIPALES
+// ============================================================
 function precioFinal(p) { 
     let precio = parseFloat(p.precioLista) || 0;
     let desc = parseFloat(p.descuento) || 0;
@@ -622,6 +655,9 @@ function renderizarFiltros() {
     });
 }
 
+// ============================================================
+//  RENDERIZAR PRODUCTOS - STOCK OCULTO PARA CLIENTES
+// ============================================================
 function renderizarProductos() {
     const contenedor = document.getElementById('contenedorProductos');
     if (productos.length === 0) {
@@ -645,9 +681,15 @@ function renderizarProductos() {
         let pFinal = precioFinal(p);
         let descNum = parseFloat(p.descuento) || 0;
         let esPromoValida = (p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "");
-        let stock = p.stock !== undefined ? p.stock : '-';
-        let stockClass = getStockClass(stock);
-        let stockText = getStockText(stock);
+        
+        // ====== STOCK SOLO PARA ADMIN ======
+        let stockHTML = '';
+        if (modoAdmin) {
+            let stock = p.stock !== undefined ? p.stock : '-';
+            let stockClass = getStockClass(stock);
+            let stockText = getStockText(stock);
+            stockHTML = `<span class="stock-badge ${stockClass}">📦 ${stockText} ${stock !== '-' ? '('+stock+')' : ''}</span>`;
+        }
         
         const esPromocion = esPromoValida || descNum > 0;
         const etiquetaPromo = esPromocion ? `<span class="etiqueta-promo">🔥 PROMO</span>` : '';
@@ -669,7 +711,7 @@ function renderizarProductos() {
                     <div class="descripcion">${p.descripcion || ''}</div>
                     <div>
                         <span class="categoria-texto">${p.categoria || 'General'}</span>
-                        <span class="stock-badge ${stockClass}">📦 ${stockText} ${stock !== '-' ? '('+stock+')' : ''}</span>
+                        ${stockHTML}
                     </div>
                     <div class="precio">
                         ${descNum > 0 ? `<span class="precio-antes">$${parseFloat(p.precioLista).toFixed(2)}</span>` : ''}
@@ -857,6 +899,7 @@ document.getElementById('enviarPedidoBtn').onclick = function(e) {
 // ============================================================
 document.getElementById('btnRegistroConfirmar').onclick = function() {
     const nombre = document.getElementById('regNombre').value.trim();
+    const negocio = document.getElementById('regNegocio').value.trim();
     const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
     const direccion = document.getElementById('regDireccion').value.trim();
     const referencia = document.getElementById('regReferencia').value.trim();
@@ -880,7 +923,7 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
     }
     
     document.getElementById('modalRegistro').style.display = 'none';
-    procesarPedido(nombre, telefono, direccion, referencia);
+    procesarPedido(nombre, negocio, telefono, direccion, referencia);
 };
 
 document.getElementById('btnRegistroCancelar').onclick = function() {
@@ -889,9 +932,9 @@ document.getElementById('btnRegistroCancelar').onclick = function() {
 };
 
 // ============================================================
-//  PROCESAR PEDIDO COMPLETO
+//  PROCESAR PEDIDO COMPLETO (CON NEGOCIO Y DIRECCIÓN COMPLETA)
 // ============================================================
-function procesarPedido(nombre, telefono, direccion, referencia) {
+function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
     let total = 0;
     let productosPedido = [];
     
@@ -910,11 +953,14 @@ function procesarPedido(nombre, telefono, direccion, referencia) {
         });
     });
     
+    const direccionCompleta = direccion + (referencia ? ' (Ref: ' + referencia + ')' : '');
+    
     const nuevoPedido = {
         cliente: {
             nombre: nombre,
+            negocio: negocio || 'Particular',
             telefono: telefono,
-            direccion: direccion + (referencia ? ' (Ref: ' + referencia + ')' : '')
+            direccion: direccionCompleta
         },
         productos: productosPedido,
         total: total,
@@ -930,6 +976,7 @@ function procesarPedido(nombre, telefono, direccion, referencia) {
         .then((snapshot) => {
             const pedidoId = snapshot.key;
             
+            // ACTUALIZAR INVENTARIO (RESTAR STOCK)
             productosPedido.forEach(item => {
                 let prod = productos.find(p => p.codigo === item.codigo);
                 if (prod && prod.stock !== undefined) {
@@ -939,10 +986,12 @@ function procesarPedido(nombre, telefono, direccion, referencia) {
                 }
             });
             
+            // REGISTRAR CLIENTE CON NEGOCIO Y DIRECCIÓN COMPLETA
             database.ref('clientes/' + telefono).update({
                 nombre: nombre,
+                negocio: negocio || 'Particular',
                 telefono: telefono,
-                direccion: direccion,
+                direccion: direccionCompleta,
                 referencia: referencia || '',
                 ultimaCompra: new Date().toISOString().split('T')[0],
                 totalCompras: (parseInt(localStorage.getItem('totalCompras_' + telefono)) || 0) + 1
@@ -962,7 +1011,7 @@ function procesarPedido(nombre, telefono, direccion, referencia) {
 }
 
 // ============================================================
-//  GENERAR COTIZACIÓN FORMAL
+//  GENERAR COTIZACIÓN FORMAL (CON NEGOCIO Y DIRECCIÓN COMPLETA)
 // ============================================================
 function generarCotizacion(pedido, pedidoId) {
     const fecha = new Date();
@@ -978,10 +1027,12 @@ function generarCotizacion(pedido, pedidoId) {
     cotizacion += `📄 Folio: GAETO-${pedidoId.slice(-6).toUpperCase()}\n`;
     cotizacion += `📅 Fecha: ${fechaFormateada}\n`;
     cotizacion += `⏰ Hora: ${fecha.toLocaleTimeString()}\n`;
-    cotizacion += `🔄 Vigencia: 7 días naturales\n\n`;
+    cotizacion += `🔄 Vigencia: 7 días naturales\n`;
+    cotizacion += `🧾 IVA: ${ivaActivado ? 'INCLUIDO (16%)' : 'NO INCLUIDO'}\n\n`;
     
     cotizacion += "*👤 DATOS DEL CLIENTE*\n";
     cotizacion += `Nombre: ${pedido.cliente.nombre}\n`;
+    cotizacion += `Negocio: ${pedido.cliente.negocio || 'Particular'}\n`;
     cotizacion += `Teléfono: ${pedido.cliente.telefono}\n`;
     cotizacion += `Dirección: ${pedido.cliente.direccion}\n\n`;
     
@@ -997,12 +1048,19 @@ function generarCotizacion(pedido, pedidoId) {
     cotizacion += "└─────────────────────────────────────┘\n";
     
     const subtotal = pedido.total;
-    const iva = subtotal * 0.16;
-    const total = subtotal + iva;
+    let iva = 0;
+    let total = subtotal;
+    
+    if (ivaActivado) {
+        iva = subtotal * 0.16;
+        total = subtotal + iva;
+    }
     
     cotizacion += "\n*💰 RESUMEN FINANCIERO*\n";
     cotizacion += `Subtotal: $${subtotal.toFixed(2)}\n`;
-    cotizacion += `IVA (16%): $${iva.toFixed(2)}\n`;
+    if (ivaActivado) {
+        cotizacion += `IVA (16%): $${iva.toFixed(2)}\n`;
+    }
     cotizacion += `───────────────────────────\n`;
     cotizacion += `*TOTAL: $${total.toFixed(2)}*\n\n`;
     
@@ -1238,7 +1296,7 @@ function renderizarPedidos() {
 function renderizarClientes() {
     const tbody = document.getElementById('clientesTabla');
     if (clientes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr>';
         return;
     }
     
@@ -1248,7 +1306,9 @@ function renderizarClientes() {
         return `
             <tr>
                 <td>${c.nombre || 'Sin nombre'}</td>
+                <td>${c.negocio || 'Particular'}</td>
                 <td>${c.telefono || 'Sin teléfono'}</td>
+                <td style="font-size:11px; max-width:200px; word-break:break-word;">${c.direccion || 'Sin dirección'}</td>
                 <td>${pedidosCliente.length}</td>
                 <td>$${totalGastado.toFixed(2)}</td>
                 <td>${c.ultimaCompra || 'Sin compras'}</td>
@@ -1410,6 +1470,9 @@ function activarModoAdmin() {
     document.getElementById('badgeAdmin').style.display = 'block'; 
     document.getElementById('toolbar').style.display = 'flex'; 
     document.getElementById('adminPanel').classList.add('visible');
+    const ivaBtn = document.getElementById('toggleIvaBtn');
+    ivaBtn.textContent = ivaActivado ? '🧾 IVA: ACTIVADO' : '🧾 IVA: DESACTIVADO';
+    ivaBtn.style.background = ivaActivado ? '#8b5cf6' : '#6b7280';
     renderizarProductos();
     actualizarPanelAdmin();
 }
