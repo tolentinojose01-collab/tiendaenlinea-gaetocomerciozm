@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>GAETO COMERCIOS - Sistema Completo</title>
-    <!-- Chart.js para gráficas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
@@ -19,7 +18,6 @@
         .toolbar .share{background:#25d366}
         .toolbar .admin-btn{background:#2563eb}
         .toolbar .promo-btn{background:#e11d48}
-        .toolbar .iva-btn{background:#8b5cf6}
         
         .contenedor-busqueda {max-width:500px; margin: 0 auto 20px auto; display: flex; gap: 10px;}
         .busqueda-input {flex: 1; padding: 12px 20px; border-radius: 40px; border: 1px solid #ccc; outline: none; font-size: 14px;}
@@ -75,7 +73,6 @@
         .botones-edicion{display:flex;gap:10px;margin-top:10px}
         .btn-eliminar{flex:1;padding:8px;border-radius:40px;border:none;color:white;cursor:pointer;background:#b91c1c;font-weight:bold}
         
-        /* ====== PANEL DE ADMINISTRACIÓN ====== */
         .admin-panel {
             display: none;
             background: white;
@@ -196,7 +193,6 @@
             100% { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
 
-        /* ====== MODAL STOCK MEJORADO ====== */
         .modal-stock {
             display: none;
             position: fixed;
@@ -273,7 +269,6 @@
         .modal-stock-content .btn-actions .btn-cancelar { background: #e2e8f0; color: #64748b; }
         .modal-stock-content .btn-actions .btn-cancelar:hover { background: #cbd5e1; }
 
-        /* ====== MODAL DE REGISTRO CON AUTOFILL ====== */
         .modal-registro {
             display: none;
             position: fixed;
@@ -428,23 +423,18 @@
 </head>
 <body>
 
-<!-- NOTIFICACIÓN FLOTANTE -->
 <div id="toastNotificacion" class="toast-notificacion">✅ Mensaje enviado</div>
 
-<!-- ====== MODAL STOCK MEJORADO ====== -->
 <div class="modal-stock" id="modalStock">
     <div class="modal-stock-content">
         <h3>📦 Ajustar Inventario</h3>
         <p class="producto-nombre" id="modalStockProducto">Producto</p>
-        
         <div class="btn-group">
             <button class="btn-sumar active" id="btnStockSumar">➕ Agregar</button>
             <button class="btn-poner" id="btnStockPoner">📝 Poner Total</button>
         </div>
-        
         <p class="instruccion" id="modalStockInstruccion">Ingresa la cantidad a AGREGAR al stock actual</p>
         <input type="number" id="modalStockInput" placeholder="Cantidad" min="0">
-        
         <div class="btn-actions">
             <button class="btn-guardar" id="btnStockGuardar">💾 Guardar</button>
             <button class="btn-cancelar" id="btnStockCancelar">❌ Cancelar</button>
@@ -452,16 +442,13 @@
     </div>
 </div>
 
-<!-- ====== MODAL DE REGISTRO DE CLIENTE CON AUTOFILL ====== -->
 <div class="modal-registro" id="modalRegistro">
     <div class="modal-registro-content">
         <div class="logo-modal">
             <img src="https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png" alt="GAETO COMERCIOS">
         </div>
-        
         <h2>📝 Registro de Pedido</h2>
         <p class="subtitulo">Ingresa tu teléfono para cargar tus datos automáticamente</p>
-        
         <div class="campo-row" style="display:flex; gap:10px; align-items:center;">
             <div style="flex:1;">
                 <label>📱 Teléfono (10 dígitos) *</label>
@@ -469,71 +456,56 @@
             </div>
             <button id="btnBuscarCliente" class="btn-buscar-cliente">🔍 Buscar</button>
         </div>
-        
         <div id="clienteEncontrado" class="mensaje-cliente-encontrado">✅ Cliente encontrado - Datos cargados automáticamente</div>
         <div id="clienteNoEncontrado" class="mensaje-cliente-no-encontrado">❌ Cliente no encontrado - Completa los datos para registrarlo</div>
-        
         <div class="campo-row">
             <label>👤 Nombre completo *</label>
             <input type="text" id="regNombre" placeholder="Ej: Juan Pérez García">
         </div>
-        
         <div class="campo-row">
             <label>🏢 Nombre del negocio (opcional)</label>
             <input type="text" id="regNegocio" placeholder="Ej: Tienda El Sol">
         </div>
-        
         <div class="campo-row">
             <label>📍 Dirección completa *</label>
             <input type="text" id="regDireccion" placeholder="Ej: Calle Principal #123, Colonia Centro, Ciudad">
         </div>
-        
         <div class="campo-row">
             <label>🏷️ Referencia (opcional)</label>
             <input type="text" id="regReferencia" placeholder="Ej: Esquina con Av. Reforma, cerca del Oxxo">
         </div>
-        
         <button class="btn-registro-confirmar" id="btnRegistroConfirmar">📲 GENERAR COTIZACIÓN</button>
         <button class="btn-registro-cancelar" id="btnRegistroCancelar">❌ Cancelar pedido</button>
-        
         <p class="footer-text">🔒 Tus datos son seguros y solo se usan para tu pedido</p>
     </div>
 </div>
 
-<!-- ENCABEZADO -->
 <div class="encabezado">
     <img src="https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png" class="logo" id="logoAdmin">
     <div class="badge-admin" id="badgeAdmin">🔧 MODO ADMIN</div>
 </div>
 
-<!-- BANNER -->
 <div class="banner">
     <div>📅 PEDIDOS: LUNES, MARTES, MIÉRCOLES</div>
     <div>🚚 ENTREGAS: VIERNES Y SÁBADOS 9am-6:30pm</div>
 </div>
 
-<!-- BÚSQUEDA -->
 <div class="contenedor-busqueda">
     <input type="text" id="busquedaInput" class="busqueda-input" placeholder="🔍 Buscar por nombre, código o descripción...">
 </div>
 
-<!-- TOOLBAR ADMIN -->
 <div class="toolbar" id="toolbar">
     <button id="compartirBtn" class="share">📤 COMPARTIR CATÁLOGO</button>
     <button id="promocionesBtn" class="promo-btn">🎯 PROMOCIONES</button>
     <button id="toggleModoBtn">👁️ VER COMO CLIENTE</button>
     <button id="agregarProductoBtn" style="background:#2563eb;">➕ CREAR PRODUCTO</button>
     <button id="adminPanelBtn" class="admin-btn">📊 PANEL ADMIN</button>
-    <button id="toggleIvaBtn" class="iva-btn">🧾 IVA: ACTIVADO</button>
 </div>
 
-<!-- FILTROS -->
 <div class="filtro-categorias" id="filtroCategorias"></div>
 
-<!-- ====== PANEL DE ADMINISTRACIÓN ====== -->
 <div class="admin-panel" id="adminPanel">
     <h2>📊 Panel de Control - GAETO COMERCIOS</h2>
-    
     <div class="tabs-admin">
         <button class="activo" data-tab="tabDashboard">📈 Dashboard</button>
         <button data-tab="tabInventario">📦 Inventario</button>
@@ -551,12 +523,10 @@
             <div class="stat-card"><h4>⚠️ Stock Bajo</h4><div class="numero" id="statStockBajo" style="color:#b91c1c;">0</div><div class="sub">Productos con stock bajo</div></div>
             <div class="stat-card"><h4>📈 Utilidad</h4><div class="numero" id="statUtilidad">$0</div><div class="sub">Estimada</div></div>
         </div>
-        
         <div class="chart-container">
             <h4 style="margin-bottom:15px;">📈 Ventas por Día</h4>
             <canvas id="ventasChart"></canvas>
         </div>
-        
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
             <div class="chart-container">
                 <h4 style="margin-bottom:15px;">🏷️ Productos por Categoría</h4>
@@ -587,7 +557,6 @@
         </div>
     </div>
 
-    <!-- TABLA DE CLIENTES CON NÚMERO DE ALTA -->
     <div class="tab-content" id="tabClientes">
         <div class="tabla-container">
             <table>
@@ -624,12 +593,10 @@
     </div>
 </div>
 
-<!-- CONTENEDOR DE PRODUCTOS -->
 <div id="contenedorProductos">
     <div style="text-align:center; padding:40px; background:white; border-radius:28px;">⏳ Conectando con Firebase...</div>
 </div>
 
-<!-- CARRITO -->
 <div id="carritoPanel" class="carrito-panel">
     <div style="display:flex;justify-content:space-between;align-items:center;"><strong>🛒 MI PEDIDO</strong><button id="vaciarCarritoBtn" style="background:#b91c1c;border:none;color:white;padding:4px 12px;border-radius:20px;font-size:11px;cursor:pointer;">Vaciar</button></div>
     <div id="carritoLista" style="margin-top:10px;">🛍️ Vacío</div>
@@ -638,7 +605,6 @@
     <a href="https://wa.me/522282877441" target="_blank" class="telefono-carrito">📞 WhatsApp de Soporte: 228 287 7441</a>
 </div>
 
-<!-- MODAL ADMIN -->
 <div class="modal-pwd" id="modalPwd">
     <div class="modal-pwd-content">
         <h3>Acceso Administrador</h3>
@@ -677,7 +643,6 @@ let chartVentas = null;
 let chartCategorias = null;
 let chartTopProductos = null;
 let chartVentasMes = null;
-let ivaActivado = true; // Por defecto ACTIVADO
 let productoStockActual = '';
 let modoStock = 'sumar';
 
@@ -727,24 +692,6 @@ database.ref('clientes').on('value', (snapshot) => {
     }
     if (modoAdmin) actualizarPanelAdmin();
 });
-
-// ============================================================
-//  CONTROL DE IVA (ACTIVAR/DESACTIVAR) - CORREGIDO
-// ============================================================
-document.getElementById('toggleIvaBtn').onclick = function() {
-    // Cambiar el estado de la variable GLOBAL
-    ivaActivado = !ivaActivado;
-    
-    // Actualizar el texto y color del botón
-    this.textContent = ivaActivado ? '🧾 IVA: ACTIVADO' : '🧾 IVA: DESACTIVADO';
-    this.style.background = ivaActivado ? '#8b5cf6' : '#6b7280';
-    
-    // Mostrar notificación
-    mostrarNotificacion(ivaActivado ? '✅ IVA activado para las cotizaciones' : '❌ IVA desactivado para las cotizaciones');
-    
-    // Guardar en localStorage para que persista
-    localStorage.setItem('ivaActivado', ivaActivado ? 'true' : 'false');
-};
 
 // ============================================================
 //  MODAL STOCK MEJORADO - AGREGAR / PONER TOTAL
@@ -1284,7 +1231,7 @@ function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
 }
 
 // ============================================================
-//  GENERAR COTIZACIÓN FORMAL (CON IVA CONTROLADO)
+//  GENERAR COTIZACIÓN FORMAL - SIN IVA
 // ============================================================
 function generarCotizacion(pedido, pedidoId) {
     const fecha = new Date();
@@ -1300,8 +1247,7 @@ function generarCotizacion(pedido, pedidoId) {
     cotizacion += `📄 Folio: GAETO-${pedidoId.slice(-6).toUpperCase()}\n`;
     cotizacion += `📅 Fecha: ${fechaFormateada}\n`;
     cotizacion += `⏰ Hora: ${fecha.toLocaleTimeString()}\n`;
-    cotizacion += `🔄 Vigencia: 7 días naturales\n`;
-    cotizacion += `🧾 IVA: ${ivaActivado ? 'INCLUIDO (16%)' : 'NO INCLUIDO'}\n\n`;
+    cotizacion += `🔄 Vigencia: 7 días naturales\n\n`;
     
     cotizacion += "*👤 DATOS DEL CLIENTE*\n";
     cotizacion += `Nombre: ${pedido.cliente.nombre}\n`;
@@ -1320,21 +1266,9 @@ function generarCotizacion(pedido, pedidoId) {
     
     cotizacion += "└─────────────────────────────────────┘\n";
     
-    const subtotal = pedido.total;
-    let iva = 0;
-    let total = subtotal;
+    const total = pedido.total;
     
-    // ====== USAR LA VARIABLE GLOBAL ivaActivado ======
-    if (ivaActivado) {
-        iva = subtotal * 0.16;
-        total = subtotal + iva;
-    }
-    
-    cotizacion += "\n*💰 RESUMEN FINANCIERO*\n";
-    cotizacion += `Subtotal: $${subtotal.toFixed(2)}\n`;
-    if (ivaActivado) {
-        cotizacion += `IVA (16%): $${iva.toFixed(2)}\n`;
-    }
+    cotizacion += "\n*💰 TOTAL DEL PEDIDO*\n";
     cotizacion += `───────────────────────────\n`;
     cotizacion += `*TOTAL: $${total.toFixed(2)}*\n\n`;
     
@@ -1365,7 +1299,7 @@ function generarCotizacion(pedido, pedidoId) {
 }
 
 // ============================================================
-//  ENVIAR COTIZACIÓN POR WHATSAPP - CON LOGO VISIBLE
+//  ENVIAR COTIZACIÓN POR WHATSAPP - CON LOGO COMO IMAGEN
 // ============================================================
 function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     let telefonoDestino = telefono;
@@ -1385,9 +1319,9 @@ function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     
     const numeroCompleto = '52' + telefonoDestino;
     
-    // ====== LOGO DE GAETO COMERCIOS ======
+    // ====== LOGO DE GAETO COMERCIOS COMO IMAGEN ======
     const logoUrl = "https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png";
-    const logoTexto = `🏢 *GAETO COMERCIOS*\n${logoUrl}\n\n`;
+    const logoTexto = `🖼️ *GAETO COMERCIOS*\n${logoUrl}\n\n`;
     
     let mensaje = `📄 *COTIZACIÓN GAETO COMERCIOS*\n\n`;
     mensaje += `Hola ${nombreCliente || 'cliente'}, ¡gracias por tu pedido!\n\n`;
@@ -1400,7 +1334,7 @@ function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
 }
 
 // ============================================================
-//  COMPARTIR CATÁLOGO - CON LISTA DE CONTACTOS DE WHATSAPP
+//  COMPARTIR CATÁLOGO
 // ============================================================
 document.getElementById('compartirBtn').onclick = () => {
     const urlActual = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
@@ -1429,7 +1363,6 @@ document.getElementById('compartirBtn').onclick = () => {
     mensaje += `✅ ¡En menos de 1 hora tendrás tu cotización!\n\n`;
     mensaje += `¿Tienes dudas? ¡Estamos para ayudarte! 💬`;
     
-    // ====== USAR COMPARTIR NATIVO (SMARTPHONE) ======
     if (navigator.share) {
         navigator.share({
             title: 'GAETO COMERCIOS - Catálogo',
@@ -1438,7 +1371,6 @@ document.getElementById('compartirBtn').onclick = () => {
         .then(() => mostrarNotificacion("✅ Mensaje compartido"))
         .catch(() => mostrarNotificacion("❌ Compartir cancelado"));
     } else {
-        // ====== FALLBACK PARA PC ======
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(mensaje + '\n\n' + urlActual)
                 .then(() => mostrarNotificacion("📋 Mensaje copiado al portapapeles. Pégarlo en WhatsApp Web."))
@@ -1450,7 +1382,7 @@ document.getElementById('compartirBtn').onclick = () => {
 };
 
 // ============================================================
-//  ENVIAR PROMOCIONES - CON LISTA DE CONTACTOS DE WHATSAPP
+//  ENVIAR PROMOCIONES
 // ============================================================
 document.getElementById('promocionesBtn').onclick = () => {
     const promociones = productos.filter(p => {
@@ -1506,7 +1438,6 @@ document.getElementById('promocionesBtn').onclick = () => {
     mensaje += `🙏 *¡GRACIAS POR PREFERIRNOS!*\n`;
     mensaje += `📲 Contáctanos para apartar tus productos.`;
     
-    // ====== USAR COMPARTIR NATIVO (SMARTPHONE) ======
     if (navigator.share) {
         navigator.share({
             title: 'GAETO COMERCIOS - Promociones',
@@ -1515,7 +1446,6 @@ document.getElementById('promocionesBtn').onclick = () => {
         .then(() => mostrarNotificacion("✅ Promociones compartidas"))
         .catch(() => mostrarNotificacion("❌ Compartir cancelado"));
     } else {
-        // ====== FALLBACK PARA PC ======
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(mensaje)
                 .then(() => mostrarNotificacion("📋 Mensaje copiado al portapapeles. Pégarlo en WhatsApp Web."))
@@ -1526,9 +1456,6 @@ document.getElementById('promocionesBtn').onclick = () => {
     }
 };
 
-// ============================================================
-//  FALLBACK PARA WHATSAPP (CUANDO NO HAY COMPARTIR NATIVO)
-// ============================================================
 function fallbackWhatsApp(mensaje) {
     const numero = "522282877441";
     const urlWhatsApp = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
@@ -1657,9 +1584,6 @@ function renderizarPedidos() {
     }).join('');
 }
 
-// ============================================================
-//  RENDERIZAR CLIENTES - CON NÚMERO DE ALTA
-// ============================================================
 function renderizarClientes() {
     const tbody = document.getElementById('clientesTabla');
     if (clientes.length === 0) {
@@ -1670,7 +1594,6 @@ function renderizarClientes() {
     tbody.innerHTML = clientes.map((c, index) => {
         const pedidosCliente = pedidos.filter(p => p.cliente?.telefono === c.telefono);
         const totalGastado = pedidosCliente.reduce((sum, p) => sum + (parseFloat(p.total) || 0), 0);
-        // Número de cliente = número de registro (index + 1)
         const numeroCliente = index + 1;
         return `
             <tr>
@@ -1811,9 +1734,6 @@ function activarModoAdmin() {
     document.getElementById('badgeAdmin').style.display = 'block'; 
     document.getElementById('toolbar').style.display = 'flex'; 
     document.getElementById('adminPanel').classList.add('visible');
-    const ivaBtn = document.getElementById('toggleIvaBtn');
-    ivaBtn.textContent = ivaActivado ? '🧾 IVA: ACTIVADO' : '🧾 IVA: DESACTIVADO';
-    ivaBtn.style.background = ivaActivado ? '#8b5cf6' : '#6b7280';
     renderizarProductos();
     actualizarPanelAdmin();
 }
@@ -1839,16 +1759,6 @@ document.querySelectorAll('.tabs-admin button').forEach(btn => {
 });
 
 window.onload = function() {
-    // Recuperar estado del IVA guardado
-    const ivaGuardado = localStorage.getItem('ivaActivado');
-    if (ivaGuardado !== null) {
-        ivaActivado = ivaGuardado === 'true';
-    }
-    // Actualizar el botón
-    const ivaBtn = document.getElementById('toggleIvaBtn');
-    ivaBtn.textContent = ivaActivado ? '🧾 IVA: ACTIVADO' : '🧾 IVA: DESACTIVADO';
-    ivaBtn.style.background = ivaActivado ? '#8b5cf6' : '#6b7280';
-    
     desactivarModoAdmin();
     document.getElementById('busquedaInput').oninput = (e) => { textoBusqueda = e.target.value; renderizarProductos(); };
     document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; renderizarCarrito(); };
