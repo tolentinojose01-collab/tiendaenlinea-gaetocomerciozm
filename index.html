@@ -732,7 +732,7 @@ database.ref('clientes').on('value', (snapshot) => {
 //  CONTROL DE IVA (ACTIVAR/DESACTIVAR) - CORREGIDO
 // ============================================================
 document.getElementById('toggleIvaBtn').onclick = function() {
-    // Cambiar el estado
+    // Cambiar el estado de la variable GLOBAL
     ivaActivado = !ivaActivado;
     
     // Actualizar el texto y color del botón
@@ -741,6 +741,9 @@ document.getElementById('toggleIvaBtn').onclick = function() {
     
     // Mostrar notificación
     mostrarNotificacion(ivaActivado ? '✅ IVA activado para las cotizaciones' : '❌ IVA desactivado para las cotizaciones');
+    
+    // Guardar en localStorage para que persista
+    localStorage.setItem('ivaActivado', ivaActivado ? 'true' : 'false');
 };
 
 // ============================================================
@@ -1362,7 +1365,7 @@ function generarCotizacion(pedido, pedidoId) {
 }
 
 // ============================================================
-//  ENVIAR COTIZACIÓN POR WHATSAPP
+//  ENVIAR COTIZACIÓN POR WHATSAPP - CON LOGO VISIBLE
 // ============================================================
 function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     let telefonoDestino = telefono;
@@ -1382,7 +1385,9 @@ function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     
     const numeroCompleto = '52' + telefonoDestino;
     
-    const logoTexto = "🖼️ *GAETO COMERCIOS*\n🔗 Logo: https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png\n\n";
+    // ====== LOGO DE GAETO COMERCIOS ======
+    const logoUrl = "https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png";
+    const logoTexto = `🏢 *GAETO COMERCIOS*\n${logoUrl}\n\n`;
     
     let mensaje = `📄 *COTIZACIÓN GAETO COMERCIOS*\n\n`;
     mensaje += `Hola ${nombreCliente || 'cliente'}, ¡gracias por tu pedido!\n\n`;
@@ -1834,6 +1839,16 @@ document.querySelectorAll('.tabs-admin button').forEach(btn => {
 });
 
 window.onload = function() {
+    // Recuperar estado del IVA guardado
+    const ivaGuardado = localStorage.getItem('ivaActivado');
+    if (ivaGuardado !== null) {
+        ivaActivado = ivaGuardado === 'true';
+    }
+    // Actualizar el botón
+    const ivaBtn = document.getElementById('toggleIvaBtn');
+    ivaBtn.textContent = ivaActivado ? '🧾 IVA: ACTIVADO' : '🧾 IVA: DESACTIVADO';
+    ivaBtn.style.background = ivaActivado ? '#8b5cf6' : '#6b7280';
+    
     desactivarModoAdmin();
     document.getElementById('busquedaInput').oninput = (e) => { textoBusqueda = e.target.value; renderizarProductos(); };
     document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; renderizarCarrito(); };
