@@ -683,6 +683,7 @@ let chartTopProductos = null;
 let chartVentasMes = null;
 let productoStockActual = '';
 let modoStock = 'sumar';
+let clienteIdActual = null;
 
 function mostrarNotificacion(mensaje, duracion = 4000) {
     const toast = document.getElementById('toastNotificacion');
@@ -712,7 +713,7 @@ database.ref('productos').on('value', (snapshot) => {
     document.getElementById('contenedorProductos').innerHTML = '<div style="padding:40px; text-align:center; background:white; border-radius:28px; color:#b91c1c;">⚠️ Error en Firebase.</div>';
 });
 
-// ====== CLIENTES - USANDO TELÉFONO COMO CLAVE ======
+// ====== CLIENTES - CON ID ÚNICO ======
 database.ref('clientes').on('value', (snapshot) => {
     const data = snapshot.val();
     clientes = [];
@@ -727,6 +728,7 @@ database.ref('clientes').on('value', (snapshot) => {
     }
 });
 
+// ====== COTIZACIONES ======
 database.ref('cotizaciones').on('value', (snapshot) => {
     const data = snapshot.val();
     cotizaciones = [];
@@ -1086,7 +1088,7 @@ function renderizarCarrito() {
 }
 
 // ============================================================
-//  BUSCAR CLIENTE POR TELÉFONO (AUTOFILL) - USANDO CLAVE DIRECTA
+//  BUSCAR CLIENTE POR TELÉFONO (AUTOFILL)
 // ============================================================
 document.getElementById('btnBuscarCliente').onclick = function() {
     const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
@@ -1098,22 +1100,25 @@ document.getElementById('btnBuscarCliente').onclick = function() {
     
     mostrarNotificacion("🔍 Buscando cliente...");
     
-    // Buscar directamente por la clave (teléfono)
-    database.ref('clientes/' + telefono).once('value')
+    // Buscar cliente por teléfono
+    database.ref('clientes').orderByChild('telefono').equalTo(telefono).once('value')
         .then((snapshot) => {
             const data = snapshot.val();
             
             if (data) {
+                const key = Object.keys(data)[0];
+                const clienteData = data[key];
                 document.getElementById('clienteEncontrado').style.display = 'block';
                 document.getElementById('clienteNoEncontrado').style.display = 'none';
                 
-                document.getElementById('regNombre').value = data.nombre || '';
-                document.getElementById('regNegocio').value = data.negocio || '';
-                document.getElementById('regDireccion').value = data.direccion || '';
-                document.getElementById('regReferencia').value = data.referencia || '';
+                document.getElementById('regNombre').value = clienteData.nombre || '';
+                document.getElementById('regNegocio').value = clienteData.negocio || '';
+                document.getElementById('regDireccion').value = clienteData.direccion || '';
+                document.getElementById('regReferencia').value = clienteData.referencia || '';
                 
-                mostrarNotificacion(`✅ Cliente encontrado: ${data.nombre || 'Sin nombre'}`);
-                document.getElementById('regTelefono').dataset.clienteId = telefono;
+                mostrarNotificacion(`✅ Cliente encontrado: ${clienteData.nombre || 'Sin nombre'}`);
+                document.getElementById('regTelefono').dataset.clienteId = key;
+                clienteIdActual = key;
             } else {
                 document.getElementById('clienteEncontrado').style.display = 'none';
                 document.getElementById('clienteNoEncontrado').style.display = 'block';
@@ -1124,6 +1129,7 @@ document.getElementById('btnBuscarCliente').onclick = function() {
                 document.getElementById('regReferencia').value = '';
                 
                 mostrarNotificacion("ℹ️ Cliente no registrado. Completa tus datos.");
+                clienteIdActual = null;
             }
         })
         .catch(err => {
@@ -1157,6 +1163,7 @@ document.getElementById('enviarPedidoBtn').onclick = function(e) {
         document.getElementById('regNegocio').value = '';
         document.getElementById('regDireccion').value = '';
         document.getElementById('regReferencia').value = '';
+        clienteIdActual = null;
     }
     
     document.getElementById('modalRegistro').style.display = 'flex';
@@ -1202,7 +1209,7 @@ document.getElementById('btnRegistroCancelar').onclick = function() {
 };
 
 // ============================================================
-//  PROCESAR PEDIDO - CORREGIDO (USANDO TELÉFONO COMO CLAVE)
+//  PROCESAR PEDIDO - CORREGIDO (CON ID ÚNICO PARA CADA CLIENTE)
 // ============================================================
 function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
     let total = 0;
@@ -1229,27 +1236,35 @@ function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
     
     mostrarNotificacion("⏳ Procesando tu pedido...");
     
-    // ====== 1. REGISTRAR CLIENTE USANDO TELÉFONO COMO CLAVE ======
-    let clienteId = telefono; // El teléfono es la clave
-    
-    // Verificar si el cliente ya existe
-    database.ref('clientes/' + telefono).once('value')
+    // ====== 1. REGISTRAR CLIENTE CON ID ÚNICO ======
+    // Primero buscar si el cliente ya existe por teléfono
+    database.ref('clientes').orderByChild('telefono').equalTo(telefono).once('value')
         .then((snapshot) => {
             const data = snapshot.val();
+            let clienteId = null;
             
             if (data) {
-                // Cliente existe - ACTUALIZAR
-                const totalComprasActual = (parseInt(data.totalCompras) || 0) + 1;
-                return database.ref('clientes/' + telefono).update({
+                // Cliente existe - OBTENER SU ID
+                clienteId = Object.keys(data)[0];
+                const clienteExistente = data[clienteId];
+                
+                // Contar cuántas cotizaciones tiene
+                const cotizacionesCliente = cotizaciones.filter(c => c.clienteId === clienteId);
+                const totalCotizaciones = cotizacionesCliente.length + 1;
+                
+                // ACTUALIZAR los datos del cliente (NO SOBRESCRIBIR)
+                return database.ref('clientes/' + clienteId).update({
                     nombre: nombre,
                     negocio: negocio || 'Particular',
                     telefono: telefono,
                     direccion: direccionCompleta,
                     ultimaCompra: fechaActual,
-                    totalCompras: totalComprasActual
+                    totalCompras: totalCotizaciones
+                }).then(() => {
+                    return clienteId;
                 });
             } else {
-                // Cliente nuevo - CREAR
+                // Cliente nuevo - CREAR CON ID ÚNICO (push)
                 const nuevoCliente = {
                     nombre: nombre,
                     negocio: negocio || 'Particular',
@@ -1260,11 +1275,14 @@ function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
                     ultimaCompra: fechaActual,
                     totalCompras: 1
                 };
-                return database.ref('clientes/' + telefono).set(nuevoCliente);
+                return database.ref('clientes').push(nuevoCliente)
+                    .then((ref) => {
+                        return ref.key; // Devuelve el ID único generado
+                    });
             }
         })
-        .then(() => {
-            // ====== 2. GUARDAR COTIZACIÓN ======
+        .then((clienteId) => {
+            // ====== 2. GUARDAR COTIZACIÓN CON EL clienteId ======
             const nuevaCotizacion = {
                 clienteId: clienteId,
                 cliente: {
@@ -1628,13 +1646,13 @@ document.getElementById('buscarClientes').addEventListener('keypress', function(
 // ============================================================
 //  ELIMINAR CLIENTE
 // ============================================================
-function eliminarCliente(telefono) {
-    if (!confirm(`⚠️ ¿Deseas eliminar al cliente ${telefono} y todas sus cotizaciones?`)) return;
+function eliminarCliente(clienteId) {
+    if (!confirm(`⚠️ ¿Deseas eliminar este cliente y todas sus cotizaciones?`)) return;
     
     mostrarNotificacion("⏳ Eliminando cliente...");
     
     // Buscar cotizaciones del cliente
-    const cotizacionesCliente = cotizaciones.filter(c => c.clienteId === telefono);
+    const cotizacionesCliente = cotizaciones.filter(c => c.clienteId === clienteId);
     const promises = [];
     
     // Eliminar cotizaciones
@@ -1642,8 +1660,8 @@ function eliminarCliente(telefono) {
         promises.push(database.ref('cotizaciones/' + c.id).remove());
     });
     
-    // Eliminar el cliente (por teléfono)
-    promises.push(database.ref('clientes/' + telefono).remove());
+    // Eliminar el cliente
+    promises.push(database.ref('clientes/' + clienteId).remove());
     
     Promise.all(promises)
         .then(() => {
