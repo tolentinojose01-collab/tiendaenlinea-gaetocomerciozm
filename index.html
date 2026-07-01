@@ -161,6 +161,8 @@
         .btn-filtrar { background: #2563eb; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
         .btn-limpiar { background: #e2e8f0; color: #334155; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; }
         .btn-buscar-tabla { background: #2563eb; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        .btn-eliminar-cliente { background: #ef4444; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 12px; padding: 4px 12px; }
+        .btn-eliminar-cliente:hover { background: #dc2626; }
         
         .carrito-panel{position:fixed;bottom:0;left:0;right:0;background:#1e293b;color:white;padding:15px;border-radius:24px 24px 0 0;max-height:50vh;overflow-y:auto;z-index:200;box-shadow:0 -5px 15px rgba(0,0,0,0.3)}
         .carrito-item{display:flex;justify-content:space-between;border-bottom:1px solid #475569;padding:8px 0;font-size:13px}
@@ -572,10 +574,10 @@
         <div class="tabla-container">
             <table>
                 <thead>
-                    <tr><th>N° Cliente</th><th>Nombre</th><th>Negocio</th><th>Teléfono</th><th>Dirección</th><th>Compras</th><th>Total Gastado</th><th>Última Compra</th></tr>
+                    <tr><th>N° Cliente</th><th>Nombre</th><th>Negocio</th><th>Teléfono</th><th>Dirección</th><th>Compras</th><th>Total Gastado</th><th>Última Compra</th><th>Acción</th></tr>
                 </thead>
                 <tbody id="clientesTabla">
-                    <tr><td colspan="8" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr>
+                    <tr><td colspan="9" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr>
                 </tbody>
             </table>
         </div>
@@ -1319,7 +1321,7 @@ function generarCotizacion(pedido, pedidoId) {
 }
 
 // ============================================================
-//  ENVIAR COTIZACIÓN POR WHATSAPP - CON LOGO MEJORADO
+//  ENVIAR COTIZACIÓN POR WHATSAPP - CON LOGO CORREGIDO
 // ============================================================
 function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     let telefonoDestino = telefono;
@@ -1339,17 +1341,17 @@ function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     
     const numeroCompleto = '52' + telefonoDestino;
     
-    // ====== LOGO DE GAETO COMERCIOS ======
+    // ====== LOGO DE GAETO COMERCIOS CORREGIDO ======
+    // Enlace directo de la imagen para que WhatsApp la muestre
     const logoUrl = "https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png";
-    const logoTexto = `🖼️ *GAETO COMERCIOS*\n\n`;
-    const logoImagen = `${logoUrl}\n\n`;
-    const separador = "───────────────────────────\n\n";
     
     let mensaje = `📄 *COTIZACIÓN GAETO COMERCIOS*\n\n`;
     mensaje += `Hola ${nombreCliente || 'cliente'}, ¡gracias por tu pedido!\n\n`;
-    mensaje += logoTexto;
-    mensaje += logoImagen;
-    mensaje += separador;
+    
+    // El logo se muestra mejor cuando el enlace está en una línea separada
+    mensaje += `🏢 *GAETO COMERCIOS*\n`;
+    mensaje += `${logoUrl}\n\n`;
+    mensaje += "───────────────────────────\n\n";
     mensaje += cotizacion;
     mensaje += `\n\n💬 ¿Tienes dudas? Estamos aquí para ayudarte.`;
     
@@ -1546,7 +1548,7 @@ document.getElementById('btnBuscarClientes').onclick = function() {
     });
     
     if (encontrados === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8;">🔍 No se encontraron clientes</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8;">🔍 No se encontraron clientes</td></tr>';
     }
 };
 
@@ -1555,6 +1557,26 @@ document.getElementById('buscarClientes').addEventListener('keypress', function(
         document.getElementById('btnBuscarClientes').click();
     }
 });
+
+// ============================================================
+//  ELIMINAR CLIENTE
+// ============================================================
+function eliminarCliente(telefono) {
+    if (!confirm(`⚠️ ¿Deseas eliminar al cliente con teléfono ${telefono}?`)) return;
+    
+    mostrarNotificacion("⏳ Eliminando cliente...");
+    
+    database.ref('clientes/' + telefono).remove()
+        .then(() => {
+            mostrarNotificacion(`✅ Cliente eliminado correctamente`);
+            // Recargar lista de clientes
+            renderizarClientes();
+            actualizarPanelAdmin();
+        })
+        .catch(err => {
+            mostrarNotificacion(`❌ Error al eliminar cliente: ${err.message}`);
+        });
+}
 
 // ============================================================
 //  HISTÓRICO DE VENTAS CON FILTROS DE FECHA
@@ -1737,7 +1759,7 @@ function renderizarPedidos() {
 function renderizarClientes() {
     const tbody = document.getElementById('clientesTabla');
     if (clientes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr>';
         return;
     }
     
@@ -1755,6 +1777,9 @@ function renderizarClientes() {
                 <td>${pedidosCliente.length}</td>
                 <td>$${totalGastado.toFixed(2)}</td>
                 <td>${c.ultimaCompra || 'Sin compras'}</td>
+                <td>
+                    <button class="btn-eliminar-cliente" onclick="eliminarCliente('${c.telefono}')">🗑️</button>
+                </td>
             </tr>
         `;
     }).join('');
