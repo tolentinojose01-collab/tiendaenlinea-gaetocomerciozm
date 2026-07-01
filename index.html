@@ -158,6 +158,9 @@
         .btn-entregar { background: #3b82f6; color: white; }
         .btn-cancelar { background: #ef4444; color: white; }
         .btn-editar-stock { background: #f59e0b; color: white; }
+        .btn-filtrar { background: #2563eb; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .btn-limpiar { background: #e2e8f0; color: #334155; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; }
+        .btn-buscar-tabla { background: #2563eb; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: bold; }
         
         .carrito-panel{position:fixed;bottom:0;left:0;right:0;background:#1e293b;color:white;padding:15px;border-radius:24px 24px 0 0;max-height:50vh;overflow-y:auto;z-index:200;box-shadow:0 -5px 15px rgba(0,0,0,0.3)}
         .carrito-item{display:flex;justify-content:space-between;border-bottom:1px solid #475569;padding:8px 0;font-size:13px}
@@ -540,6 +543,10 @@
     </div>
 
     <div class="tab-content" id="tabInventario">
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <input type="text" id="buscarInventario" placeholder="🔍 Buscar por nombre o código..." style="flex:1; padding:10px 16px; border-radius:30px; border:1px solid #ccc; font-size:14px;">
+            <button id="btnBuscarInventario" class="btn-buscar-tabla">Buscar</button>
+        </div>
         <div class="tabla-container">
             <table>
                 <thead><tr><th>Código</th><th>Producto</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead>
@@ -558,19 +565,14 @@
     </div>
 
     <div class="tab-content" id="tabClientes">
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <input type="text" id="buscarClientes" placeholder="🔍 Buscar por nombre, teléfono o negocio..." style="flex:1; padding:10px 16px; border-radius:30px; border:1px solid #ccc; font-size:14px;">
+            <button id="btnBuscarClientes" class="btn-buscar-tabla">Buscar</button>
+        </div>
         <div class="tabla-container">
             <table>
                 <thead>
-                    <tr>
-                        <th>N° Cliente</th>
-                        <th>Nombre</th>
-                        <th>Negocio</th>
-                        <th>Teléfono</th>
-                        <th>Dirección</th>
-                        <th>Compras</th>
-                        <th>Total Gastado</th>
-                        <th>Última Compra</th>
-                    </tr>
+                    <tr><th>N° Cliente</th><th>Nombre</th><th>Negocio</th><th>Teléfono</th><th>Dirección</th><th>Compras</th><th>Total Gastado</th><th>Última Compra</th></tr>
                 </thead>
                 <tbody id="clientesTabla">
                     <tr><td colspan="8" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr>
@@ -589,6 +591,24 @@
         <div class="chart-container">
             <h4 style="margin-bottom:15px;">📊 Ventas por Mes</h4>
             <canvas id="ventasMesChart"></canvas>
+        </div>
+        
+        <div style="margin-top:25px;">
+            <h4 style="margin-bottom:15px; color:#002b5c;">📋 Histórico de Ventas</h4>
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px; align-items:center;">
+                <label style="font-size:13px; font-weight:bold;">Desde:</label>
+                <input type="date" id="fechaDesde" style="padding:8px 12px; border-radius:20px; border:1px solid #ccc;">
+                <label style="font-size:13px; font-weight:bold;">Hasta:</label>
+                <input type="date" id="fechaHasta" style="padding:8px 12px; border-radius:20px; border:1px solid #ccc;">
+                <button id="btnFiltrarVentas" class="btn-filtrar">🔍 Filtrar</button>
+                <button id="btnLimpiarFiltros" class="btn-limpiar">Limpiar</button>
+            </div>
+            <div class="tabla-container">
+                <table>
+                    <thead><tr><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th></tr></thead>
+                    <tbody id="historicoVentasTabla"><tr><td colspan="5" style="text-align:center; color:#94a3b8;">No hay ventas registradas</td></tr></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -1299,7 +1319,7 @@ function generarCotizacion(pedido, pedidoId) {
 }
 
 // ============================================================
-//  ENVIAR COTIZACIÓN POR WHATSAPP - CON LOGO COMO IMAGEN
+//  ENVIAR COTIZACIÓN POR WHATSAPP - CON LOGO MEJORADO
 // ============================================================
 function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     let telefonoDestino = telefono;
@@ -1319,13 +1339,17 @@ function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     
     const numeroCompleto = '52' + telefonoDestino;
     
-    // ====== LOGO DE GAETO COMERCIOS COMO IMAGEN ======
+    // ====== LOGO DE GAETO COMERCIOS ======
     const logoUrl = "https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png";
-    const logoTexto = `🖼️ *GAETO COMERCIOS*\n${logoUrl}\n\n`;
+    const logoTexto = `🖼️ *GAETO COMERCIOS*\n\n`;
+    const logoImagen = `${logoUrl}\n\n`;
+    const separador = "───────────────────────────\n\n";
     
     let mensaje = `📄 *COTIZACIÓN GAETO COMERCIOS*\n\n`;
     mensaje += `Hola ${nombreCliente || 'cliente'}, ¡gracias por tu pedido!\n\n`;
     mensaje += logoTexto;
+    mensaje += logoImagen;
+    mensaje += separador;
     mensaje += cotizacion;
     mensaje += `\n\n💬 ¿Tienes dudas? Estamos aquí para ayudarte.`;
     
@@ -1463,6 +1487,131 @@ function fallbackWhatsApp(mensaje) {
 }
 
 // ============================================================
+//  BUSCADOR EN INVENTARIO
+// ============================================================
+document.getElementById('btnBuscarInventario').onclick = function() {
+    const busqueda = document.getElementById('buscarInventario').value.toLowerCase().trim();
+    const tbody = document.getElementById('inventarioTabla');
+    const filas = tbody.querySelectorAll('tr');
+    
+    if (!busqueda) {
+        renderizarInventario();
+        return;
+    }
+    
+    let encontrados = 0;
+    filas.forEach(fila => {
+        const texto = fila.textContent.toLowerCase();
+        if (texto.includes(busqueda)) {
+            fila.style.display = '';
+            encontrados++;
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+    
+    if (encontrados === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">🔍 No se encontraron productos</td></tr>';
+    }
+};
+
+document.getElementById('buscarInventario').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('btnBuscarInventario').click();
+    }
+});
+
+// ============================================================
+//  BUSCADOR EN CLIENTES
+// ============================================================
+document.getElementById('btnBuscarClientes').onclick = function() {
+    const busqueda = document.getElementById('buscarClientes').value.toLowerCase().trim();
+    const tbody = document.getElementById('clientesTabla');
+    const filas = tbody.querySelectorAll('tr');
+    
+    if (!busqueda) {
+        renderizarClientes();
+        return;
+    }
+    
+    let encontrados = 0;
+    filas.forEach(fila => {
+        const texto = fila.textContent.toLowerCase();
+        if (texto.includes(busqueda)) {
+            fila.style.display = '';
+            encontrados++;
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+    
+    if (encontrados === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8;">🔍 No se encontraron clientes</td></tr>';
+    }
+};
+
+document.getElementById('buscarClientes').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('btnBuscarClientes').click();
+    }
+});
+
+// ============================================================
+//  HISTÓRICO DE VENTAS CON FILTROS DE FECHA
+// ============================================================
+function renderizarHistoricoVentas(fechaDesde, fechaHasta) {
+    const tbody = document.getElementById('historicoVentasTabla');
+    
+    let pedidosFiltrados = [...pedidos];
+    
+    if (fechaDesde && fechaHasta) {
+        pedidosFiltrados = pedidosFiltrados.filter(p => {
+            if (!p.fecha) return false;
+            return p.fecha >= fechaDesde && p.fecha <= fechaHasta;
+        });
+    } else if (fechaDesde) {
+        pedidosFiltrados = pedidosFiltrados.filter(p => p.fecha && p.fecha >= fechaDesde);
+    } else if (fechaHasta) {
+        pedidosFiltrados = pedidosFiltrados.filter(p => p.fecha && p.fecha <= fechaHasta);
+    }
+    
+    pedidosFiltrados.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+    
+    if (pedidosFiltrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">No hay ventas en el período seleccionado</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = pedidosFiltrados.map(p => {
+        const productosLista = (p.productos || []).map(item => `${item.cantidad}x ${item.nombre}`).join(', ');
+        const estadoClass = p.estado === 'CONFIRMADO' ? 'btn-confirmar' : 
+                           p.estado === 'ENTREGADO' ? 'btn-entregar' : 
+                           p.estado === 'CANCELADO' ? 'btn-cancelar' : '';
+        return `
+            <tr>
+                <td>${p.fecha || 'Sin fecha'}</td>
+                <td>${p.cliente?.nombre || 'Anónimo'}</td>
+                <td>${productosLista || 'Sin productos'}</td>
+                <td><strong>$${parseFloat(p.total || 0).toFixed(2)}</strong></td>
+                <td><span class="btn-accion ${estadoClass}">${p.estado || 'PENDIENTE'}</span></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+document.getElementById('btnFiltrarVentas').onclick = function() {
+    const desde = document.getElementById('fechaDesde').value;
+    const hasta = document.getElementById('fechaHasta').value;
+    renderizarHistoricoVentas(desde, hasta);
+};
+
+document.getElementById('btnLimpiarFiltros').onclick = function() {
+    document.getElementById('fechaDesde').value = '';
+    document.getElementById('fechaHasta').value = '';
+    renderizarHistoricoVentas();
+};
+
+// ============================================================
 //  GUARDAR CAMBIOS PRODUCTO
 // ============================================================
 window.guardarCambios = function(id) {
@@ -1523,6 +1672,7 @@ function actualizarPanelAdmin() {
     renderizarPedidos();
     renderizarClientes();
     renderizarGraficas();
+    renderizarHistoricoVentas();
 }
 
 function renderizarInventario() {
@@ -1755,6 +1905,7 @@ document.querySelectorAll('.tabs-admin button').forEach(btn => {
         if (this.dataset.tab === 'tabInventario') renderizarInventario();
         if (this.dataset.tab === 'tabPedidos') renderizarPedidos();
         if (this.dataset.tab === 'tabClientes') renderizarClientes();
+        if (this.dataset.tab === 'tabReportes') renderizarHistoricoVentas();
     };
 });
 
