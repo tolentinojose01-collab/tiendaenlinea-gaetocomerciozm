@@ -587,11 +587,13 @@
         </div>
     </div>
 
+    <!-- TABLA DE CLIENTES CON NÚMERO DE ALTA -->
     <div class="tab-content" id="tabClientes">
         <div class="tabla-container">
             <table>
                 <thead>
                     <tr>
+                        <th>N° Cliente</th>
                         <th>Nombre</th>
                         <th>Negocio</th>
                         <th>Teléfono</th>
@@ -602,7 +604,7 @@
                     </tr>
                 </thead>
                 <tbody id="clientesTabla">
-                    <tr><td colspan="7" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr>
+                    <tr><td colspan="8" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr>
                 </tbody>
             </table>
         </div>
@@ -675,7 +677,7 @@ let chartVentas = null;
 let chartCategorias = null;
 let chartTopProductos = null;
 let chartVentasMes = null;
-let ivaActivado = true;
+let ivaActivado = true; // Por defecto ACTIVADO
 let productoStockActual = '';
 let modoStock = 'sumar';
 
@@ -727,12 +729,17 @@ database.ref('clientes').on('value', (snapshot) => {
 });
 
 // ============================================================
-//  CONTROL DE IVA (ACTIVAR/DESACTIVAR)
+//  CONTROL DE IVA (ACTIVAR/DESACTIVAR) - CORREGIDO
 // ============================================================
 document.getElementById('toggleIvaBtn').onclick = function() {
+    // Cambiar el estado
     ivaActivado = !ivaActivado;
+    
+    // Actualizar el texto y color del botón
     this.textContent = ivaActivado ? '🧾 IVA: ACTIVADO' : '🧾 IVA: DESACTIVADO';
     this.style.background = ivaActivado ? '#8b5cf6' : '#6b7280';
+    
+    // Mostrar notificación
     mostrarNotificacion(ivaActivado ? '✅ IVA activado para las cotizaciones' : '❌ IVA desactivado para las cotizaciones');
 };
 
@@ -1274,7 +1281,7 @@ function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
 }
 
 // ============================================================
-//  GENERAR COTIZACIÓN FORMAL (CON NEGOCIO Y DIRECCIÓN COMPLETA)
+//  GENERAR COTIZACIÓN FORMAL (CON IVA CONTROLADO)
 // ============================================================
 function generarCotizacion(pedido, pedidoId) {
     const fecha = new Date();
@@ -1314,6 +1321,7 @@ function generarCotizacion(pedido, pedidoId) {
     let iva = 0;
     let total = subtotal;
     
+    // ====== USAR LA VARIABLE GLOBAL ivaActivado ======
     if (ivaActivado) {
         iva = subtotal * 0.16;
         total = subtotal + iva;
@@ -1426,7 +1434,6 @@ document.getElementById('compartirBtn').onclick = () => {
         .catch(() => mostrarNotificacion("❌ Compartir cancelado"));
     } else {
         // ====== FALLBACK PARA PC ======
-        // Opción 1: Copiar al portapapeles
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(mensaje + '\n\n' + urlActual)
                 .then(() => mostrarNotificacion("📋 Mensaje copiado al portapapeles. Pégarlo en WhatsApp Web."))
@@ -1645,18 +1652,24 @@ function renderizarPedidos() {
     }).join('');
 }
 
+// ============================================================
+//  RENDERIZAR CLIENTES - CON NÚMERO DE ALTA
+// ============================================================
 function renderizarClientes() {
     const tbody = document.getElementById('clientesTabla');
     if (clientes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8;">No hay clientes registrados</td></tr>';
         return;
     }
     
-    tbody.innerHTML = clientes.map(c => {
+    tbody.innerHTML = clientes.map((c, index) => {
         const pedidosCliente = pedidos.filter(p => p.cliente?.telefono === c.telefono);
         const totalGastado = pedidosCliente.reduce((sum, p) => sum + (parseFloat(p.total) || 0), 0);
+        // Número de cliente = número de registro (index + 1)
+        const numeroCliente = index + 1;
         return `
             <tr>
+                <td><strong>#${numeroCliente}</strong></td>
                 <td>${c.nombre || 'Sin nombre'}</td>
                 <td>${c.negocio || 'Particular'}</td>
                 <td>${c.telefono || 'Sin teléfono'}</td>
