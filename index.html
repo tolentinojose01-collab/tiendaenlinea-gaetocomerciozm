@@ -173,7 +173,8 @@
         .modal-pwd {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:3000;}
         .modal-pwd-content {background:white; padding:25px; border-radius:24px; text-align:center; width:90%; max-width:320px;}
         .modal-pwd-content input {width:100%; padding:10px; border-radius:20px; border:1px solid #ccc; text-align:center; margin-bottom:15px; font-size:16px;}
-        .modal-pwd-content button {background:#002b5c; color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer; font-weight:bold;}
+        .modal-pwd-content button {background:#002b5c; color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer; font-weight:bold; margin:3px;}
+        .modal-pwd-content .intentos-msg {font-size:10px; color:#999; margin-top:10px;}
 
         .toast-notificacion {
             position: fixed;
@@ -627,19 +628,31 @@
     <a href="https://wa.me/522282877441" target="_blank" class="telefono-carrito">📞 WhatsApp de Soporte: 228 287 7441</a>
 </div>
 
+<!-- ====== MODAL DE ACCESO CON SEGURIDAD ====== -->
 <div class="modal-pwd" id="modalPwd">
     <div class="modal-pwd-content">
-        <h3>Acceso Administrador</h3>
-        <p style="font-size:12px; margin-bottom:10px; color:#666;">Introduce tu clave</p>
-        <input type="password" id="pwdInput" placeholder="••••">
-        <button id="btnEntrarAdmin">Entrar</button>
-        <button id="btnCancelarAdmin" style="background:#666; margin-left:5px;">Cancelar</button>
+        <h3>🔐 Acceso Administrador</h3>
+        <p style="font-size:12px; margin-bottom:10px; color:#666;">Introduce tu clave de acceso</p>
+        <input type="password" id="pwdInput" placeholder="••••••">
+        <div style="margin-top:10px;">
+            <button id="btnEntrarAdmin">Entrar</button>
+            <button id="btnCancelarAdmin" style="background:#666; margin-left:5px;">Cancelar</button>
+        </div>
+        <p class="intentos-msg" id="intentosMsg">Intentos disponibles: 3</p>
     </div>
 </div>
 
 <script>
-const ADMIN_PASSWORD = "1310";
+// ============================================================
+//  SEGURIDAD - CONTRASEÑA ADMIN Y LÍMITE DE INTENTOS
+// ============================================================
+const ADMIN_PASSWORD = "#Gael680912";
+let intentosFallidos = 0;
+const MAX_INTENTOS = 3;
 
+// ============================================================
+//  FIREBASE CONFIG
+// ============================================================
 const firebaseConfig = {
   apiKey: "AIzaSyDMxqNOS1Xe12Ecm4cAFWJNrxS53FJcRWc",
   authDomain: "gaeto-comercio.firebaseapp.com",
@@ -654,6 +667,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+// ============================================================
+//  VARIABLES GLOBALES
+// ============================================================
 let productos = [];
 let carrito = [];
 let modoAdmin = false;
@@ -716,7 +732,7 @@ database.ref('clientes').on('value', (snapshot) => {
 });
 
 // ============================================================
-//  MODAL STOCK MEJORADO - AGREGAR / PONER TOTAL
+//  MODAL STOCK
 // ============================================================
 document.getElementById('btnStockSumar').onclick = function() {
     modoStock = 'sumar';
@@ -834,7 +850,7 @@ function renderizarFiltros() {
 }
 
 // ============================================================
-//  RENDERIZAR PRODUCTOS - STOCK OCULTO PARA CLIENTES
+//  RENDERIZAR PRODUCTOS
 // ============================================================
 function renderizarProductos() {
     const contenedor = document.getElementById('contenedorProductos');
@@ -1109,7 +1125,7 @@ document.getElementById('regTelefono').addEventListener('keypress', function(e) 
 });
 
 // ============================================================
-//  BOTÓN ENVIAR PEDIDO - CON MODAL DE REGISTRO Y AUTOFILL
+//  BOTÓN ENVIAR PEDIDO
 // ============================================================
 document.getElementById('enviarPedidoBtn').onclick = function(e) {
     e.preventDefault();
@@ -1138,9 +1154,6 @@ document.getElementById('enviarPedidoBtn').onclick = function(e) {
     }, 300);
 };
 
-// ============================================================
-//  CONFIRMAR REGISTRO Y PROCESAR PEDIDO
-// ============================================================
 document.getElementById('btnRegistroConfirmar').onclick = function() {
     const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
     const nombre = document.getElementById('regNombre').value.trim();
@@ -1175,9 +1188,6 @@ document.getElementById('btnRegistroCancelar').onclick = function() {
     mostrarNotificacion("❌ Pedido cancelado");
 };
 
-// ============================================================
-//  PROCESAR PEDIDO COMPLETO (CON NEGOCIO Y DIRECCIÓN COMPLETA)
-// ============================================================
 function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
     let total = 0;
     let productosPedido = [];
@@ -1321,7 +1331,7 @@ function generarCotizacion(pedido, pedidoId) {
 }
 
 // ============================================================
-//  ENVIAR COTIZACIÓN POR WHATSAPP - SIN LINK DE POSTIMAGES
+//  ENVIAR COTIZACIÓN POR WHATSAPP - SIN LOGO
 // ============================================================
 function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     let telefonoDestino = telefono;
@@ -1341,7 +1351,6 @@ function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     
     const numeroCompleto = '52' + telefonoDestino;
     
-    // ====== COTIZACIÓN LIMPIA - SIN LOGO, SIN LINKS ======
     let mensaje = `📄 *COTIZACIÓN GAETO COMERCIOS*\n\n`;
     mensaje += `Hola ${nombreCliente || 'cliente'}, ¡gracias por tu pedido!\n\n`;
     mensaje += cotizacion;
@@ -1481,7 +1490,7 @@ function fallbackWhatsApp(mensaje) {
 }
 
 // ============================================================
-//  BUSCADOR EN INVENTARIO
+//  BUSCADORES
 // ============================================================
 document.getElementById('btnBuscarInventario').onclick = function() {
     const busqueda = document.getElementById('buscarInventario').value.toLowerCase().trim();
@@ -1515,9 +1524,6 @@ document.getElementById('buscarInventario').addEventListener('keypress', functio
     }
 });
 
-// ============================================================
-//  BUSCADOR EN CLIENTES
-// ============================================================
 document.getElementById('btnBuscarClientes').onclick = function() {
     const busqueda = document.getElementById('buscarClientes').value.toLowerCase().trim();
     const tbody = document.getElementById('clientesTabla');
@@ -1570,7 +1576,7 @@ function eliminarCliente(telefono) {
 }
 
 // ============================================================
-//  HISTÓRICO DE VENTAS CON FILTROS DE FECHA
+//  HISTÓRICO DE VENTAS
 // ============================================================
 function renderizarHistoricoVentas(fechaDesde, fechaHasta) {
     const tbody = document.getElementById('historicoVentasTabla');
@@ -1778,7 +1784,7 @@ function renderizarClientes() {
 }
 
 // ============================================================
-//  IMPRIMIR TICKET TÉRMICO - CON LOGO GAETO COMERCIOS
+//  IMPRIMIR TICKET TÉRMICO
 // ============================================================
 function imprimirTicket(pedidoId) {
     const pedido = pedidos.find(p => p.id === pedidoId);
@@ -2082,6 +2088,49 @@ function renderizarGraficas() {
     });
 }
 
+// ============================================================
+//  ACCESO ADMINISTRADOR CON SEGURIDAD
+// ============================================================
+document.getElementById('btnEntrarAdmin').onclick = () => {
+    if (intentosFallidos >= MAX_INTENTOS) {
+        alert("🔒 Demasiados intentos. Recarga la página.");
+        document.getElementById('pwdInput').disabled = true;
+        return;
+    }
+    
+    const claveIngresada = document.getElementById('pwdInput').value;
+    
+    if (claveIngresada === ADMIN_PASSWORD) {
+        activarModoAdmin();
+        document.getElementById('modalPwd').style.display = "none";
+        intentosFallidos = 0;
+        document.getElementById('intentosMsg').textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
+        document.getElementById('pwdInput').disabled = false;
+        document.getElementById('pwdInput').value = '';
+    } else {
+        intentosFallidos++;
+        const restantes = MAX_INTENTOS - intentosFallidos;
+        document.getElementById('intentosMsg').textContent = `❌ Clave incorrecta. Intentos restantes: ${restantes}`;
+        document.getElementById('pwdInput').value = '';
+        document.getElementById('pwdInput').focus();
+        if (restantes === 0) {
+            document.getElementById('pwdInput').disabled = true;
+            document.getElementById('intentosMsg').textContent = '🔒 Bloqueado. Recarga la página.';
+        }
+    }
+};
+
+document.getElementById('btnCancelarAdmin').onclick = () => {
+    document.getElementById('modalPwd').style.display = "none";
+    document.getElementById('pwdInput').value = '';
+    document.getElementById('pwdInput').disabled = false;
+    intentosFallidos = 0;
+    document.getElementById('intentosMsg').textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
+};
+
+// ============================================================
+//  MODO ADMIN
+// ============================================================
 function activarModoAdmin() { 
     modoAdmin = true; 
     document.getElementById('badgeAdmin').style.display = 'block'; 
@@ -2116,14 +2165,15 @@ window.onload = function() {
     desactivarModoAdmin();
     document.getElementById('busquedaInput').oninput = (e) => { textoBusqueda = e.target.value; renderizarProductos(); };
     document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; renderizarCarrito(); };
-    document.getElementById('logoAdmin').onclick = () => { document.getElementById('modalPwd').style.display = "flex"; document.getElementById('pwdInput').value = ""; document.getElementById('pwdInput').focus(); };
-    
-    document.getElementById('btnEntrarAdmin').onclick = () => { 
-        if (document.getElementById('pwdInput').value === ADMIN_PASSWORD) { activarModoAdmin(); document.getElementById('modalPwd').style.display = "none"; } 
-        else { alert("Clave incorrecta."); } 
+    document.getElementById('logoAdmin').onclick = () => { 
+        document.getElementById('modalPwd').style.display = "flex"; 
+        document.getElementById('pwdInput').value = ''; 
+        document.getElementById('pwdInput').disabled = false;
+        document.getElementById('pwdInput').focus(); 
+        intentosFallidos = 0;
+        document.getElementById('intentosMsg').textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
     };
     
-    document.getElementById('btnCancelarAdmin').onclick = () => { document.getElementById('modalPwd').style.display = "none"; };
     document.getElementById('toggleModoBtn').onclick = () => { desactivarModoAdmin(); };
 
     document.getElementById('agregarProductoBtn').onclick = () => {
@@ -2151,6 +2201,7 @@ window.onload = function() {
             }
         } else {
             document.getElementById('modalPwd').style.display = "flex";
+            document.getElementById('pwdInput').focus();
         }
     };
 };
