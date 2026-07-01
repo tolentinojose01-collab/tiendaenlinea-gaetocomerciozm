@@ -562,7 +562,7 @@
         <div class="tabla-container">
             <table>
                 <thead><tr><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
-                <tbody id="pedidosTabla"><tr><td colspan="6" style="text-align:center; color:#94a3b8;">No hay pedidos registrados</td></tr></tbody>
+                <tbody id="pedidosTabla"><tr><td colspan="6" style="text-align:center; color:#94a3b8;">No hay cotizaciones registradas</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -609,7 +609,7 @@
             <div class="tabla-container">
                 <table>
                     <thead><tr><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th></tr></thead>
-                    <tbody id="historicoVentasTabla"><tr><td colspan="5" style="text-align:center; color:#94a3b8;">No hay ventas registradas</td></tr></tbody>
+                    <tbody id="historicoVentasTabla"><tr><td colspan="5" style="text-align:center; color:#94a3b8;">No hay cotizaciones registradas</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -675,7 +675,6 @@ let carrito = [];
 let modoAdmin = false;
 let categoriaActiva = "TODOS";
 let textoBusqueda = "";
-let pedidos = [];
 let clientes = [];
 let cotizaciones = [];
 let chartVentas = null;
@@ -684,6 +683,7 @@ let chartTopProductos = null;
 let chartVentasMes = null;
 let productoStockActual = '';
 let modoStock = 'sumar';
+let clienteBuscando = false;
 
 function mostrarNotificacion(mensaje, duracion = 4000) {
     const toast = document.getElementById('toastNotificacion');
@@ -713,17 +713,6 @@ database.ref('productos').on('value', (snapshot) => {
     document.getElementById('contenedorProductos').innerHTML = '<div style="padding:40px; text-align:center; background:white; border-radius:28px; color:#b91c1c;">⚠️ Error en Firebase.</div>';
 });
 
-database.ref('pedidos').on('value', (snapshot) => {
-    const data = snapshot.val();
-    pedidos = [];
-    if (data) {
-        Object.keys(data).forEach(key => {
-            pedidos.push({ id: key, ...data[key] });
-        });
-    }
-    if (modoAdmin) actualizarPanelAdmin();
-});
-
 database.ref('clientes').on('value', (snapshot) => {
     const data = snapshot.val();
     clientes = [];
@@ -749,6 +738,7 @@ database.ref('cotizaciones').on('value', (snapshot) => {
     if (modoAdmin) {
         renderizarClientes();
         renderizarPedidos();
+        renderizarHistoricoVentas();
         actualizarPanelAdmin();
     }
 });
@@ -1099,16 +1089,19 @@ function renderizarCarrito() {
 //  BUSCAR CLIENTE POR TELÉFONO (AUTOFILL)
 // ============================================================
 document.getElementById('btnBuscarCliente').onclick = function() {
+    if (clienteBuscando) return;
+    clienteBuscando = true;
+    
     const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
     
     if (telefono.length < 10) {
         mostrarNotificacion("⚠️ Escribe un teléfono válido (10 dígitos)");
+        clienteBuscando = false;
         return;
     }
     
     mostrarNotificacion("🔍 Buscando cliente...");
     
-    // Buscar en clientes por teléfono
     database.ref('clientes').orderByChild('telefono').equalTo(telefono).once('value')
         .then((snapshot) => {
             const data = snapshot.val();
@@ -1137,9 +1130,11 @@ document.getElementById('btnBuscarCliente').onclick = function() {
                 
                 mostrarNotificacion("ℹ️ Cliente no registrado. Completa tus datos.");
             }
+            clienteBuscando = false;
         })
         .catch(err => {
             mostrarNotificacion("❌ Error al buscar cliente: " + err.message);
+            clienteBuscando = false;
         });
 };
 
@@ -1214,7 +1209,7 @@ document.getElementById('btnRegistroCancelar').onclick = function() {
 };
 
 // ============================================================
-//  PROCESAR PEDIDO - CON REGISTRO DE CLIENTE Y COTIZACIÓN
+//  PROCESAR PEDIDO - CON REGISTRO DE CLIENTE Y COTIZACIÓN (CORREGIDO)
 // ============================================================
 function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
     let total = 0;
@@ -1241,27 +1236,34 @@ function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
     
     mostrarNotificacion("⏳ Procesando tu pedido...");
     
-    // ====== 1. REGISTRAR CLIENTE (con ID único) ======
+    // ====== 1. REGISTRAR CLIENTE (con ID único - NO SOBRESCRIBE) ======
     let clienteId = null;
+    let esClienteNuevo = false;
     
+    // Buscar cliente por teléfono
     database.ref('clientes').orderByChild('telefono').equalTo(telefono).once('value')
         .then((snapshot) => {
             const data = snapshot.val();
             if (data) {
-                // Cliente existe, obtener su ID
+                // Cliente existe - OBTENER SU ID Y ACTUALIZAR
                 const key = Object.keys(data)[0];
                 clienteId = key;
-                // Actualizar datos del cliente
+                const clienteExistente = data[key];
+                // Actualizar datos del cliente (NO sobrescribe, solo actualiza)
                 return database.ref('clientes/' + clienteId).update({
                     nombre: nombre,
                     negocio: negocio || 'Particular',
                     telefono: telefono,
                     direccion: direccionCompleta,
                     ultimaCompra: fechaActual,
-                    totalCompras: (parseInt(data[key].totalCompras) || 0) + 1
+                    totalCompras: (parseInt(clienteExistente.totalCompras) || 0) + 1
+                }).then(() => {
+                    esClienteNuevo = false;
+                    return clienteId;
                 });
             } else {
-                // Cliente nuevo, crear con ID único
+                // Cliente nuevo - CREAR CON ID ÚNICO
+                esClienteNuevo = true;
                 const nuevoCliente = {
                     nombre: nombre,
                     negocio: negocio || 'Particular',
@@ -1275,10 +1277,11 @@ function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
                 return database.ref('clientes').push(nuevoCliente)
                     .then((ref) => {
                         clienteId = ref.key;
+                        return clienteId;
                     });
             }
         })
-        .then(() => {
+        .then((id) => {
             // ====== 2. GUARDAR COTIZACIÓN ======
             const nuevaCotizacion = {
                 clienteId: clienteId,
@@ -1332,17 +1335,17 @@ function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
             carrito = [];
             renderizarCarrito();
             
-            // Actualizar paneles si está en modo admin
-            if (modoAdmin) {
-                renderizarClientes();
-                renderizarPedidos();
-                actualizarPanelAdmin();
-            }
+            // Actualizar paneles
+            renderizarClientes();
+            renderizarPedidos();
+            renderizarHistoricoVentas();
+            if (modoAdmin) actualizarPanelAdmin();
             
             mostrarNotificacion(`✅ ¡Cotización #${cotizacionId.slice(-6).toUpperCase()} registrada! Revisa WhatsApp.`);
         })
         .catch(err => {
             mostrarNotificacion("❌ Error al procesar el pedido: " + err.message);
+            console.error("Error detallado:", err);
         });
 }
 
@@ -1644,24 +1647,29 @@ document.getElementById('buscarClientes').addEventListener('keypress', function(
 //  ELIMINAR CLIENTE
 // ============================================================
 function eliminarCliente(id) {
-    if (!confirm(`⚠️ ¿Deseas eliminar este cliente?`)) return;
+    if (!confirm(`⚠️ ¿Deseas eliminar este cliente y todas sus cotizaciones?`)) return;
     
     mostrarNotificacion("⏳ Eliminando cliente...");
     
+    // Buscar cotizaciones del cliente
+    const cotizacionesCliente = cotizaciones.filter(c => c.clienteId === id);
+    const promises = [];
+    
+    // Eliminar cotizaciones
+    cotizacionesCliente.forEach(c => {
+        promises.push(database.ref('cotizaciones/' + c.id).remove());
+    });
+    
     // Eliminar el cliente
-    database.ref('clientes/' + id).remove()
-        .then(() => {
-            // También eliminar sus cotizaciones
-            const cotizacionesCliente = cotizaciones.filter(c => c.clienteId === id);
-            const promises = cotizacionesCliente.map(c => 
-                database.ref('cotizaciones/' + c.id).remove()
-            );
-            return Promise.all(promises);
-        })
+    promises.push(database.ref('clientes/' + id).remove());
+    
+    Promise.all(promises)
         .then(() => {
             mostrarNotificacion(`✅ Cliente y sus cotizaciones eliminados`);
             renderizarClientes();
-            actualizarPanelAdmin();
+            renderizarPedidos();
+            renderizarHistoricoVentas();
+            if (modoAdmin) actualizarPanelAdmin();
         })
         .catch(err => {
             mostrarNotificacion(`❌ Error al eliminar cliente: ${err.message}`);
@@ -1854,7 +1862,14 @@ function renderizarClientes() {
         return;
     }
     
-    tbody.innerHTML = clientes.map((c, index) => {
+    // Ordenar clientes por fecha de registro (más reciente primero)
+    const clientesOrdenados = [...clientes].sort((a, b) => {
+        const fechaA = a.fechaRegistro || '';
+        const fechaB = b.fechaRegistro || '';
+        return fechaB.localeCompare(fechaA);
+    });
+    
+    tbody.innerHTML = clientesOrdenados.map((c, index) => {
         const cotizacionesCliente = cotizaciones.filter(cot => cot.clienteId === c.id);
         const totalGastado = cotizacionesCliente.reduce((sum, cot) => sum + (parseFloat(cot.total) || 0), 0);
         const numeroCliente = index + 1;
@@ -1886,7 +1901,8 @@ function cambiarEstadoCotizacion(id, estado) {
         .then(() => {
             mostrarNotificacion(`✅ Cotización ${estado}`);
             renderizarPedidos();
-            actualizarPanelAdmin();
+            renderizarHistoricoVentas();
+            if (modoAdmin) actualizarPanelAdmin();
         })
         .catch(err => {
             mostrarNotificacion("❌ Error: " + err.message);
