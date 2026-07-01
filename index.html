@@ -1321,7 +1321,7 @@ function generarCotizacion(pedido, pedidoId) {
 }
 
 // ============================================================
-//  ENVIAR COTIZACIÓN POR WHATSAPP - CON LOGO CORRECTO (MISMA URL QUE EN EL MODAL)
+//  ENVIAR COTIZACIÓN POR WHATSAPP - SIN LOGO (VERSIÓN LIMPIA)
 // ============================================================
 function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     let telefonoDestino = telefono;
@@ -1341,15 +1341,9 @@ function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     
     const numeroCompleto = '52' + telefonoDestino;
     
-    // ====== LOGO DE GAETO COMERCIOS (MISMA URL QUE EN EL MODAL) ======
-    const logoUrl = "https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png";
-    
-    // Formato probado que funciona en WhatsApp
+    // Cotización limpia sin logo
     let mensaje = `📄 *COTIZACIÓN GAETO COMERCIOS*\n\n`;
     mensaje += `Hola ${nombreCliente || 'cliente'}, ¡gracias por tu pedido!\n\n`;
-    mensaje += `🏢 *GAETO COMERCIOS*\n`;
-    mensaje += `${logoUrl}\n\n`;
-    mensaje += "───────────────────────────\n\n";
     mensaje += cotizacion;
     mensaje += `\n\n💬 ¿Tienes dudas? Estamos aquí para ayudarte.`;
     
