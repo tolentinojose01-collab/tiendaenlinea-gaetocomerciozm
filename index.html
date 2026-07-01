@@ -1321,7 +1321,7 @@ function generarCotizacion(pedido, pedidoId) {
 }
 
 // ============================================================
-//  ENVIAR COTIZACIÓN POR WHATSAPP - CON LOGO CORREGIDO
+//  ENVIAR COTIZACIÓN POR WHATSAPP - CON LOGO CORRECTO (MISMA URL QUE EN EL MODAL)
 // ============================================================
 function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     let telefonoDestino = telefono;
@@ -1341,14 +1341,12 @@ function enviarCotizacionWhatsApp(telefono, cotizacion, nombreCliente) {
     
     const numeroCompleto = '52' + telefonoDestino;
     
-    // ====== LOGO DE GAETO COMERCIOS CORREGIDO ======
-    // Enlace directo de la imagen para que WhatsApp la muestre
+    // ====== LOGO DE GAETO COMERCIOS (MISMA URL QUE EN EL MODAL) ======
     const logoUrl = "https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png";
     
+    // Formato probado que funciona en WhatsApp
     let mensaje = `📄 *COTIZACIÓN GAETO COMERCIOS*\n\n`;
     mensaje += `Hola ${nombreCliente || 'cliente'}, ¡gracias por tu pedido!\n\n`;
-    
-    // El logo se muestra mejor cuando el enlace está en una línea separada
     mensaje += `🏢 *GAETO COMERCIOS*\n`;
     mensaje += `${logoUrl}\n\n`;
     mensaje += "───────────────────────────\n\n";
@@ -1569,7 +1567,6 @@ function eliminarCliente(telefono) {
     database.ref('clientes/' + telefono).remove()
         .then(() => {
             mostrarNotificacion(`✅ Cliente eliminado correctamente`);
-            // Recargar lista de clientes
             renderizarClientes();
             actualizarPanelAdmin();
         })
