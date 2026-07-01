@@ -450,7 +450,7 @@
 <div class="modal-registro" id="modalRegistro">
     <div class="modal-registro-content">
         <div class="logo-modal">
-            <img src="https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png" alt="GAETO COMERCIOS">
+            <img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png" alt="GAETO COMERCIOS">
         </div>
         <h2>📝 Registro de Pedido</h2>
         <p class="subtitulo">Ingresa tu teléfono para cargar tus datos automáticamente</p>
@@ -486,7 +486,7 @@
 </div>
 
 <div class="encabezado">
-    <img src="https://i.postimg.cc/0y0PPD1M/GAETO-COMERCIOS-LOGO.png" class="logo" id="logoAdmin">
+    <img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png" class="logo" id="logoAdmin">
     <div class="badge-admin" id="badgeAdmin">🔧 MODO ADMIN</div>
 </div>
 
@@ -1741,6 +1741,7 @@ function renderizarPedidos() {
                         `<button class="btn-accion btn-entregar" onclick="cambiarEstadoPedido('${p.id}','ENTREGADO')">📦</button>` : ''}
                     ${p.estado !== 'CANCELADO' ? 
                         `<button class="btn-accion btn-cancelar" onclick="cambiarEstadoPedido('${p.id}','CANCELADO')">❌</button>` : ''}
+                    <button class="btn-accion" onclick="imprimirTicket('${p.id}')" style="background:#8b5cf6; color:white; font-size:12px; padding:4px 10px;">🎫</button>
                 </td>
             </tr>
         `;
@@ -1774,6 +1775,198 @@ function renderizarClientes() {
             </tr>
         `;
     }).join('');
+}
+
+// ============================================================
+//  IMPRIMIR TICKET TÉRMICO - CON LOGO GAETO COMERCIOS
+// ============================================================
+function imprimirTicket(pedidoId) {
+    const pedido = pedidos.find(p => p.id === pedidoId);
+    if (!pedido) {
+        mostrarNotificacion("❌ Pedido no encontrado");
+        return;
+    }
+    
+    const ventana = window.open('', '_blank', 'width=380,height=600');
+    if (!ventana) {
+        mostrarNotificacion("❌ Bloqueo de ventanas emergentes. Permite popups para imprimir.");
+        return;
+    }
+    
+    const cliente = pedido.cliente || { nombre: 'Cliente', telefono: 'Sin teléfono', direccion: 'Sin dirección' };
+    const fecha = pedido.fecha || new Date().toISOString().split('T')[0];
+    const total = parseFloat(pedido.total || 0).toFixed(2);
+    
+    const logoUrl = "https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png";
+    
+    let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Ticket - GAETO COMERCIOS</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+                font-family: 'Courier New', monospace;
+                width: 80mm;
+                margin: 0 auto;
+                padding: 10px 5px;
+                background: white;
+                font-size: 12px;
+                line-height: 1.4;
+            }
+            .ticket { width: 100%; text-align: center; }
+            .logo-img { max-width: 150px; height: auto; margin-bottom: 5px; }
+            .logo-sub { font-size: 10px; letter-spacing: 2px; margin-bottom: 5px; color: #555; }
+            .separador { border-top: 1px dashed #000; margin: 6px 0; width: 100%; }
+            .producto-item { display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0; border-bottom: 1px dotted #ccc; }
+            .producto-item .nombre { flex: 1; text-align: left; }
+            .producto-item .cantidad { width: 30px; text-align: center; }
+            .producto-item .precio { width: 50px; text-align: right; }
+            .producto-item .subtotal { width: 55px; text-align: right; }
+            .total-line { display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; padding: 5px 0; border-top: 2px solid #000; margin-top: 5px; }
+            .pie { font-size: 10px; margin-top: 10px; padding-top: 5px; border-top: 1px dashed #000; }
+            .gracias { font-size: 14px; font-weight: bold; margin: 10px 0 5px 0; color: #002b5c; }
+            .fecha-hora { font-size: 10px; color: #555; margin: 3px 0; }
+            .datos-cliente { text-align: left; font-size: 11px; margin: 5px 0; }
+            .datos-cliente div { padding: 1px 0; }
+            .encabezado-productos { display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 3px; }
+            .encabezado-productos .nombre { flex: 1; text-align: left; }
+            .encabezado-productos .cantidad { width: 30px; text-align: center; }
+            .encabezado-productos .precio { width: 50px; text-align: right; }
+            .encabezado-productos .subtotal { width: 55px; text-align: right; }
+            @media print { body { margin: 0; padding: 6px 3px; } .no-print { display: none; } }
+        </style>
+    </head>
+    <body>
+        <div class="ticket" id="ticket">
+            <div><img src="${logoUrl}" alt="GAETO COMERCIOS" class="logo-img"></div>
+            <div class="logo-sub">🛒 Tu tienda de confianza 🛒</div>
+            <div class="separador"></div>
+            <div style="font-size:10px; text-align:center; line-height:1.6;">
+                📞 228 287 7441<br>
+                📍 Jiménez 408, Col. Miguel Alemán<br>
+                Veracruz, Ver.
+            </div>
+            <div class="separador"></div>
+            <div style="font-size:13px; font-weight:bold; margin:5px 0; color:#002b5c;">🧾 TICKET DE PEDIDO</div>
+            <div class="fecha-hora">📅 ${fecha}  |  ⏰ ${new Date().toLocaleTimeString()}</div>
+            <div class="separador"></div>
+            <div class="datos-cliente">
+                <div><strong>👤 Cliente:</strong> ${cliente.nombre || 'Sin nombre'}</div>
+                <div><strong>📱 Teléfono:</strong> ${cliente.telefono || 'Sin teléfono'}</div>
+                <div><strong>📍 Dirección:</strong> ${cliente.direccion || 'Sin dirección'}</div>
+                ${cliente.negocio ? `<div><strong>🏢 Negocio:</strong> ${cliente.negocio}</div>` : ''}
+            </div>
+            <div class="separador"></div>
+            <div style="text-align:left; font-size:11px; font-weight:bold; margin-bottom:3px;">📦 PRODUCTOS</div>
+            <div class="encabezado-productos">
+                <span class="nombre">Descripción</span>
+                <span class="cantidad">Cant</span>
+                <span class="precio">Precio</span>
+                <span class="subtotal">Subtotal</span>
+            </div>
+    `;
+    
+    if (pedido.productos && pedido.productos.length > 0) {
+        pedido.productos.forEach(item => {
+            const nombre = item.nombre || 'Producto';
+            const cantidad = item.cantidad || 0;
+            const precio = parseFloat(item.precioUnitario || 0).toFixed(2);
+            const subtotal = parseFloat(item.subtotal || 0).toFixed(2);
+            html += `
+                <div class="producto-item">
+                    <span class="nombre">${nombre.substring(0, 25)}</span>
+                    <span class="cantidad">${cantidad}</span>
+                    <span class="precio">$${precio}</span>
+                    <span class="subtotal">$${subtotal}</span>
+                </div>
+            `;
+        });
+    } else {
+        html += `<div style="text-align:center; padding:5px 0; color:#999;">Sin productos</div>`;
+    }
+    
+    html += `
+            <div class="separador"></div>
+            <div class="total-line"><span>💰 TOTAL</span><span>$${total}</span></div>
+            <div class="separador"></div>
+            <div style="font-size:10px; text-align:left; margin:5px 0; line-height:1.6;">
+                <strong>💳 Formas de pago:</strong><br>
+                • Efectivo (contra entrega)<br>
+                • Transferencia bancaria<br>
+                • Depósito en ventanilla
+            </div>
+            <div class="separador"></div>
+            <div class="gracias">¡GRACIAS POR TU PREFERENCIA!</div>
+            <div style="font-size:10px; margin:3px 0;">📲 Confirma tu pedido: <strong>CONFIRMO</strong></div>
+            <div class="separador"></div>
+            <div class="pie" style="line-height:1.6;">
+                📞 228 287 7441<br>
+                📍 Jiménez 408, Col. Miguel Alemán<br>
+                Veracruz, Ver.<br>
+                🌐 https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/
+            </div>
+            <div class="no-print" style="margin-top:15px; padding:10px;">
+                <button onclick="window.print()" style="padding:10px 30px; background:#2563eb; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer;">🖨️ Imprimir Ticket</button>
+                <button onclick="window.close()" style="padding:10px 30px; background:#e2e8f0; color:#334155; border:none; border-radius:8px; font-size:16px; cursor:pointer; margin-left:5px;">❌ Cerrar</button>
+            </div>
+        </div>
+        <script>
+            window.onload = function() {
+                setTimeout(function() { window.print(); }, 500);
+            };
+        <\/script>
+    </body>
+    </html>
+    `;
+    
+    ventana.document.write(html);
+    ventana.document.close();
+}
+
+// ============================================================
+//  CAMBIAR ESTADO DE PEDIDO - CON REGISTRO DE CLIENTE
+// ============================================================
+function cambiarEstadoPedido(id, estado) {
+    mostrarNotificacion("⏳ Procesando...");
+    
+    const pedido = pedidos.find(p => p.id === id);
+    if (!pedido) {
+        mostrarNotificacion("❌ Pedido no encontrado");
+        return;
+    }
+    
+    if (estado === 'ENTREGADO') {
+        const cliente = pedido.cliente;
+        if (cliente && cliente.telefono) {
+            database.ref('clientes/' + cliente.telefono).update({
+                nombre: cliente.nombre || 'Cliente',
+                negocio: cliente.negocio || 'Particular',
+                telefono: cliente.telefono,
+                direccion: cliente.direccion || '',
+                ultimaCompra: new Date().toISOString().split('T')[0],
+                totalCompras: (parseInt(localStorage.getItem('totalCompras_' + cliente.telefono)) || 0) + 1
+            }).then(() => {
+                console.log('✅ Cliente registrado/actualizado');
+            }).catch(err => {
+                console.error('❌ Error al registrar cliente:', err);
+            });
+        }
+    }
+    
+    database.ref('pedidos/' + id + '/estado').set(estado)
+        .then(() => {
+            mostrarNotificacion(`✅ Pedido ${estado}`);
+            renderizarPedidos();
+            actualizarPanelAdmin();
+            renderizarClientes();
+            renderizarHistoricoVentas();
+        })
+        .catch(err => {
+            mostrarNotificacion("❌ Error: " + err.message);
+        });
 }
 
 function renderizarGraficas() {
@@ -1887,12 +2080,6 @@ function renderizarGraficas() {
             plugins: { legend: { display: false } }
         }
     });
-}
-
-function cambiarEstadoPedido(id, estado) {
-    database.ref('pedidos/' + id + '/estado').set(estado)
-        .then(() => mostrarNotificacion(`✅ Pedido ${estado}`))
-        .catch(err => alert("Error: " + err.message));
 }
 
 function activarModoAdmin() { 
