@@ -1188,6 +1188,9 @@ document.getElementById('btnRegistroCancelar').onclick = function() {
     mostrarNotificacion("❌ Pedido cancelado");
 };
 
+// ============================================================
+//  PROCESAR PEDIDO COMPLETO - CON REGISTRO DE CLIENTE INMEDIATO
+// ============================================================
 function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
     let total = 0;
     let productosPedido = [];
@@ -1230,6 +1233,7 @@ function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
         .then((snapshot) => {
             const pedidoId = snapshot.key;
             
+            // ACTUALIZAR INVENTARIO
             productosPedido.forEach(item => {
                 let prod = productos.find(p => p.codigo === item.codigo);
                 if (prod && prod.stock !== undefined) {
@@ -1239,6 +1243,7 @@ function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
                 }
             });
             
+            // ====== REGISTRAR CLIENTE INMEDIATAMENTE ======
             database.ref('clientes/' + telefono).update({
                 nombre: nombre,
                 negocio: negocio || 'Particular',
@@ -1247,6 +1252,14 @@ function procesarPedido(nombre, negocio, telefono, direccion, referencia) {
                 referencia: referencia || '',
                 ultimaCompra: new Date().toISOString().split('T')[0],
                 totalCompras: (parseInt(localStorage.getItem('totalCompras_' + telefono)) || 0) + 1
+            }).then(() => {
+                console.log('✅ Cliente registrado/actualizado');
+                if (modoAdmin) {
+                    renderizarClientes();
+                    actualizarPanelAdmin();
+                }
+            }).catch(err => {
+                console.error('❌ Error al registrar cliente:', err);
             });
             
             const cotizacion = generarCotizacion(nuevoPedido, pedidoId);
@@ -1933,7 +1946,7 @@ function imprimirTicket(pedidoId) {
 }
 
 // ============================================================
-//  CAMBIAR ESTADO DE PEDIDO - CON REGISTRO DE CLIENTE
+//  CAMBIAR ESTADO DE PEDIDO
 // ============================================================
 function cambiarEstadoPedido(id, estado) {
     mostrarNotificacion("⏳ Procesando...");
@@ -1948,16 +1961,11 @@ function cambiarEstadoPedido(id, estado) {
         const cliente = pedido.cliente;
         if (cliente && cliente.telefono) {
             database.ref('clientes/' + cliente.telefono).update({
-                nombre: cliente.nombre || 'Cliente',
-                negocio: cliente.negocio || 'Particular',
-                telefono: cliente.telefono,
-                direccion: cliente.direccion || '',
-                ultimaCompra: new Date().toISOString().split('T')[0],
-                totalCompras: (parseInt(localStorage.getItem('totalCompras_' + cliente.telefono)) || 0) + 1
+                ultimaCompra: new Date().toISOString().split('T')[0]
             }).then(() => {
-                console.log('✅ Cliente registrado/actualizado');
+                console.log('✅ Cliente actualizado (última compra)');
             }).catch(err => {
-                console.error('❌ Error al registrar cliente:', err);
+                console.error('❌ Error al actualizar cliente:', err);
             });
         }
     }
@@ -2129,6 +2137,44 @@ document.getElementById('btnCancelarAdmin').onclick = () => {
 };
 
 // ============================================================
+//  ABRIR MODAL ADMIN - CORREGIDO
+// ============================================================
+document.getElementById('logoAdmin').onclick = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log("🔑 Logo clickeado - Abriendo modal");
+    
+    const modal = document.getElementById('modalPwd');
+    const input = document.getElementById('pwdInput');
+    const msg = document.getElementById('intentosMsg');
+    
+    if (!modal) {
+        console.error("❌ Modal no encontrado");
+        return;
+    }
+    
+    modal.style.display = "flex";
+    modal.style.visibility = "visible";
+    modal.style.opacity = "1";
+    
+    if (input) {
+        input.value = '';
+        input.disabled = false;
+        setTimeout(function() {
+            input.focus();
+        }, 300);
+    }
+    
+    intentosFallidos = 0;
+    if (msg) {
+        msg.textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
+    }
+    
+    console.log("✅ Modal abierto correctamente");
+};
+
+// ============================================================
 //  MODO ADMIN
 // ============================================================
 function activarModoAdmin() { 
@@ -2165,14 +2211,6 @@ window.onload = function() {
     desactivarModoAdmin();
     document.getElementById('busquedaInput').oninput = (e) => { textoBusqueda = e.target.value; renderizarProductos(); };
     document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; renderizarCarrito(); };
-    document.getElementById('logoAdmin').onclick = () => { 
-        document.getElementById('modalPwd').style.display = "flex"; 
-        document.getElementById('pwdInput').value = ''; 
-        document.getElementById('pwdInput').disabled = false;
-        document.getElementById('pwdInput').focus(); 
-        intentosFallidos = 0;
-        document.getElementById('intentosMsg').textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
-    };
     
     document.getElementById('toggleModoBtn').onclick = () => { desactivarModoAdmin(); };
 
