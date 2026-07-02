@@ -11,7 +11,7 @@
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:#eef2f5;padding:20px;padding-bottom:180px}
         .encabezado{text-align:center;background:white;border-radius:40px;padding:15px;margin-bottom:20px;position:relative}
-        .logo{max-width:250px;width:80%;cursor:pointer}
+        .logo{max-width:250px;width:80%;cursor:pointer;user-select:none;-webkit-user-select:none}
         .badge-admin{position:absolute;bottom:5px;right:15px;background:#ff9800;color:#000;font-size:10px;padding:2px 8px;border-radius:20px;display:none}
         .banner{background:#1e2a3e;color:#ffd966;text-align:center;padding:10px;border-radius:60px;margin-bottom:20px;font-size:13px;line-height:1.4}
         
@@ -498,7 +498,7 @@
 </div>
 
 <div class="encabezado">
-    <img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png" class="logo" id="logoAdmin">
+    <img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png" class="logo" id="logoAdmin" title="GAETO COMERCIOS">
     <div class="badge-admin" id="badgeAdmin">🔧 MODO ADMIN</div>
 </div>
 
@@ -3205,6 +3205,57 @@ function renderizarGraficas() {
 }
 
 // ============================================================
+//  ABRIR MODAL ADMIN - CON 3 CLICS (SEGURIDAD OCULTA)
+// ============================================================
+let contadorClicksLogo = 0;
+let temporizadorClicks = null;
+
+document.getElementById('logoAdmin').onclick = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    contadorClicksLogo++;
+    
+    // Reiniciar el contador después de 2 segundos si no se completa la secuencia
+    clearTimeout(temporizadorClicks);
+    temporizadorClicks = setTimeout(() => {
+        contadorClicksLogo = 0;
+    }, 2000);
+    
+    // Si ya tiene 3 clics, abrir el modal DE FORMA OCULTA
+    if (contadorClicksLogo >= 3) {
+        contadorClicksLogo = 0;
+        clearTimeout(temporizadorClicks);
+        
+        // Mostrar mensaje SOLO al administrador (notificación breve)
+        mostrarNotificacion("🔐 Acceso Administrador");
+        
+        const modal = document.getElementById('modalPwd');
+        const input = document.getElementById('pwdInput');
+        const msg = document.getElementById('intentosMsg');
+        
+        if (!modal) return;
+        
+        modal.style.display = "flex";
+        modal.style.visibility = "visible";
+        modal.style.opacity = "1";
+        
+        if (input) {
+            input.value = '';
+            input.disabled = false;
+            setTimeout(function() {
+                input.focus();
+            }, 300);
+        }
+        
+        intentosFallidos = 0;
+        if (msg) {
+            msg.textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
+        }
+    }
+};
+
+// ============================================================
 //  ACCESO ADMINISTRADOR CON SEGURIDAD
 // ============================================================
 document.getElementById('btnEntrarAdmin').onclick = () => {
@@ -3242,37 +3293,6 @@ document.getElementById('btnCancelarAdmin').onclick = () => {
     document.getElementById('pwdInput').disabled = false;
     intentosFallidos = 0;
     document.getElementById('intentosMsg').textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
-};
-
-// ============================================================
-//  ABRIR MODAL ADMIN
-// ============================================================
-document.getElementById('logoAdmin').onclick = function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const modal = document.getElementById('modalPwd');
-    const input = document.getElementById('pwdInput');
-    const msg = document.getElementById('intentosMsg');
-    
-    if (!modal) return;
-    
-    modal.style.display = "flex";
-    modal.style.visibility = "visible";
-    modal.style.opacity = "1";
-    
-    if (input) {
-        input.value = '';
-        input.disabled = false;
-        setTimeout(function() {
-            input.focus();
-        }, 300);
-    }
-    
-    intentosFallidos = 0;
-    if (msg) {
-        msg.textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
-    }
 };
 
 // ============================================================
