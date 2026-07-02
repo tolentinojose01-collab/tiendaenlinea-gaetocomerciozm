@@ -423,6 +423,134 @@
             font-weight: bold;
         }
 
+        /* ===== LISTAS DE PRECIOS ===== */
+        .lista-precios-container {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+        .lista-precios-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .lista-precios-header h3 {
+            color: #002b5c;
+            font-size: 18px;
+        }
+        .lista-precios-header .acciones-lista {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .lista-precios-header .acciones-lista button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .btn-pdf-lista { background: #dc2626; color: white; }
+        .btn-pdf-cliente { background: #2563eb; color: white; }
+        .btn-imprimir-lista { background: #2563eb; color: white; }
+        .btn-whatsapp-lista { background: #25d366; color: white; }
+        .btn-promociones-lista { background: #e11d48; color: white; }
+        .lista-precios-filtros {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .lista-precios-filtros input,
+        .lista-precios-filtros select {
+            padding: 8px 14px;
+            border-radius: 30px;
+            border: 1px solid #ccc;
+            font-size: 13px;
+            outline: none;
+        }
+        .lista-precios-tabla {
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .lista-precios-tabla table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .lista-precios-tabla th {
+            background: #002b5c;
+            color: white;
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .lista-precios-tabla td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 12px;
+        }
+        .lista-precios-tabla tr:hover { background: #f8fafc; }
+        .lista-precios-tabla .precio-venta { color: #002b5c; font-weight: bold; }
+        .lista-precios-tabla .precio-compra { color: #64748b; }
+        .lista-precios-tabla .margen-positivo { color: #16a34a; font-weight: bold; }
+        .lista-precios-tabla .margen-negativo { color: #dc2626; font-weight: bold; }
+        .lista-precios-tabla .codigo { font-family: monospace; font-size: 11px; color: #64748b; }
+        .lista-precios-tabla .categoria-tag {
+            background: #e2e8f0;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+        }
+        .tab-precios { display: none; }
+        .tab-precios.visible { display: block; }
+        .precio-cliente { font-size: 13px; color: #002b5c; font-weight: bold; }
+        .precio-cliente-grande { font-size: 18px; color: #002b5c; font-weight: bold; }
+
+        /* ===== ESTILOS PARA IMPRESIÓN DE PROMOCIONES ===== */
+        .promo-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e11d48;
+            box-shadow: 0 4px 15px rgba(225,29,72,0.15);
+            position: relative;
+            page-break-inside: avoid;
+        }
+        .promo-card .promo-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: #e11d48;
+            color: white;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .promo-card .promo-titulo { font-size: 16px; font-weight: bold; color: #002b5c; }
+        .promo-card .promo-precio { font-size: 22px; font-weight: bold; color: #e11d48; }
+        .promo-card .promo-antes { text-decoration: line-through; color: #999; font-size: 16px; margin-right: 10px; }
+        .promo-card .promo-desc { color: #334155; font-size: 13px; }
+        .promo-card .promo-codigo { font-family: monospace; font-size: 11px; color: #64748b; }
+
+        @media print {
+            .lista-precios-container { border: none; padding: 10px; }
+            .lista-precios-header .acciones-lista { display: none !important; }
+            .lista-precios-filtros { display: none !important; }
+            .lista-precios-tabla th { background: #002b5c !important; color: white !important; }
+            .no-print { display: none !important; }
+            .promo-card { border: 2px solid #e11d48 !important; page-break-inside: avoid; }
+        }
+
         @media (max-width:600px){
             .imagen-area{height:200px}
             .banner{font-size:11px}
@@ -530,6 +658,7 @@
         <button data-tab="tabClientes">👥 Clientes</button>
         <button data-tab="tabCompras">🛒 Compras</button>
         <button data-tab="tabReportes">📊 Reportes</button>
+        <button data-tab="tabListasPrecios">📊 Listas Precios</button>
     </div>
 
     <div class="tab-content visible" id="tabDashboard">
@@ -718,6 +847,170 @@
                     <thead><tr><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th></tr></thead>
                     <tbody id="historicoVentasTabla"><tr><td colspan="5" style="text-align:center; color:#94a3b8;">No hay cotizaciones registradas</td></tr></tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== PESTAÑA LISTAS DE PRECIOS ====== -->
+    <div class="tab-content" id="tabListasPrecios">
+        <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+            <button onclick="mostrarTabPrecios('venta')" id="btnTabVenta" style="background:#002b5c; color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:13px;">
+                💰 LISTA DE VENTA
+            </button>
+            <button onclick="mostrarTabPrecios('compra')" id="btnTabCompra" style="background:#e2e8f0; color:#334155; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:13px;">
+                📊 COMPRA Y VENTA
+            </button>
+            <button onclick="mostrarTabPrecios('cliente')" id="btnTabCliente" style="background:#e2e8f0; color:#334155; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:13px;">
+                🧾 PARA CLIENTE
+            </button>
+            <button onclick="mostrarTabPrecios('promociones')" id="btnTabPromociones" style="background:#e2e8f0; color:#334155; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:13px;">
+                🔥 PROMOCIONES
+            </button>
+        </div>
+
+        <!-- TAB 1: LISTA DE PRECIOS DE VENTA (ADMIN) -->
+        <div id="tabVenta" class="tab-precios visible">
+            <div class="lista-precios-container">
+                <div class="lista-precios-header">
+                    <h3>💰 LISTA DE PRECIOS DE VENTA</h3>
+                    <div class="acciones-lista">
+                        <button class="btn-pdf-lista" onclick="generarPDFListaVenta()">📄 PDF</button>
+                        <button class="btn-imprimir-lista" onclick="imprimirListaVenta()">🖨️ Imprimir</button>
+                        <button class="btn-whatsapp-lista" onclick="compartirListaVenta()">📲 WhatsApp</button>
+                    </div>
+                </div>
+                <div class="lista-precios-filtros">
+                    <input type="text" id="filtroVentaBuscar" placeholder="🔍 Buscar..." oninput="filtrarListaVenta()">
+                    <select id="filtroVentaCategoria" onchange="filtrarListaVenta()">
+                        <option value="TODOS">Todas las categorías</option>
+                    </select>
+                    <button onclick="filtrarListaVenta()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:bold;">Filtrar</button>
+                    <button onclick="limpiarFiltrosVenta()" style="background:#e2e8f0; border:none; padding:8px 16px; border-radius:30px; cursor:pointer;">Limpiar</button>
+                </div>
+                <div class="lista-precios-tabla" id="listaVentaTabla">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Precio Lista</th>
+                                <th>Dto. %</th>
+                                <th>Precio Venta</th>
+                                <th>Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaVentaBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: LISTA DE PRECIOS DE COMPRA Y VENTA (ADMIN) -->
+        <div id="tabCompra" class="tab-precios">
+            <div class="lista-precios-container">
+                <div class="lista-precios-header">
+                    <h3>📊 PRECIOS DE COMPRA Y VENTA</h3>
+                    <div class="acciones-lista">
+                        <button class="btn-pdf-lista" onclick="generarPDFListaCompraVenta()">📄 PDF</button>
+                        <button class="btn-imprimir-lista" onclick="imprimirListaCompraVenta()">🖨️ Imprimir</button>
+                        <button class="btn-whatsapp-lista" onclick="compartirListaCompraVenta()">📲 WhatsApp</button>
+                    </div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px 16px; border-radius:12px; margin-bottom:15px; font-size:13px; color:#334155;">
+                    💡 <strong>Margen =</strong> (Precio Venta - Precio Compra) / Precio Venta × 100
+                    <span style="margin-left:20px;">🟢 Margen positivo &nbsp;|&nbsp; 🔴 Margen negativo</span>
+                </div>
+                <div class="lista-precios-filtros">
+                    <input type="text" id="filtroCompraBuscar" placeholder="🔍 Buscar..." oninput="filtrarListaCompra()">
+                    <select id="filtroCompraCategoria" onchange="filtrarListaCompra()">
+                        <option value="TODOS">Todas las categorías</option>
+                    </select>
+                    <button onclick="filtrarListaCompra()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:bold;">Filtrar</button>
+                    <button onclick="limpiarFiltrosCompra()" style="background:#e2e8f0; border:none; padding:8px 16px; border-radius:30px; cursor:pointer;">Limpiar</button>
+                </div>
+                <div class="lista-precios-tabla" id="listaCompraTabla">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Precio Compra</th>
+                                <th>Precio Venta</th>
+                                <th>Margen</th>
+                                <th>Ganancia</th>
+                                <th>Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaCompraBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: LISTA PARA CLIENTE (SOLO PRECIO DE VENTA, FORMATO AMIGABLE) -->
+        <div id="tabCliente" class="tab-precios">
+            <div class="lista-precios-container">
+                <div class="lista-precios-header">
+                    <h3>🧾 LISTA DE PRECIOS PARA CLIENTE</h3>
+                    <div class="acciones-lista">
+                        <button class="btn-pdf-cliente" onclick="generarPDFListaCliente()">📄 PDF</button>
+                        <button class="btn-imprimir-lista" onclick="imprimirListaCliente()">🖨️ Imprimir</button>
+                        <button class="btn-whatsapp-lista" onclick="compartirListaCliente()">📲 WhatsApp</button>
+                    </div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px 16px; border-radius:12px; margin-bottom:15px; font-size:13px; color:#334155;">
+                    📋 <strong>Formato amigable</strong> para compartir con tus clientes. Solo muestra precios de venta.
+                </div>
+                <div class="lista-precios-filtros">
+                    <input type="text" id="filtroClienteBuscar" placeholder="🔍 Buscar..." oninput="filtrarListaCliente()">
+                    <select id="filtroClienteCategoria" onchange="filtrarListaCliente()">
+                        <option value="TODOS">Todas las categorías</option>
+                    </select>
+                    <button onclick="filtrarListaCliente()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:bold;">Filtrar</button>
+                    <button onclick="limpiarFiltrosCliente()" style="background:#e2e8f0; border:none; padding:8px 16px; border-radius:30px; cursor:pointer;">Limpiar</button>
+                </div>
+                <div class="lista-precios-tabla" id="listaClienteTabla">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Precio Venta</th>
+                                <th>Descuento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaClienteBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: PROMOCIONES -->
+        <div id="tabPromociones" class="tab-precios">
+            <div class="lista-precios-container">
+                <div class="lista-precios-header">
+                    <h3>🔥 PROMOCIONES ACTIVAS</h3>
+                    <div class="acciones-lista">
+                        <button class="btn-promociones-lista" onclick="generarPDFPromociones()">📄 PDF</button>
+                        <button class="btn-imprimir-lista" onclick="imprimirPromociones()">🖨️ Imprimir</button>
+                        <button class="btn-whatsapp-lista" onclick="compartirPromociones()">📲 WhatsApp</button>
+                    </div>
+                </div>
+                <div style="background:#fef3c7; padding:12px 16px; border-radius:12px; margin-bottom:15px; font-size:13px; color:#92400e;">
+                    🔥 Aquí se muestran todos los productos con promoción activa (descuento o banner promocional).
+                </div>
+                <div class="lista-precios-filtros">
+                    <input type="text" id="filtroPromoBuscar" placeholder="🔍 Buscar..." oninput="filtrarPromociones()">
+                    <select id="filtroPromoCategoria" onchange="filtrarPromociones()">
+                        <option value="TODOS">Todas las categorías</option>
+                    </select>
+                    <button onclick="filtrarPromociones()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:bold;">Filtrar</button>
+                    <button onclick="limpiarFiltrosPromo()" style="background:#e2e8f0; border:none; padding:8px 16px; border-radius:30px; cursor:pointer;">Limpiar</button>
+                </div>
+                <div id="listaPromocionesContainer"></div>
             </div>
         </div>
     </div>
@@ -1074,6 +1367,7 @@ function renderizarProductos() {
                         <div class="campo-row"><label>Categoría</label><input type="text" id="edit-categoria-${p.id}" value="${p.categoria || ''}"></div>
                         <div class="campo-row"><label>Precio de Lista ($)</label><input type="number" step="0.01" id="edit-precio-${p.id}" value="${p.precioLista || ''}"></div>
                         <div class="campo-row"><label>Descuento (%)</label><input type="number" id="edit-descuento-${p.id}" value="${p.descuento || '0'}"></div>
+                        <div class="campo-row"><label>Precio de Compra ($)</label><input type="number" step="0.01" id="edit-precioCompra-${p.id}" value="${p.precioCompra || ''}"></div>
                         <div class="campo-row"><label>Stock</label><input type="number" id="edit-stock-${p.id}" value="${p.stock || '0'}"></div>
                         
                         <div class="campo-row">
@@ -2944,6 +3238,7 @@ window.guardarCambios = function(id) {
         categoria: document.getElementById(`edit-categoria-${id}`).value,
         precioLista: document.getElementById(`edit-precio-${id}`).value,
         descuento: document.getElementById(`edit-descuento-${id}`).value,
+        precioCompra: document.getElementById(`edit-precioCompra-${id}`).value,
         stock: document.getElementById(`edit-stock-${id}`).value || 0,
         imagenUrl: document.getElementById(`edit-imagen-${id}`).value,
         promoFuera: document.getElementById(`edit-promo-${id}`).value,
@@ -2998,6 +3293,20 @@ function actualizarPanelAdmin() {
     renderizarGraficas();
     renderizarHistoricoVentas();
     renderizarCompras();
+    
+    // Renderizar listas de precios si la pestaña está visible
+    const tabListas = document.getElementById('tabListasPrecios');
+    if (tabListas && tabListas.classList.contains('visible')) {
+        if (document.getElementById('tabVenta').classList.contains('visible')) {
+            renderizarListaVenta();
+        } else if (document.getElementById('tabCompra').classList.contains('visible')) {
+            renderizarListaCompraVenta();
+        } else if (document.getElementById('tabCliente').classList.contains('visible')) {
+            renderizarListaCliente();
+        } else if (document.getElementById('tabPromociones').classList.contains('visible')) {
+            renderizarPromociones();
+        }
+    }
 }
 
 function renderizarInventario() {
@@ -3331,8 +3640,929 @@ document.querySelectorAll('.tabs-admin button').forEach(btn => {
         if (this.dataset.tab === 'tabClientes') renderizarClientes();
         if (this.dataset.tab === 'tabCompras') renderizarCompras();
         if (this.dataset.tab === 'tabReportes') renderizarHistoricoVentas();
+        if (this.dataset.tab === 'tabListasPrecios') {
+            // Inicializar con la pestaña de venta visible
+            if (document.getElementById('tabVenta').classList.contains('visible')) {
+                renderizarListaVenta();
+            } else if (document.getElementById('tabCompra').classList.contains('visible')) {
+                renderizarListaCompraVenta();
+            } else if (document.getElementById('tabCliente').classList.contains('visible')) {
+                renderizarListaCliente();
+            } else if (document.getElementById('tabPromociones').classList.contains('visible')) {
+                renderizarPromociones();
+            } else {
+                // Por defecto mostrar venta
+                mostrarTabPrecios('venta');
+            }
+        }
     };
 });
+
+// ============================================================
+//  LISTAS DE PRECIOS - FUNCIONES COMPLETAS
+// ============================================================
+
+// Mostrar pestaña de listas
+function mostrarTabPrecios(tab) {
+    document.querySelectorAll('.tab-precios').forEach(t => t.classList.remove('visible'));
+    if (tab === 'venta') {
+        document.getElementById('tabVenta').classList.add('visible');
+        document.getElementById('btnTabVenta').style.background = '#002b5c';
+        document.getElementById('btnTabVenta').style.color = 'white';
+        document.getElementById('btnTabCompra').style.background = '#e2e8f0';
+        document.getElementById('btnTabCompra').style.color = '#334155';
+        document.getElementById('btnTabCliente').style.background = '#e2e8f0';
+        document.getElementById('btnTabCliente').style.color = '#334155';
+        document.getElementById('btnTabPromociones').style.background = '#e2e8f0';
+        document.getElementById('btnTabPromociones').style.color = '#334155';
+        renderizarListaVenta();
+    } else if (tab === 'compra') {
+        document.getElementById('tabCompra').classList.add('visible');
+        document.getElementById('btnTabCompra').style.background = '#002b5c';
+        document.getElementById('btnTabCompra').style.color = 'white';
+        document.getElementById('btnTabVenta').style.background = '#e2e8f0';
+        document.getElementById('btnTabVenta').style.color = '#334155';
+        document.getElementById('btnTabCliente').style.background = '#e2e8f0';
+        document.getElementById('btnTabCliente').style.color = '#334155';
+        document.getElementById('btnTabPromociones').style.background = '#e2e8f0';
+        document.getElementById('btnTabPromociones').style.color = '#334155';
+        renderizarListaCompraVenta();
+    } else if (tab === 'cliente') {
+        document.getElementById('tabCliente').classList.add('visible');
+        document.getElementById('btnTabCliente').style.background = '#002b5c';
+        document.getElementById('btnTabCliente').style.color = 'white';
+        document.getElementById('btnTabVenta').style.background = '#e2e8f0';
+        document.getElementById('btnTabVenta').style.color = '#334155';
+        document.getElementById('btnTabCompra').style.background = '#e2e8f0';
+        document.getElementById('btnTabCompra').style.color = '#334155';
+        document.getElementById('btnTabPromociones').style.background = '#e2e8f0';
+        document.getElementById('btnTabPromociones').style.color = '#334155';
+        renderizarListaCliente();
+    } else if (tab === 'promociones') {
+        document.getElementById('tabPromociones').classList.add('visible');
+        document.getElementById('btnTabPromociones').style.background = '#002b5c';
+        document.getElementById('btnTabPromociones').style.color = 'white';
+        document.getElementById('btnTabVenta').style.background = '#e2e8f0';
+        document.getElementById('btnTabVenta').style.color = '#334155';
+        document.getElementById('btnTabCompra').style.background = '#e2e8f0';
+        document.getElementById('btnTabCompra').style.color = '#334155';
+        document.getElementById('btnTabCliente').style.background = '#e2e8f0';
+        document.getElementById('btnTabCliente').style.color = '#334155';
+        renderizarPromociones();
+    }
+}
+
+// ===== LISTA DE VENTA (ADMIN) =====
+function renderizarListaVenta() {
+    const categorias = obtenerCategorias();
+    const select = document.getElementById('filtroVentaCategoria');
+    const catActual = select.value;
+    select.innerHTML = '<option value="TODOS">Todas las categorías</option>';
+    categorias.forEach(c => {
+        select.innerHTML += `<option value="${c}" ${c === catActual ? 'selected' : ''}>${c}</option>`;
+    });
+    
+    const buscar = document.getElementById('filtroVentaBuscar').value.toLowerCase().trim();
+    const catFiltro = document.getElementById('filtroVentaCategoria').value;
+    
+    let filtrados = productos.filter(p => {
+        const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
+        const texto = `${p.nombre} ${p.codigo} ${p.descripcion}`.toLowerCase();
+        const cumpleBusq = texto.includes(buscar);
+        return cumpleCat && cumpleBusq;
+    });
+    
+    const tbody = document.getElementById('listaVentaBody');
+    
+    if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:20px;">🔍 No se encontraron productos</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = filtrados.map(p => {
+        const pFinal = precioFinal(p);
+        const descNum = parseFloat(p.descuento) || 0;
+        const stock = p.stock !== undefined ? p.stock : '-';
+        const stockClass = getStockClass(stock);
+        const stockText = getStockText(stock);
+        const precioLista = parseFloat(p.precioLista || 0).toFixed(2);
+        
+        return `
+            <tr>
+                <td class="codigo">${p.codigo || 'S/C'}</td>
+                <td><strong>${p.nombre}</strong></td>
+                <td><span class="categoria-tag">${p.categoria || 'General'}</span></td>
+                <td>$${precioLista}</td>
+                <td>${descNum > 0 ? descNum + '%' : '—'}</td>
+                <td class="precio-venta">$${pFinal.toFixed(2)}</td>
+                <td><span class="stock-badge ${stockClass}">${stockText}</span></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function filtrarListaVenta() { renderizarListaVenta(); }
+function limpiarFiltrosVenta() {
+    document.getElementById('filtroVentaBuscar').value = '';
+    document.getElementById('filtroVentaCategoria').value = 'TODOS';
+    renderizarListaVenta();
+}
+
+// ===== LISTA DE COMPRA Y VENTA (ADMIN) =====
+function renderizarListaCompraVenta() {
+    const categorias = obtenerCategorias();
+    const select = document.getElementById('filtroCompraCategoria');
+    const catActual = select.value;
+    select.innerHTML = '<option value="TODOS">Todas las categorías</option>';
+    categorias.forEach(c => {
+        select.innerHTML += `<option value="${c}" ${c === catActual ? 'selected' : ''}>${c}</option>`;
+    });
+    
+    const buscar = document.getElementById('filtroCompraBuscar').value.toLowerCase().trim();
+    const catFiltro = document.getElementById('filtroCompraCategoria').value;
+    
+    let filtrados = productos.filter(p => {
+        const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
+        const texto = `${p.nombre} ${p.codigo} ${p.descripcion}`.toLowerCase();
+        const cumpleBusq = texto.includes(buscar);
+        return cumpleCat && cumpleBusq;
+    });
+    
+    const tbody = document.getElementById('listaCompraBody');
+    
+    if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:20px;">🔍 No se encontraron productos</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = filtrados.map(p => {
+        const pFinal = precioFinal(p);
+        const precioCompra = parseFloat(p.precioCompra || p.precioLista * 0.6 || 0);
+        const precioVenta = parseFloat(pFinal);
+        const ganancia = precioVenta - precioCompra;
+        const margen = precioVenta > 0 ? (ganancia / precioVenta) * 100 : 0;
+        const margenClass = margen >= 0 ? 'margen-positivo' : 'margen-negativo';
+        const stock = p.stock !== undefined ? p.stock : '-';
+        const stockClass = getStockClass(stock);
+        const stockText = getStockText(stock);
+        
+        return `
+            <tr>
+                <td class="codigo">${p.codigo || 'S/C'}</td>
+                <td><strong>${p.nombre}</strong></td>
+                <td><span class="categoria-tag">${p.categoria || 'General'}</span></td>
+                <td class="precio-compra">$${precioCompra.toFixed(2)}</td>
+                <td class="precio-venta">$${precioVenta.toFixed(2)}</td>
+                <td class="${margenClass}">${margen.toFixed(1)}%</td>
+                <td>$${ganancia.toFixed(2)}</td>
+                <td><span class="stock-badge ${stockClass}">${stockText}</span></td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function filtrarListaCompra() { renderizarListaCompraVenta(); }
+function limpiarFiltrosCompra() {
+    document.getElementById('filtroCompraBuscar').value = '';
+    document.getElementById('filtroCompraCategoria').value = 'TODOS';
+    renderizarListaCompraVenta();
+}
+
+// ===== LISTA PARA CLIENTE (SOLO PRECIO DE VENTA) =====
+function renderizarListaCliente() {
+    const categorias = obtenerCategorias();
+    const select = document.getElementById('filtroClienteCategoria');
+    const catActual = select.value;
+    select.innerHTML = '<option value="TODOS">Todas las categorías</option>';
+    categorias.forEach(c => {
+        select.innerHTML += `<option value="${c}" ${c === catActual ? 'selected' : ''}>${c}</option>`;
+    });
+    
+    const buscar = document.getElementById('filtroClienteBuscar').value.toLowerCase().trim();
+    const catFiltro = document.getElementById('filtroClienteCategoria').value;
+    
+    let filtrados = productos.filter(p => {
+        const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
+        const texto = `${p.nombre} ${p.codigo} ${p.descripcion}`.toLowerCase();
+        const cumpleBusq = texto.includes(buscar);
+        return cumpleCat && cumpleBusq;
+    });
+    
+    const tbody = document.getElementById('listaClienteBody');
+    
+    if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:20px;">🔍 No se encontraron productos</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = filtrados.map(p => {
+        const pFinal = precioFinal(p);
+        const descNum = parseFloat(p.descuento) || 0;
+        const precioLista = parseFloat(p.precioLista || 0).toFixed(2);
+        const tieneDescuento = descNum > 0;
+        
+        return `
+            <tr>
+                <td class="codigo">${p.codigo || 'S/C'}</td>
+                <td><strong>${p.nombre}</strong></td>
+                <td><span class="categoria-tag">${p.categoria || 'General'}</span></td>
+                <td class="precio-cliente">$${pFinal.toFixed(2)}</td>
+                <td>${tieneDescuento ? `🔥 ${descNum}% OFF` : '—'}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function filtrarListaCliente() { renderizarListaCliente(); }
+function limpiarFiltrosCliente() {
+    document.getElementById('filtroClienteBuscar').value = '';
+    document.getElementById('filtroClienteCategoria').value = 'TODOS';
+    renderizarListaCliente();
+}
+
+// ===== PROMOCIONES =====
+function renderizarPromociones() {
+    const categorias = obtenerCategorias();
+    const select = document.getElementById('filtroPromoCategoria');
+    const catActual = select.value;
+    select.innerHTML = '<option value="TODOS">Todas las categorías</option>';
+    categorias.forEach(c => {
+        select.innerHTML += `<option value="${c}" ${c === catActual ? 'selected' : ''}>${c}</option>`;
+    });
+    
+    const buscar = document.getElementById('filtroPromoBuscar').value.toLowerCase().trim();
+    const catFiltro = document.getElementById('filtroPromoCategoria').value;
+    
+    let promociones = productos.filter(p => {
+        const tienePromo = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
+        const tieneDescuento = parseFloat(p.descuento) > 0;
+        const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
+        const texto = `${p.nombre} ${p.codigo} ${p.descripcion}`.toLowerCase();
+        const cumpleBusq = texto.includes(buscar);
+        return (tienePromo || tieneDescuento) && cumpleCat && cumpleBusq;
+    });
+    
+    const container = document.getElementById('listaPromocionesContainer');
+    
+    if (promociones.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:30px; color:#94a3b8;">🔍 No hay promociones activas</div>';
+        return;
+    }
+    
+    container.innerHTML = promociones.map(p => {
+        const pFinal = precioFinal(p);
+        const descNum = parseFloat(p.descuento) || 0;
+        const precioLista = parseFloat(p.precioLista || 0).toFixed(2);
+        const esPromoBanner = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
+        const tieneDescuento = descNum > 0;
+        
+        let badgeTexto = '';
+        if (tieneDescuento && esPromoBanner) badgeTexto = '🔥 DESCUENTO + BANNER';
+        else if (tieneDescuento) badgeTexto = `🔥 ${descNum}% DESCUENTO`;
+        else if (esPromoBanner) badgeTexto = '📢 PROMO BANNER';
+        
+        return `
+            <div class="promo-card">
+                <span class="promo-badge">${badgeTexto}</span>
+                <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div class="promo-codigo">Código: ${p.codigo || 'S/C'}</div>
+                        <div class="promo-titulo">${p.nombre}</div>
+                        <div class="promo-desc">${p.descripcion || ''}</div>
+                        <div class="promo-desc" style="font-size:12px; color:#64748b;">📂 ${p.categoria || 'General'}</div>
+                        ${esPromoBanner ? `<div style="background:#fef3c7; padding:6px 12px; border-radius:12px; margin-top:8px; font-size:13px; color:#92400e; display:inline-block;">📢 ${p.textoPromo}</div>` : ''}
+                        ${p.vigenciaPromo ? `<div style="font-size:11px; color:#64748b; margin-top:4px;">⏰ Vigencia: ${formatearFecha(p.vigenciaPromo)}</div>` : ''}
+                    </div>
+                    <div style="text-align:right;">
+                        ${tieneDescuento ? `<div class="promo-antes">$${precioLista}</div>` : ''}
+                        <div class="promo-precio">$${pFinal.toFixed(2)}</div>
+                        ${tieneDescuento ? `<div style="font-size:13px; color:#16a34a;">Ahorro: $${(parseFloat(precioLista) - pFinal).toFixed(2)}</div>` : ''}
+                        <div style="font-size:11px; color:#64748b;">📦 Stock: ${p.stock || 0}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function filtrarPromociones() { renderizarPromociones(); }
+function limpiarFiltrosPromo() {
+    document.getElementById('filtroPromoBuscar').value = '';
+    document.getElementById('filtroPromoCategoria').value = 'TODOS';
+    renderizarPromociones();
+}
+
+// ===== GENERAR PDF LISTA DE VENTA =====
+function generarPDFListaVenta() {
+    const filtroCat = document.getElementById('filtroVentaCategoria').value;
+    const filtroBusq = document.getElementById('filtroVentaBuscar').value.trim();
+    
+    let filtrados = productos.filter(p => {
+        const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
+        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
+        return cumpleCat && cumpleBusq;
+    });
+    
+    if (filtrados.length === 0) {
+        mostrarNotificacion('❌ No hay productos para generar el PDF');
+        return;
+    }
+    
+    let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Lista de Precios - GAETO COMERCIOS</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background: white; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header img { max-width: 180px; }
+            .header h1 { color: #002b5c; margin: 10px 0 5px; }
+            .header .fecha { color: #64748b; font-size: 14px; }
+            .tabla { width: 100%; border-collapse: collapse; font-size: 12px; }
+            .tabla th { background: #002b5c; color: white; padding: 10px; text-align: left; }
+            .tabla td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
+            .tabla tr:hover { background: #f8fafc; }
+            .pie { text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+            .precio-venta { color: #002b5c; font-weight: bold; }
+            .categoria-tag { background: #e2e8f0; padding: 2px 10px; border-radius: 12px; font-size: 10px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png" alt="GAETO COMERCIOS">
+            <h1>💰 LISTA DE PRECIOS DE VENTA</h1>
+            <div class="fecha">Generado: ${new Date().toLocaleDateString('es-MX')} ${new Date().toLocaleTimeString()}</div>
+        </div>
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio Lista</th>
+                    <th>Dto. %</th>
+                    <th>Precio Venta</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    filtrados.forEach(p => {
+        const pFinal = precioFinal(p);
+        const descNum = parseFloat(p.descuento) || 0;
+        const precioLista = parseFloat(p.precioLista || 0).toFixed(2);
+        html += `
+            <tr>
+                <td>${p.codigo || 'S/C'}</td>
+                <td><strong>${p.nombre}</strong></td>
+                <td><span class="categoria-tag">${p.categoria || 'General'}</span></td>
+                <td>$${precioLista}</td>
+                <td>${descNum > 0 ? descNum + '%' : '—'}</td>
+                <td class="precio-venta">$${pFinal.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+            </tbody>
+        </table>
+        <div class="pie">
+            📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán, Veracruz, Ver.<br>
+            🌐 https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/
+        </div>
+    </body>
+    </html>
+    `;
+    
+    const ventana = window.open('', '_blank', 'width=800,height=600');
+    if (!ventana) {
+        mostrarNotificacion('❌ Permite ventanas emergentes');
+        return;
+    }
+    ventana.document.write(html);
+    ventana.document.close();
+    setTimeout(() => ventana.print(), 1000);
+}
+
+// ===== GENERAR PDF LISTA DE COMPRA Y VENTA =====
+function generarPDFListaCompraVenta() {
+    const filtroCat = document.getElementById('filtroCompraCategoria').value;
+    const filtroBusq = document.getElementById('filtroCompraBuscar').value.trim();
+    
+    let filtrados = productos.filter(p => {
+        const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
+        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
+        return cumpleCat && cumpleBusq;
+    });
+    
+    if (filtrados.length === 0) {
+        mostrarNotificacion('❌ No hay productos para generar el PDF');
+        return;
+    }
+    
+    let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Lista Compra/Venta - GAETO COMERCIOS</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background: white; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header img { max-width: 180px; }
+            .header h1 { color: #002b5c; margin: 10px 0 5px; }
+            .header .fecha { color: #64748b; font-size: 14px; }
+            .tabla { width: 100%; border-collapse: collapse; font-size: 12px; }
+            .tabla th { background: #002b5c; color: white; padding: 10px; text-align: left; }
+            .tabla td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
+            .tabla tr:hover { background: #f8fafc; }
+            .pie { text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+            .precio-venta { color: #002b5c; font-weight: bold; }
+            .precio-compra { color: #64748b; }
+            .margen-positivo { color: #16a34a; font-weight: bold; }
+            .margen-negativo { color: #dc2626; font-weight: bold; }
+            .categoria-tag { background: #e2e8f0; padding: 2px 10px; border-radius: 12px; font-size: 10px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png" alt="GAETO COMERCIOS">
+            <h1>📊 LISTA DE PRECIOS COMPRA Y VENTA</h1>
+            <div class="fecha">Generado: ${new Date().toLocaleDateString('es-MX')} ${new Date().toLocaleTimeString()}</div>
+        </div>
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio Compra</th>
+                    <th>Precio Venta</th>
+                    <th>Margen</th>
+                    <th>Ganancia</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    filtrados.forEach(p => {
+        const pFinal = precioFinal(p);
+        const precioCompra = parseFloat(p.precioCompra || p.precioLista * 0.6 || 0);
+        const precioVenta = parseFloat(pFinal);
+        const ganancia = precioVenta - precioCompra;
+        const margen = precioVenta > 0 ? (ganancia / precioVenta) * 100 : 0;
+        const margenClass = margen >= 0 ? 'margen-positivo' : 'margen-negativo';
+        
+        html += `
+            <tr>
+                <td>${p.codigo || 'S/C'}</td>
+                <td><strong>${p.nombre}</strong></td>
+                <td><span class="categoria-tag">${p.categoria || 'General'}</span></td>
+                <td class="precio-compra">$${precioCompra.toFixed(2)}</td>
+                <td class="precio-venta">$${precioVenta.toFixed(2)}</td>
+                <td class="${margenClass}">${margen.toFixed(1)}%</td>
+                <td>$${ganancia.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+            </tbody>
+        </table>
+        <div class="pie">
+            📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán, Veracruz, Ver.<br>
+            🌐 https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/
+        </div>
+    </body>
+    </html>
+    `;
+    
+    const ventana = window.open('', '_blank', 'width=800,height=600');
+    if (!ventana) {
+        mostrarNotificacion('❌ Permite ventanas emergentes');
+        return;
+    }
+    ventana.document.write(html);
+    ventana.document.close();
+    setTimeout(() => ventana.print(), 1000);
+}
+
+// ===== GENERAR PDF LISTA PARA CLIENTE =====
+function generarPDFListaCliente() {
+    const filtroCat = document.getElementById('filtroClienteCategoria').value;
+    const filtroBusq = document.getElementById('filtroClienteBuscar').value.trim();
+    
+    let filtrados = productos.filter(p => {
+        const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
+        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
+        return cumpleCat && cumpleBusq;
+    });
+    
+    if (filtrados.length === 0) {
+        mostrarNotificacion('❌ No hay productos para generar el PDF');
+        return;
+    }
+    
+    let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Lista de Precios - GAETO COMERCIOS</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background: white; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header img { max-width: 180px; }
+            .header h1 { color: #002b5c; margin: 10px 0 5px; }
+            .header .fecha { color: #64748b; font-size: 14px; }
+            .tabla { width: 100%; border-collapse: collapse; font-size: 13px; }
+            .tabla th { background: #002b5c; color: white; padding: 10px; text-align: left; }
+            .tabla td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
+            .tabla tr:hover { background: #f8fafc; }
+            .pie { text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+            .precio-cliente { color: #002b5c; font-weight: bold; font-size: 16px; }
+            .categoria-tag { background: #e2e8f0; padding: 2px 10px; border-radius: 12px; font-size: 10px; }
+            .descuento-tag { background: #e11d48; color: white; padding: 2px 10px; border-radius: 12px; font-size: 10px; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png" alt="GAETO COMERCIOS">
+            <h1>🧾 LISTA DE PRECIOS PARA CLIENTE</h1>
+            <div class="fecha">Generado: ${new Date().toLocaleDateString('es-MX')} ${new Date().toLocaleTimeString()}</div>
+        </div>
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Descuento</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    filtrados.forEach(p => {
+        const pFinal = precioFinal(p);
+        const descNum = parseFloat(p.descuento) || 0;
+        const tieneDescuento = descNum > 0;
+        html += `
+            <tr>
+                <td>${p.codigo || 'S/C'}</td>
+                <td><strong>${p.nombre}</strong></td>
+                <td><span class="categoria-tag">${p.categoria || 'General'}</span></td>
+                <td class="precio-cliente">$${pFinal.toFixed(2)}</td>
+                <td>${tieneDescuento ? `<span class="descuento-tag">🔥 ${descNum}% OFF</span>` : '—'}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+            </tbody>
+        </table>
+        <div class="pie">
+            📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán, Veracruz, Ver.<br>
+            🌐 https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/
+        </div>
+    </body>
+    </html>
+    `;
+    
+    const ventana = window.open('', '_blank', 'width=800,height=600');
+    if (!ventana) {
+        mostrarNotificacion('❌ Permite ventanas emergentes');
+        return;
+    }
+    ventana.document.write(html);
+    ventana.document.close();
+    setTimeout(() => ventana.print(), 1000);
+}
+
+// ===== GENERAR PDF PROMOCIONES =====
+function generarPDFPromociones() {
+    const filtroCat = document.getElementById('filtroPromoCategoria').value;
+    const filtroBusq = document.getElementById('filtroPromoBuscar').value.trim();
+    
+    let promociones = productos.filter(p => {
+        const tienePromo = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
+        const tieneDescuento = parseFloat(p.descuento) > 0;
+        const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
+        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
+        return (tienePromo || tieneDescuento) && cumpleCat && cumpleBusq;
+    });
+    
+    if (promociones.length === 0) {
+        mostrarNotificacion('❌ No hay promociones para generar el PDF');
+        return;
+    }
+    
+    let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Promociones - GAETO COMERCIOS</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background: white; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .header img { max-width: 180px; }
+            .header h1 { color: #e11d48; margin: 10px 0 5px; }
+            .header .fecha { color: #64748b; font-size: 14px; }
+            .promo-card { 
+                border: 2px solid #e11d48; 
+                border-radius: 12px; 
+                padding: 15px 20px; 
+                margin-bottom: 15px;
+                page-break-inside: avoid;
+                background: #fff;
+                box-shadow: 0 2px 10px rgba(225,29,72,0.1);
+            }
+            .promo-card .badge { 
+                display: inline-block; 
+                background: #e11d48; 
+                color: white; 
+                padding: 2px 14px; 
+                border-radius: 20px; 
+                font-size: 11px; 
+                font-weight: bold;
+                margin-bottom: 8px;
+            }
+            .promo-card .nombre { font-size: 18px; font-weight: bold; color: #002b5c; }
+            .promo-card .codigo { font-size: 12px; color: #64748b; font-family: monospace; }
+            .promo-card .precio { font-size: 24px; font-weight: bold; color: #e11d48; }
+            .promo-card .antes { text-decoration: line-through; color: #999; font-size: 16px; margin-right: 10px; }
+            .promo-card .desc { color: #334155; margin: 5px 0; }
+            .promo-card .banner { background: #fef3c7; padding: 6px 12px; border-radius: 8px; color: #92400e; display: inline-block; margin-top: 5px; }
+            .promo-card .vigencia { font-size: 11px; color: #64748b; margin-top: 3px; }
+            .pie { text-align: center; margin-top: 20px; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+            .flex-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+            @media print { .promo-card { page-break-inside: avoid; } }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png" alt="GAETO COMERCIOS">
+            <h1>🔥 PROMOCIONES ACTIVAS</h1>
+            <div class="fecha">Generado: ${new Date().toLocaleDateString('es-MX')} ${new Date().toLocaleTimeString()}</div>
+        </div>
+    `;
+    
+    promociones.forEach((p, index) => {
+        const pFinal = precioFinal(p);
+        const descNum = parseFloat(p.descuento) || 0;
+        const precioLista = parseFloat(p.precioLista || 0).toFixed(2);
+        const esPromoBanner = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
+        const tieneDescuento = descNum > 0;
+        
+        let badgeTexto = '';
+        if (tieneDescuento && esPromoBanner) badgeTexto = '🔥 DESCUENTO + BANNER';
+        else if (tieneDescuento) badgeTexto = `🔥 ${descNum}% DESCUENTO`;
+        else if (esPromoBanner) badgeTexto = '📢 PROMO BANNER';
+        
+        html += `
+        <div class="promo-card">
+            <div class="badge">${badgeTexto}</div>
+            <div class="flex-row">
+                <div>
+                    <div class="codigo">Código: ${p.codigo || 'S/C'}</div>
+                    <div class="nombre">${p.nombre}</div>
+                    <div class="desc">${p.descripcion || ''}</div>
+                    <div style="font-size:12px; color:#64748b;">📂 ${p.categoria || 'General'}</div>
+                    ${esPromoBanner ? `<div class="banner">📢 ${p.textoPromo}</div>` : ''}
+                    ${p.vigenciaPromo ? `<div class="vigencia">⏰ Vigencia: ${formatearFecha(p.vigenciaPromo)}</div>` : ''}
+                </div>
+                <div style="text-align:right;">
+                    ${tieneDescuento ? `<div class="antes">$${precioLista}</div>` : ''}
+                    <div class="precio">$${pFinal.toFixed(2)}</div>
+                    ${tieneDescuento ? `<div style="font-size:13px; color:#16a34a;">Ahorro: $${(parseFloat(precioLista) - pFinal).toFixed(2)}</div>` : ''}
+                    <div style="font-size:12px; color:#64748b;">📦 Stock: ${p.stock || 0}</div>
+                </div>
+            </div>
+        </div>
+        `;
+    });
+    
+    html += `
+        <div class="pie">
+            📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán, Veracruz, Ver.<br>
+            🌐 https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/
+        </div>
+    </body>
+    </html>
+    `;
+    
+    const ventana = window.open('', '_blank', 'width=800,height=600');
+    if (!ventana) {
+        mostrarNotificacion('❌ Permite ventanas emergentes');
+        return;
+    }
+    ventana.document.write(html);
+    ventana.document.close();
+    setTimeout(() => ventana.print(), 1000);
+}
+
+// ===== IMPRIMIR FUNCIONES =====
+function imprimirListaVenta() { generarPDFListaVenta(); }
+function imprimirListaCompraVenta() { generarPDFListaCompraVenta(); }
+function imprimirListaCliente() { generarPDFListaCliente(); }
+function imprimirPromociones() { generarPDFPromociones(); }
+
+// ===== COMPARTIR POR WHATSAPP =====
+function compartirListaVenta() {
+    const filtroCat = document.getElementById('filtroVentaCategoria').value;
+    const filtroBusq = document.getElementById('filtroVentaBuscar').value.trim();
+    
+    let filtrados = productos.filter(p => {
+        const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
+        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
+        return cumpleCat && cumpleBusq;
+    });
+    
+    if (filtrados.length === 0) {
+        mostrarNotificacion('❌ No hay productos para compartir');
+        return;
+    }
+    
+    let mensaje = `💰 *LISTA DE PRECIOS - GAETO COMERCIOS*\n\n`;
+    mensaje += `📅 ${new Date().toLocaleDateString('es-MX')}\n`;
+    mensaje += `───────────────────────────\n\n`;
+    
+    filtrados.forEach((p, index) => {
+        const pFinal = precioFinal(p);
+        const descNum = parseFloat(p.descuento) || 0;
+        const codigo = p.codigo || 'S/C';
+        mensaje += `${index + 1}. [${codigo}] *${p.nombre}*\n`;
+        if (descNum > 0) {
+            mensaje += `   💰 Antes: $${parseFloat(p.precioLista || 0).toFixed(2)}\n`;
+            mensaje += `   🔥 Ahora: *$${pFinal.toFixed(2)}* (${descNum}% OFF)\n`;
+        } else {
+            mensaje += `   💰 Precio: *$${pFinal.toFixed(2)}*\n`;
+        }
+        mensaje += `   📂 ${p.categoria || 'General'}\n\n`;
+    });
+    
+    mensaje += `───────────────────────────\n`;
+    mensaje += `📞 228 287 7441\n`;
+    mensaje += `📍 Jiménez 408, Col. Miguel Alemán, Veracruz\n`;
+    mensaje += `🌐 https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/\n\n`;
+    mensaje += `🙏 *¡GRACIAS POR PREFERIRNOS!*`;
+    
+    const urlWhatsApp = `https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlWhatsApp, '_blank');
+}
+
+function compartirListaCompraVenta() {
+    const filtroCat = document.getElementById('filtroCompraCategoria').value;
+    const filtroBusq = document.getElementById('filtroCompraBuscar').value.trim();
+    
+    let filtrados = productos.filter(p => {
+        const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
+        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
+        return cumpleCat && cumpleBusq;
+    });
+    
+    if (filtrados.length === 0) {
+        mostrarNotificacion('❌ No hay productos para compartir');
+        return;
+    }
+    
+    let mensaje = `📊 *LISTA COMPRA Y VENTA - GAETO COMERCIOS*\n\n`;
+    mensaje += `📅 ${new Date().toLocaleDateString('es-MX')}\n`;
+    mensaje += `───────────────────────────\n\n`;
+    
+    filtrados.forEach((p, index) => {
+        const pFinal = precioFinal(p);
+        const precioCompra = parseFloat(p.precioCompra || p.precioLista * 0.6 || 0);
+        const ganancia = pFinal - precioCompra;
+        const margen = pFinal > 0 ? (ganancia / pFinal) * 100 : 0;
+        const codigo = p.codigo || 'S/C';
+        
+        mensaje += `${index + 1}. [${codigo}] *${p.nombre}*\n`;
+        mensaje += `   💰 Compra: $${precioCompra.toFixed(2)}\n`;
+        mensaje += `   💰 Venta: *$${pFinal.toFixed(2)}*\n`;
+        mensaje += `   📈 Margen: ${margen.toFixed(1)}% ($${ganancia.toFixed(2)})\n`;
+        mensaje += `   📂 ${p.categoria || 'General'}\n\n`;
+    });
+    
+    mensaje += `───────────────────────────\n`;
+    mensaje += `📞 228 287 7441\n`;
+    mensaje += `📍 Jiménez 408, Col. Miguel Alemán, Veracruz\n`;
+    mensaje += `🌐 https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/\n\n`;
+    mensaje += `🙏 *¡GRACIAS POR PREFERIRNOS!*`;
+    
+    const urlWhatsApp = `https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlWhatsApp, '_blank');
+}
+
+function compartirListaCliente() {
+    const filtroCat = document.getElementById('filtroClienteCategoria').value;
+    const filtroBusq = document.getElementById('filtroClienteBuscar').value.trim();
+    
+    let filtrados = productos.filter(p => {
+        const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
+        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
+        return cumpleCat && cumpleBusq;
+    });
+    
+    if (filtrados.length === 0) {
+        mostrarNotificacion('❌ No hay productos para compartir');
+        return;
+    }
+    
+    let mensaje = `🧾 *LISTA DE PRECIOS - GAETO COMERCIOS*\n\n`;
+    mensaje += `📅 ${new Date().toLocaleDateString('es-MX')}\n`;
+    mensaje += `───────────────────────────\n\n`;
+    
+    filtrados.forEach((p, index) => {
+        const pFinal = precioFinal(p);
+        const descNum = parseFloat(p.descuento) || 0;
+        const codigo = p.codigo || 'S/C';
+        mensaje += `${index + 1}. [${codigo}] *${p.nombre}*\n`;
+        mensaje += `   💰 Precio: *$${pFinal.toFixed(2)}*\n`;
+        if (descNum > 0) {
+            mensaje += `   🔥 ${descNum}% DESCUENTO\n`;
+        }
+        mensaje += `   📂 ${p.categoria || 'General'}\n\n`;
+    });
+    
+    mensaje += `───────────────────────────\n`;
+    mensaje += `📞 228 287 7441\n`;
+    mensaje += `📍 Jiménez 408, Col. Miguel Alemán, Veracruz\n`;
+    mensaje += `🌐 https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/\n\n`;
+    mensaje += `🙏 *¡GRACIAS POR TU PREFERENCIA!*`;
+    
+    const urlWhatsApp = `https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlWhatsApp, '_blank');
+}
+
+function compartirPromociones() {
+    const filtroCat = document.getElementById('filtroPromoCategoria').value;
+    const filtroBusq = document.getElementById('filtroPromoBuscar').value.trim();
+    
+    let promociones = productos.filter(p => {
+        const tienePromo = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
+        const tieneDescuento = parseFloat(p.descuento) > 0;
+        const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
+        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
+        return (tienePromo || tieneDescuento) && cumpleCat && cumpleBusq;
+    });
+    
+    if (promociones.length === 0) {
+        mostrarNotificacion('❌ No hay promociones para compartir');
+        return;
+    }
+    
+    let mensaje = `🔥 *PROMOCIONES - GAETO COMERCIOS* 🔥\n\n`;
+    mensaje += `📅 ${new Date().toLocaleDateString('es-MX')}\n`;
+    mensaje += `───────────────────────────\n\n`;
+    
+    promociones.forEach((p, index) => {
+        const pFinal = precioFinal(p);
+        const descNum = parseFloat(p.descuento) || 0;
+        const codigo = p.codigo || 'S/C';
+        const esPromoBanner = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
+        
+        mensaje += `${index + 1}. [${codigo}] *${p.nombre}*\n`;
+        if (descNum > 0) {
+            mensaje += `   💰 Antes: $${parseFloat(p.precioLista || 0).toFixed(2)}\n`;
+            mensaje += `   🔥 Ahora: *$${pFinal.toFixed(2)}* (${descNum}% OFF)\n`;
+        } else {
+            mensaje += `   💰 Precio: *$${pFinal.toFixed(2)}*\n`;
+        }
+        if (esPromoBanner) {
+            mensaje += `   📢 ${p.textoPromo}\n`;
+        }
+        if (p.vigenciaPromo) {
+            mensaje += `   ⏰ Vigencia: ${formatearFecha(p.vigenciaPromo)}\n`;
+        }
+        mensaje += `   📂 ${p.categoria || 'General'}\n\n`;
+    });
+    
+    mensaje += `───────────────────────────\n`;
+    mensaje += `📞 228 287 7441\n`;
+    mensaje += `📍 Jiménez 408, Col. Miguel Alemán, Veracruz\n`;
+    mensaje += `🌐 https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/\n\n`;
+    mensaje += `🙏 *¡APROVECHA ESTAS OFERTAS!*`;
+    
+    const urlWhatsApp = `https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlWhatsApp, '_blank');
+}
 
 window.onload = function() {
     desactivarModoAdmin();
@@ -3354,7 +4584,8 @@ window.onload = function() {
             imagenUrl: "",
             promoFuera: "NO",
             textoPromo: "",
-            vigenciaPromo: ""
+            vigenciaPromo: "",
+            precioCompra: "60"
         }).then(() => mostrarNotificacion("➕ Plantilla creada al final.")).catch(err => alert(err.message));
     };
 
