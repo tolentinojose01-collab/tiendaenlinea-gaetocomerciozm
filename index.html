@@ -51,6 +51,7 @@
         .stock-normal{background:#bbf7d0;color:#166534}
         .stock-agotado{background:#e5e7eb;color:#4b5563}
         .descuento-badge{background:#e11d48;color:white;padding:2px 10px;border-radius:20px;font-size:11px;margin-left:8px}
+        .oculto-badge{background:#fecaca;color:#991b1b;padding:2px 10px;border-radius:20px;font-size:11px;margin-left:8px}
         
         .acciones{display:flex;gap:10px;margin:15px 0;flex-wrap:wrap}
         .acciones input{width:70px;padding:8px;border-radius:40px;border:1px solid #ccc;text-align:center}
@@ -694,7 +695,7 @@
         </div>
         <div class="tabla-container">
             <table>
-                <thead><tr><th>Código</th><th>Producto</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <thead><tr><th>Código</th><th>Producto</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Visibilidad</th><th>Acciones</th></tr></thead>
                 <tbody id="inventarioTabla"></tbody>
             </table>
         </div>
@@ -1099,6 +1100,14 @@ function mostrarNotificacion(mensaje, duracion = 4000) {
 }
 
 // ============================================================
+//  FUNCIÓN HELPER PARA OBTENER ESTADO DE VISIBILIDAD
+// ============================================================
+function obtenerCampoActivo(p) {
+    // Asegura compatibilidad con productos antiguos sin campo 'activo'
+    return p.activo !== undefined ? p.activo : 'SI';
+}
+
+// ============================================================
 //  LEER DATOS DE FIREBASE
 // ============================================================
 database.ref('productos').on('value', (snapshot) => {
@@ -1291,7 +1300,7 @@ function renderizarFiltros() {
 }
 
 // ============================================================
-//  RENDERIZAR PRODUCTOS
+//  RENDERIZAR PRODUCTOS (CON FILTRO DE OCULTOS)
 // ============================================================
 function renderizarProductos() {
     const contenedor = document.getElementById('contenedorProductos');
@@ -1301,6 +1310,11 @@ function renderizarProductos() {
     }
 
     let filtrados = productos.filter(p => {
+        // FILTRO PRINCIPAL: ocultar productos inactivos SI NO ESTÁ EN MODO ADMIN
+        if (!modoAdmin && obtenerCampoActivo(p) === 'NO') {
+            return false;
+        }
+        
         let cumpleCat = (categoriaActiva === "TODOS" || p.categoria === categoriaActiva);
         let cad = `${p.nombre} ${p.codigo} ${p.descripcion} ${p.categoria}`.toLowerCase();
         let cumpleBusq = cad.includes(textoBusqueda.toLowerCase());
@@ -1316,6 +1330,7 @@ function renderizarProductos() {
         let pFinal = precioFinal(p);
         let descNum = parseFloat(p.descuento) || 0;
         let esPromoValida = (p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "");
+        let estaOculto = obtenerCampoActivo(p) === 'NO';
         
         let stockHTML = '';
         if (modoAdmin) {
@@ -1330,8 +1345,11 @@ function renderizarProductos() {
         const descuentoTexto = descNum > 0 ? `<span class="descuento-badge">-${descNum}%</span>` : '';
         const precioClase = descNum > 0 ? 'precio-promo' : '';
         
+        // Badge de oculto para admin
+        const ocultoBadge = (modoAdmin && estaOculto) ? `<span class="oculto-badge">🔒 OCULTO</span>` : '';
+        
         return `
-            <div class="producto" id="prod-${p.id}">
+            <div class="producto" id="prod-${p.id}" style="${estaOculto && modoAdmin ? 'opacity:0.7; border:2px dashed #fecaca;' : ''}">
                 ${esPromoValida ? `<div class="banner-promo-fuera">${p.textoPromo.toUpperCase()}${p.vigenciaPromo ? `<span class="vigencia">VIGENCIA: ${formatearFecha(p.vigenciaPromo)}</span>` : ''}</div>` : ''}
                 ${etiquetaPromo}
                 <div class="info" style="padding-bottom:5px;">
@@ -1341,7 +1359,11 @@ function renderizarProductos() {
                     ${p.imagenUrl ? `<img src="${p.imagenUrl}" alt="${p.nombre}">` : '<div class="sin-imagen">📷 Sin Imagen</div>'}
                 </div>
                 <div class="info">
-                    <div class="titulo">${p.nombre} ${descuentoTexto}</div>
+                    <div class="titulo">
+                        ${p.nombre} 
+                        ${descuentoTexto}
+                        ${ocultoBadge}
+                    </div>
                     <div class="descripcion">${p.descripcion || ''}</div>
                     <div>
                         <span class="categoria-texto">${p.categoria || 'General'}</span>
@@ -1369,6 +1391,15 @@ function renderizarProductos() {
                         <div class="campo-row"><label>Descuento (%)</label><input type="number" id="edit-descuento-${p.id}" value="${p.descuento || '0'}"></div>
                         <div class="campo-row"><label>Precio de Compra ($)</label><input type="number" step="0.01" id="edit-precioCompra-${p.id}" value="${p.precioCompra || ''}"></div>
                         <div class="campo-row"><label>Stock</label><input type="number" id="edit-stock-${p.id}" value="${p.stock || '0'}"></div>
+                        
+                        <!-- NUEVO CAMPO: VISIBILIDAD -->
+                        <div class="campo-row">
+                            <label>👁️ Visibilidad en catálogo</label>
+                            <select id="edit-activo-${p.id}">
+                                <option value="SI" ${obtenerCampoActivo(p) === 'SI' ? 'selected' : ''}>✅ Activo (Visible)</option>
+                                <option value="NO" ${obtenerCampoActivo(p) === 'NO' ? 'selected' : ''}>🔒 Inactivo (Oculto)</option>
+                            </select>
+                        </div>
                         
                         <div class="campo-row">
                             <label style="color:#2563eb; font-weight:bold;">📸 Cargar Foto desde Celular o PC</label>
@@ -2997,6 +3028,10 @@ document.getElementById('promocionesBtn').onclick = () => {
     const promociones = productos.filter(p => {
         const tienePromo = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
         const tieneDescuento = parseFloat(p.descuento) > 0;
+        // Solo promociones activas (no ocultas)
+        if (!modoAdmin && obtenerCampoActivo(p) === 'NO') {
+            return false;
+        }
         return tienePromo || tieneDescuento;
     });
     
@@ -3096,7 +3131,7 @@ document.getElementById('btnBuscarInventario').onclick = function() {
     });
     
     if (encontrados === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">🔍 No se encontraron productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">🔍 No se encontraron productos</td></tr>';
     }
 };
 
@@ -3228,7 +3263,7 @@ document.getElementById('btnLimpiarFiltros').onclick = function() {
 };
 
 // ============================================================
-//  GUARDAR CAMBIOS PRODUCTO
+//  GUARDAR CAMBIOS PRODUCTO (CON CAMPO ACTIVO)
 // ============================================================
 window.guardarCambios = function(id) {
     const actualizaciones = {
@@ -3243,11 +3278,16 @@ window.guardarCambios = function(id) {
         imagenUrl: document.getElementById(`edit-imagen-${id}`).value,
         promoFuera: document.getElementById(`edit-promo-${id}`).value,
         textoPromo: document.getElementById(`edit-textopromo-${id}`).value,
-        vigenciaPromo: document.getElementById(`edit-vigencia-${id}`).value
+        vigenciaPromo: document.getElementById(`edit-vigencia-${id}`).value,
+        activo: document.getElementById(`edit-activo-${id}`).value  // <--- NUEVO CAMPO
     };
 
     database.ref('productos/' + id).update(actualizaciones)
-        .then(() => mostrarNotificacion("💾 ¡Producto actualizado correctamente!"))
+        .then(() => {
+            mostrarNotificacion("💾 ¡Producto actualizado correctamente!");
+            renderizarProductos();
+            if (modoAdmin) actualizarPanelAdmin();
+        })
         .catch(err => alert("Error: " + err.message));
 };
 
@@ -3312,7 +3352,7 @@ function actualizarPanelAdmin() {
 function renderizarInventario() {
     const tbody = document.getElementById('inventarioTabla');
     if (productos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">No hay productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">No hay productos</td></tr>';
         return;
     }
     
@@ -3321,13 +3361,16 @@ function renderizarInventario() {
         const stockClass = getStockClass(stock);
         const stockText = getStockText(stock);
         const esPromo = (p.promoFuera === "SI" && p.textoPromo) || parseFloat(p.descuento) > 0;
+        const estaOculto = obtenerCampoActivo(p) === 'NO';
+        
         return `
-            <tr>
-                <td>${p.codigo || 'S/C'} ${esPromo ? '🔥' : ''}</td>
-                <td>${p.nombre}</td>
+            <tr style="${estaOculto ? 'opacity:0.6; background:#fef2f2;' : ''}">
+                <td>${p.codigo || 'S/C'} ${esPromo ? '🔥' : ''} ${estaOculto ? '🔒' : ''}</td>
+                <td>${p.nombre} ${estaOculto ? '<span style="color:#b91c1c; font-size:10px;">(OCULTO)</span>' : ''}</td>
                 <td>$${parseFloat(p.precioLista || 0).toFixed(2)}</td>
                 <td>${stock}</td>
                 <td><span class="stock-badge ${stockClass}">${stockText}</span></td>
+                <td>${estaOculto ? '🔒 Oculto' : '✅ Visible'}</td>
                 <td>
                     <button class="btn-accion btn-editar-stock" onclick="abrirModalStock('${p.id}')">📦 Stock</button>
                 </td>
@@ -3726,6 +3769,8 @@ function renderizarListaVenta() {
     const catFiltro = document.getElementById('filtroVentaCategoria').value;
     
     let filtrados = productos.filter(p => {
+        // Solo productos activos en listas de precios públicas
+        if (obtenerCampoActivo(p) === 'NO') return false;
         const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
         const texto = `${p.nombre} ${p.codigo} ${p.descripcion}`.toLowerCase();
         const cumpleBusq = texto.includes(buscar);
@@ -3782,6 +3827,7 @@ function renderizarListaCompraVenta() {
     const catFiltro = document.getElementById('filtroCompraCategoria').value;
     
     let filtrados = productos.filter(p => {
+        // Mostrar todos en admin (incluyendo ocultos)
         const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
         const texto = `${p.nombre} ${p.codigo} ${p.descripcion}`.toLowerCase();
         const cumpleBusq = texto.includes(buscar);
@@ -3805,10 +3851,11 @@ function renderizarListaCompraVenta() {
         const stock = p.stock !== undefined ? p.stock : '-';
         const stockClass = getStockClass(stock);
         const stockText = getStockText(stock);
+        const estaOculto = obtenerCampoActivo(p) === 'NO';
         
         return `
-            <tr>
-                <td class="codigo">${p.codigo || 'S/C'}</td>
+            <tr style="${estaOculto ? 'opacity:0.6; background:#fef2f2;' : ''}">
+                <td class="codigo">${p.codigo || 'S/C'} ${estaOculto ? '🔒' : ''}</td>
                 <td><strong>${p.nombre}</strong></td>
                 <td><span class="categoria-tag">${p.categoria || 'General'}</span></td>
                 <td class="precio-compra">$${precioCompra.toFixed(2)}</td>
@@ -3842,6 +3889,8 @@ function renderizarListaCliente() {
     const catFiltro = document.getElementById('filtroClienteCategoria').value;
     
     let filtrados = productos.filter(p => {
+        // Solo productos activos
+        if (obtenerCampoActivo(p) === 'NO') return false;
         const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
         const texto = `${p.nombre} ${p.codigo} ${p.descripcion}`.toLowerCase();
         const cumpleBusq = texto.includes(buscar);
@@ -3896,6 +3945,8 @@ function renderizarPromociones() {
     let promociones = productos.filter(p => {
         const tienePromo = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
         const tieneDescuento = parseFloat(p.descuento) > 0;
+        // Solo productos activos
+        if (obtenerCampoActivo(p) === 'NO') return false;
         const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
         const texto = `${p.nombre} ${p.codigo} ${p.descripcion}`.toLowerCase();
         const cumpleBusq = texto.includes(buscar);
@@ -3958,6 +4009,7 @@ function generarPDFListaVenta() {
     const filtroBusq = document.getElementById('filtroVentaBuscar').value.trim();
     
     let filtrados = productos.filter(p => {
+        if (obtenerCampoActivo(p) === 'NO') return false;
         const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
         const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
         const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
@@ -4159,6 +4211,7 @@ function generarPDFListaCliente() {
     const filtroBusq = document.getElementById('filtroClienteBuscar').value.trim();
     
     let filtrados = productos.filter(p => {
+        if (obtenerCampoActivo(p) === 'NO') return false;
         const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
         const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
         const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
@@ -4256,6 +4309,7 @@ function generarPDFPromociones() {
     let promociones = productos.filter(p => {
         const tienePromo = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
         const tieneDescuento = parseFloat(p.descuento) > 0;
+        if (obtenerCampoActivo(p) === 'NO') return false;
         const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
         const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
         const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
@@ -4385,6 +4439,7 @@ function compartirListaVenta() {
     const filtroBusq = document.getElementById('filtroVentaBuscar').value.trim();
     
     let filtrados = productos.filter(p => {
+        if (obtenerCampoActivo(p) === 'NO') return false;
         const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
         const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
         const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
@@ -4450,8 +4505,9 @@ function compartirListaCompraVenta() {
         const ganancia = pFinal - precioCompra;
         const margen = pFinal > 0 ? (ganancia / pFinal) * 100 : 0;
         const codigo = p.codigo || 'S/C';
+        const estaOculto = obtenerCampoActivo(p) === 'NO';
         
-        mensaje += `${index + 1}. [${codigo}] *${p.nombre}*\n`;
+        mensaje += `${index + 1}. [${codigo}] *${p.nombre}* ${estaOculto ? '🔒' : ''}\n`;
         mensaje += `   💰 Compra: $${precioCompra.toFixed(2)}\n`;
         mensaje += `   💰 Venta: *$${pFinal.toFixed(2)}*\n`;
         mensaje += `   📈 Margen: ${margen.toFixed(1)}% ($${ganancia.toFixed(2)})\n`;
@@ -4473,6 +4529,7 @@ function compartirListaCliente() {
     const filtroBusq = document.getElementById('filtroClienteBuscar').value.trim();
     
     let filtrados = productos.filter(p => {
+        if (obtenerCampoActivo(p) === 'NO') return false;
         const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
         const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
         const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
@@ -4517,6 +4574,7 @@ function compartirPromociones() {
     let promociones = productos.filter(p => {
         const tienePromo = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
         const tieneDescuento = parseFloat(p.descuento) > 0;
+        if (obtenerCampoActivo(p) === 'NO') return false;
         const cumpleCat = filtroCat === 'TODOS' || p.categoria === filtroCat;
         const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
         const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
@@ -4585,7 +4643,8 @@ window.onload = function() {
             promoFuera: "NO",
             textoPromo: "",
             vigenciaPromo: "",
-            precioCompra: "60"
+            precioCompra: "60",
+            activo: "SI"  // <--- NUEVO CAMPO POR DEFECTO
         }).then(() => mostrarNotificacion("➕ Plantilla creada al final.")).catch(err => alert(err.message));
     };
 
