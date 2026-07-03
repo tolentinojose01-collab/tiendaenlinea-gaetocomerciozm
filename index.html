@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:#eef2f5;padding:20px;padding-bottom:180px}
+        body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:#eef2f5;padding:20px;padding-bottom:180px;transition:padding-bottom 0.3s ease}
         .encabezado{text-align:center;background:white;border-radius:40px;padding:15px;margin-bottom:20px;position:relative}
         .logo{max-width:250px;width:80%;cursor:pointer;user-select:none;-webkit-user-select:none}
         .badge-admin{position:absolute;bottom:5px;right:15px;background:#ff9800;color:#000;font-size:10px;padding:2px 8px;border-radius:20px;display:none}
@@ -58,7 +58,10 @@
         .acciones input{width:60px;padding:6px;border-radius:30px;border:1px solid #ccc;text-align:center;font-size:12px}
         .btn-agregar{background:#ff9800;color:white;border:none;padding:6px 12px;border-radius:30px;cursor:pointer;font-weight:bold;flex:1;font-size:12px}
         .btn-wa{background:#25d366;color:white;text-decoration:none;text-align:center;padding:6px 12px;border-radius:30px;font-weight:bold;flex:1;font-size:12px}
+        .btn-editar{background:#8b5cf6;color:white;border:none;padding:6px 12px;border-radius:30px;cursor:pointer;font-weight:bold;flex:1;font-size:12px}
+        .btn-editar:hover{background:#7c3aed}
         .editor-area{margin-top:12px;border-top:1px solid #ddd;padding-top:12px;display:none}
+        .editor-area.visible{display:block !important}
         .campo-row{margin-bottom:10px}
         .campo-row label{font-weight:bold;display:block;margin-bottom:4px;font-size:11px}
         .campo-row input, .campo-row textarea, .campo-row select{width:100%;padding:8px 12px;border-radius:25px;border:1px solid #ccc;font-size:12px;outline:none}
@@ -70,7 +73,8 @@
         
         /* ===== VISTA PARA CELULAR PEQUEÑO - 2 COLUMNAS ===== */
         @media (max-width: 480px) {
-            body{padding:8px;padding-bottom:160px}
+            body{padding:8px;padding-bottom:200px}
+            body.admin-panel-abierto{padding-bottom:280px}
             #contenedorProductos {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
@@ -138,6 +142,10 @@
                 font-size: 9px;
                 padding: 4px 6px;
             }
+            .btn-editar {
+                font-size: 9px;
+                padding: 4px 6px;
+            }
             .descuento-badge {
                 font-size: 0.5rem;
                 padding: 1px 4px;
@@ -160,7 +168,25 @@
                 padding: 1px 4px;
             }
             .editor-area {
-                display: none !important;
+                display: none;
+            }
+            .editor-area.visible {
+                display: block !important;
+            }
+            .campo-row input, .campo-row textarea, .campo-row select {
+                font-size: 11px;
+                padding: 6px 10px;
+            }
+            .campo-row label {
+                font-size: 10px;
+            }
+            .btn-guardar {
+                font-size: 11px;
+                padding: 6px;
+            }
+            .btn-eliminar {
+                font-size: 11px;
+                padding: 4px;
             }
             .filtro-categorias {
                 gap: 4px;
@@ -188,6 +214,7 @@
             }
             .carrito-panel {
                 padding: 8px;
+                max-height: 45vh;
             }
             .carrito-item {
                 font-size: 10px;
@@ -201,11 +228,48 @@
                 font-size: 11px;
                 padding: 6px;
             }
+            .admin-panel {
+                padding: 12px;
+            }
+            .admin-panel h2 {
+                font-size: 16px;
+            }
+            .tabs-admin button {
+                font-size: 10px;
+                padding: 4px 10px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .stat-card {
+                padding: 8px;
+            }
+            .stat-card .numero {
+                font-size: 16px;
+            }
+            .stat-card h4 {
+                font-size: 10px;
+            }
+            .admin-header {
+                flex-direction: column;
+                gap: 8px;
+                align-items: stretch;
+            }
+            .admin-header h2 {
+                font-size: 16px;
+                text-align: center;
+            }
+            .btn-cerrar-panel {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
         }
         
         /* ===== VISTA PARA CELULAR GRANDE / TABLET PEQUEÑA - 3 COLUMNAS ===== */
         @media (min-width: 481px) and (max-width: 768px) {
-            body{padding:10px;padding-bottom:160px}
+            body{padding:10px;padding-bottom:200px}
+            body.admin-panel-abierto{padding-bottom:280px}
             #contenedorProductos {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 10px;
@@ -273,6 +337,10 @@
                 font-size: 10px;
                 padding: 5px 8px;
             }
+            .btn-editar {
+                font-size: 10px;
+                padding: 5px 8px;
+            }
             .descuento-badge {
                 font-size: 0.55rem;
                 padding: 1px 5px;
@@ -295,7 +363,25 @@
                 padding: 1px 5px;
             }
             .editor-area {
-                display: none !important;
+                display: none;
+            }
+            .editor-area.visible {
+                display: block !important;
+            }
+            .campo-row input, .campo-row textarea, .campo-row select {
+                font-size: 11px;
+                padding: 6px 10px;
+            }
+            .campo-row label {
+                font-size: 10px;
+            }
+            .btn-guardar {
+                font-size: 11px;
+                padding: 6px;
+            }
+            .btn-eliminar {
+                font-size: 11px;
+                padding: 4px;
             }
             .filtro-categorias {
                 gap: 5px;
@@ -323,6 +409,7 @@
             }
             .carrito-panel {
                 padding: 10px;
+                max-height: 45vh;
             }
             .carrito-item {
                 font-size: 11px;
@@ -335,6 +422,22 @@
             .btn-enviar-wa {
                 font-size: 12px;
                 padding: 8px;
+            }
+            .admin-panel {
+                padding: 15px;
+            }
+            .admin-header {
+                flex-direction: column;
+                gap: 8px;
+                align-items: stretch;
+            }
+            .admin-header h2 {
+                font-size: 18px;
+                text-align: center;
+            }
+            .btn-cerrar-panel {
+                font-size: 12px;
+                padding: 6px 12px;
             }
         }
         
@@ -371,6 +474,12 @@
             }
             .imagen-area {
                 height: 200px;
+            }
+            .editor-area {
+                display: none;
+            }
+            .editor-area.visible {
+                display: block !important;
             }
         }
         
@@ -670,7 +779,6 @@
         </div>
     </div>
 
-    <!-- ====== PESTAÑA COMPRAS ====== -->
     <div class="tab-content" id="tabCompras">
         <div style="display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap;">
             <button id="btnNuevaCompra" style="background:#2563eb; color:white; border:none; padding:12px 25px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:14px;">➕ NUEVA COMPRA</button>
@@ -752,7 +860,6 @@
         </div>
     </div>
 
-    <!-- ====== PESTAÑA LISTAS DE PRECIOS ====== -->
     <div class="tab-content" id="tabListasPrecios">
         <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
             <button onclick="mostrarTabPrecios('venta')" id="btnTabVenta" style="background:#002b5c; color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:13px;">💰 LISTA DE VENTA</button>
@@ -975,9 +1082,185 @@ function ordenarProductos(lista) {
 // ============================================================
 function cerrarTodosLosEditores() {
     document.querySelectorAll('.editor-area').forEach(editor => {
-        editor.style.display = 'none';
+        editor.classList.remove('visible');
     });
 }
+
+// ============================================================
+//  FUNCIÓN PARA ALTERNAR EDITOR (ABRIR/CERRAR)
+// ============================================================
+function toggleEditor(id) {
+    const editor = document.getElementById('edit-area-' + id);
+    if (editor) {
+        editor.classList.toggle('visible');
+        if (editor.classList.contains('visible')) {
+            setTimeout(() => {
+                editor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+            mostrarNotificacion("✏️ Editor abierto");
+        } else {
+            mostrarNotificacion("📝 Editor cerrado");
+        }
+    }
+}
+
+// ============================================================
+//  ABRIR MODAL ADMIN - CON 3 CLICS (SEGURIDAD OCULTA)
+// ============================================================
+let contadorClicksLogo = 0;
+let temporizadorClicks = null;
+
+document.getElementById('logoAdmin').addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    contadorClicksLogo++;
+    
+    clearTimeout(temporizadorClicks);
+    temporizadorClicks = setTimeout(() => {
+        contadorClicksLogo = 0;
+    }, 2000);
+    
+    if (contadorClicksLogo >= 3) {
+        contadorClicksLogo = 0;
+        clearTimeout(temporizadorClicks);
+        
+        mostrarNotificacion("🔐 Acceso Administrador");
+        
+        const modal = document.getElementById('modalPwd');
+        const input = document.getElementById('pwdInput');
+        const msg = document.getElementById('intentosMsg');
+        
+        if (!modal) return;
+        
+        modal.style.display = "flex";
+        modal.style.visibility = "visible";
+        modal.style.opacity = "1";
+        
+        if (input) {
+            input.value = '';
+            input.disabled = false;
+            setTimeout(function() {
+                input.focus();
+            }, 300);
+        }
+        
+        intentosFallidos = 0;
+        if (msg) {
+            msg.textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
+        }
+    }
+});
+
+// ============================================================
+//  ACCESO ADMINISTRADOR CON SEGURIDAD
+// ============================================================
+document.getElementById('btnEntrarAdmin').onclick = () => {
+    if (intentosFallidos >= MAX_INTENTOS) {
+        alert("🔒 Demasiados intentos. Recarga la página.");
+        document.getElementById('pwdInput').disabled = true;
+        return;
+    }
+    
+    const claveIngresada = document.getElementById('pwdInput').value;
+    
+    if (claveIngresada === ADMIN_PASSWORD) {
+        activarModoAdmin();
+        document.getElementById('modalPwd').style.display = "none";
+        intentosFallidos = 0;
+        document.getElementById('intentosMsg').textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
+        document.getElementById('pwdInput').disabled = false;
+        document.getElementById('pwdInput').value = '';
+    } else {
+        intentosFallidos++;
+        const restantes = MAX_INTENTOS - intentosFallidos;
+        document.getElementById('intentosMsg').textContent = `❌ Clave incorrecta. Intentos restantes: ${restantes}`;
+        document.getElementById('pwdInput').value = '';
+        document.getElementById('pwdInput').focus();
+        if (restantes === 0) {
+            document.getElementById('pwdInput').disabled = true;
+            document.getElementById('intentosMsg').textContent = '🔒 Bloqueado. Recarga la página.';
+        }
+    }
+};
+
+document.getElementById('btnCancelarAdmin').onclick = () => {
+    document.getElementById('modalPwd').style.display = "none";
+    document.getElementById('pwdInput').value = '';
+    document.getElementById('pwdInput').disabled = false;
+    intentosFallidos = 0;
+    document.getElementById('intentosMsg').textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
+};
+
+// ============================================================
+//  MODO ADMIN
+// ============================================================
+function activarModoAdmin() { 
+    modoAdmin = true; 
+    document.getElementById('badgeAdmin').style.display = 'block'; 
+    document.getElementById('toolbar').style.display = 'flex'; 
+    document.getElementById('adminPanel').classList.add('visible');
+    document.body.classList.add('admin-panel-abierto');
+    renderizarProductos();
+    actualizarPanelAdmin();
+    iniciarListenerCompras();
+    mostrarNotificacion("✅ Modo Administrador activado");
+}
+
+function desactivarModoAdmin() { 
+    modoAdmin = false; 
+    document.getElementById('badgeAdmin').style.display = 'none'; 
+    document.getElementById('toolbar').style.display = 'none'; 
+    document.getElementById('adminPanel').classList.remove('visible');
+    document.body.classList.remove('admin-panel-abierto');
+    cerrarTodosLosEditores();
+    renderizarProductos();
+    if (comprasListener) {
+        comprasListener.off();
+        comprasListener = null;
+    }
+    mostrarNotificacion("👁️ Modo Cliente activado");
+}
+
+// ============================================================
+//  CERRAR PANEL DE ADMINISTRACIÓN
+// ============================================================
+document.getElementById('cerrarPanelBtn').onclick = function() {
+    document.getElementById('adminPanel').classList.remove('visible');
+    document.body.classList.remove('admin-panel-abierto');
+    cerrarTodosLosEditores();
+    mostrarNotificacion("📊 Panel cerrado. Editores cerrados.");
+};
+
+// ============================================================
+//  BOTÓN PANEL ADMIN
+// ============================================================
+document.getElementById('adminPanelBtn').onclick = function() {
+    if (modoAdmin) {
+        const panel = document.getElementById('adminPanel');
+        if (panel.classList.contains('visible')) {
+            panel.classList.remove('visible');
+            document.body.classList.remove('admin-panel-abierto');
+            cerrarTodosLosEditores();
+            mostrarNotificacion("📊 Panel cerrado. Editores cerrados.");
+        } else {
+            panel.classList.add('visible');
+            document.body.classList.add('admin-panel-abierto');
+            actualizarPanelAdmin();
+            mostrarNotificacion("📊 Panel abierto");
+        }
+    } else {
+        document.getElementById('modalPwd').style.display = "flex";
+        document.getElementById('pwdInput').focus();
+    }
+};
+
+// ============================================================
+//  BOTÓN VER COMO CLIENTE
+// ============================================================
+document.getElementById('toggleModoBtn').onclick = () => { 
+    desactivarModoAdmin(); 
+};
 
 // ============================================================
 //  LEER DATOS DE FIREBASE
@@ -1096,7 +1379,7 @@ function renderizarFiltros() {
 }
 
 // ============================================================
-//  RENDERIZAR PRODUCTOS
+//  RENDERIZAR PRODUCTOS CON BOTÓN EDITAR
 // ============================================================
 function renderizarProductos() {
     const contenedor = document.getElementById('contenedorProductos');
@@ -1135,6 +1418,8 @@ function renderizarProductos() {
         const descuentoTexto = descNum > 0 ? `<span class="descuento-badge">-${descNum}%</span>` : '';
         const precioClase = descNum > 0 ? 'precio-promo' : '';
         const ocultoBadge = (modoAdmin && estaOculto) ? `<span class="oculto-badge">🔒 OCULTO</span>` : '';
+        const botonEditar = modoAdmin ? `<button class="btn-editar" onclick="toggleEditor('${p.id}')">✏️ EDITAR</button>` : '';
+        
         return `
             <div class="producto" id="prod-${p.id}" style="${estaOculto && modoAdmin ? 'opacity:0.7; border:2px dashed #fecaca;' : ''}">
                 ${esPromoValida ? `<div class="banner-promo-fuera">${p.textoPromo.toUpperCase()}${p.vigenciaPromo ? `<span class="vigencia">VIGENCIA: ${formatearFecha(p.vigenciaPromo)}</span>` : ''}</div>` : ''}
@@ -1160,8 +1445,9 @@ function renderizarProductos() {
                         <input type="number" id="cant-${p.id}" value="1" min="1">
                         <button class="btn-agregar" onclick="agregarAlCarrito('${p.id}')">🛒 AGREGAR</button>
                         <a class="btn-wa" href="https://wa.me/522282877441?text=${encodeURIComponent('Hola, me interesa: ' + p.nombre)}" target="_blank">💬 CONSULTAR</a>
+                        ${botonEditar}
                     </div>
-                    <div class="editor-area" id="edit-area-${p.id}" style="display: ${modoAdmin ? 'block' : 'none'};">
+                    <div class="editor-area" id="edit-area-${p.id}">
                         <hr style="margin-bottom:15px; border:0; border-top:1px dashed #ccc;">
                         <h4 style="margin-bottom:10px; color:#002b5c;">🛠️ Editar Producto</h4>
                         <div class="campo-row"><label>Código</label><input type="text" id="edit-codigo-${p.id}" value="${p.codigo || ''}"></div>
@@ -3537,173 +3823,13 @@ function abrirModalStock(id) {
 }
 
 // ============================================================
-//  ACCESO ADMINISTRADOR CON SEGURIDAD
-// ============================================================
-document.getElementById('btnEntrarAdmin').onclick = () => {
-    if (intentosFallidos >= MAX_INTENTOS) {
-        alert("🔒 Demasiados intentos. Recarga la página.");
-        document.getElementById('pwdInput').disabled = true;
-        return;
-    }
-    const claveIngresada = document.getElementById('pwdInput').value;
-    if (claveIngresada === ADMIN_PASSWORD) {
-        activarModoAdmin();
-        document.getElementById('modalPwd').style.display = "none";
-        intentosFallidos = 0;
-        document.getElementById('intentosMsg').textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
-        document.getElementById('pwdInput').disabled = false;
-        document.getElementById('pwdInput').value = '';
-    } else {
-        intentosFallidos++;
-        const restantes = MAX_INTENTOS - intentosFallidos;
-        document.getElementById('intentosMsg').textContent = `❌ Clave incorrecta. Intentos restantes: ${restantes}`;
-        document.getElementById('pwdInput').value = '';
-        document.getElementById('pwdInput').focus();
-        if (restantes === 0) {
-            document.getElementById('pwdInput').disabled = true;
-            document.getElementById('intentosMsg').textContent = '🔒 Bloqueado. Recarga la página.';
-        }
-    }
-};
-
-document.getElementById('btnCancelarAdmin').onclick = () => {
-    document.getElementById('modalPwd').style.display = "none";
-    document.getElementById('pwdInput').value = '';
-    document.getElementById('pwdInput').disabled = false;
-    intentosFallidos = 0;
-    document.getElementById('intentosMsg').textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
-};
-
-// ============================================================
-//  MODO ADMIN
-// ============================================================
-function activarModoAdmin() { 
-    modoAdmin = true; 
-    document.getElementById('badgeAdmin').style.display = 'block'; 
-    document.getElementById('toolbar').style.display = 'flex'; 
-    document.getElementById('adminPanel').classList.add('visible');
-    renderizarProductos();
-    actualizarPanelAdmin();
-    iniciarListenerCompras();
-}
-
-function desactivarModoAdmin() { 
-    modoAdmin = false; 
-    document.getElementById('badgeAdmin').style.display = 'none'; 
-    document.getElementById('toolbar').style.display = 'none'; 
-    document.getElementById('adminPanel').classList.remove('visible');
-    cerrarTodosLosEditores();
-    renderizarProductos();
-    if (comprasListener) {
-        comprasListener.off();
-        comprasListener = null;
-    }
-}
-
-// ============================================================
-//  CERRAR PANEL DE ADMINISTRACIÓN
-// ============================================================
-document.getElementById('cerrarPanelBtn').onclick = function() {
-    document.getElementById('adminPanel').classList.remove('visible');
-    cerrarTodosLosEditores();
-    mostrarNotificacion("📊 Panel cerrado. Los editores de productos se han cerrado.");
-};
-
-// ============================================================
-//  BOTÓN PANEL ADMIN
-// ============================================================
-document.getElementById('adminPanelBtn').onclick = function() {
-    if (modoAdmin) {
-        const panel = document.getElementById('adminPanel');
-        if (panel.classList.contains('visible')) {
-            panel.classList.remove('visible');
-            cerrarTodosLosEditores();
-            mostrarNotificacion("📊 Panel cerrado. Editores cerrados.");
-        } else {
-            panel.classList.add('visible');
-            actualizarPanelAdmin();
-            mostrarNotificacion("📊 Panel abierto");
-        }
-    } else {
-        document.getElementById('modalPwd').style.display = "flex";
-        document.getElementById('pwdInput').focus();
-    }
-};
-
-// ============================================================
-//  ABRIR MODAL ADMIN - CON 3 CLICS
-// ============================================================
-let contadorClicksLogo = 0;
-let temporizadorClicks = null;
-
-document.getElementById('logoAdmin').onclick = function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    contadorClicksLogo++;
-    clearTimeout(temporizadorClicks);
-    temporizadorClicks = setTimeout(() => {
-        contadorClicksLogo = 0;
-    }, 2000);
-    if (contadorClicksLogo >= 3) {
-        contadorClicksLogo = 0;
-        clearTimeout(temporizadorClicks);
-        mostrarNotificacion("🔐 Acceso Administrador");
-        const modal = document.getElementById('modalPwd');
-        const input = document.getElementById('pwdInput');
-        const msg = document.getElementById('intentosMsg');
-        if (!modal) return;
-        modal.style.display = "flex";
-        modal.style.visibility = "visible";
-        modal.style.opacity = "1";
-        if (input) {
-            input.value = '';
-            input.disabled = false;
-            setTimeout(function() {
-                input.focus();
-            }, 300);
-        }
-        intentosFallidos = 0;
-        if (msg) {
-            msg.textContent = `Intentos disponibles: ${MAX_INTENTOS}`;
-        }
-    }
-};
-
-document.querySelectorAll('.tabs-admin button').forEach(btn => {
-    btn.onclick = function() {
-        document.querySelectorAll('.tabs-admin button').forEach(b => b.classList.remove('activo'));
-        this.classList.add('activo');
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('visible'));
-        document.getElementById(this.dataset.tab).classList.add('visible');
-        if (this.dataset.tab === 'tabInventario') renderizarInventario();
-        if (this.dataset.tab === 'tabPedidos') renderizarPedidos();
-        if (this.dataset.tab === 'tabClientes') renderizarClientes();
-        if (this.dataset.tab === 'tabCompras') renderizarCompras();
-        if (this.dataset.tab === 'tabReportes') renderizarHistoricoVentas();
-        if (this.dataset.tab === 'tabListasPrecios') {
-            if (document.getElementById('tabVenta').classList.contains('visible')) {
-                renderizarListaVenta();
-            } else if (document.getElementById('tabCompra').classList.contains('visible')) {
-                renderizarListaCompraVenta();
-            } else if (document.getElementById('tabCliente').classList.contains('visible')) {
-                renderizarListaCliente();
-            } else if (document.getElementById('tabPromociones').classList.contains('visible')) {
-                renderizarPromociones();
-            } else {
-                mostrarTabPrecios('venta');
-            }
-        }
-    };
-});
-
-// ============================================================
 //  WINDOW ONLOAD
 // ============================================================
 window.onload = function() {
     desactivarModoAdmin();
     document.getElementById('busquedaInput').oninput = (e) => { textoBusqueda = e.target.value; renderizarProductos(); };
     document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; renderizarCarrito(); };
-    document.getElementById('toggleModoBtn').onclick = () => { desactivarModoAdmin(); };
+    
     document.getElementById('agregarProductoBtn').onclick = () => {
         const nuevoRef = database.ref('productos').push();
         nuevoRef.set({
