@@ -1108,6 +1108,24 @@ function obtenerCampoActivo(p) {
 }
 
 // ============================================================
+//  FUNCIÓN PARA ORDENAR PRODUCTOS (ACTIVOS PRIMERO, OCULTOS AL FINAL)
+// ============================================================
+function ordenarProductos(lista) {
+    return lista.sort((a, b) => {
+        const aActivo = obtenerCampoActivo(a) === 'SI';
+        const bActivo = obtenerCampoActivo(b) === 'SI';
+        
+        // Si ambos son activos o ambos son ocultos, ordenar por nombre
+        if (aActivo === bActivo) {
+            return (a.nombre || '').localeCompare(b.nombre || '');
+        }
+        
+        // Activos primero, ocultos después
+        return aActivo ? -1 : 1;
+    });
+}
+
+// ============================================================
 //  LEER DATOS DE FIREBASE
 // ============================================================
 database.ref('productos').on('value', (snapshot) => {
@@ -1300,7 +1318,7 @@ function renderizarFiltros() {
 }
 
 // ============================================================
-//  RENDERIZAR PRODUCTOS (CON FILTRO DE OCULTOS)
+//  RENDERIZAR PRODUCTOS (CON FILTRO DE OCULTOS Y ORDEN)
 // ============================================================
 function renderizarProductos() {
     const contenedor = document.getElementById('contenedorProductos');
@@ -1320,6 +1338,9 @@ function renderizarProductos() {
         let cumpleBusq = cad.includes(textoBusqueda.toLowerCase());
         return cumpleCat && cumpleBusq;
     });
+
+    // ORDENAR: activos primero, ocultos al final
+    filtrados = ordenarProductos(filtrados);
 
     if (filtrados.length === 0) {
         contenedor.innerHTML = '<div style="padding:40px; text-align:center; background:white; border-radius:28px; color:#64748b;">🔍 Sin coincidencias.</div>';
@@ -3279,7 +3300,7 @@ window.guardarCambios = function(id) {
         promoFuera: document.getElementById(`edit-promo-${id}`).value,
         textoPromo: document.getElementById(`edit-textopromo-${id}`).value,
         vigenciaPromo: document.getElementById(`edit-vigencia-${id}`).value,
-        activo: document.getElementById(`edit-activo-${id}`).value  // <--- NUEVO CAMPO
+        activo: document.getElementById(`edit-activo-${id}`).value
     };
 
     database.ref('productos/' + id).update(actualizaciones)
@@ -3356,7 +3377,10 @@ function renderizarInventario() {
         return;
     }
     
-    tbody.innerHTML = productos.map(p => {
+    // ORDENAR: activos primero, ocultos al final
+    const productosOrdenados = ordenarProductos([...productos]);
+    
+    tbody.innerHTML = productosOrdenados.map(p => {
         const stock = p.stock !== undefined ? p.stock : '-';
         const stockClass = getStockClass(stock);
         const stockText = getStockText(stock);
@@ -3777,6 +3801,9 @@ function renderizarListaVenta() {
         return cumpleCat && cumpleBusq;
     });
     
+    // ORDENAR: activos primero, ocultos al final
+    filtrados = ordenarProductos(filtrados);
+    
     const tbody = document.getElementById('listaVentaBody');
     
     if (filtrados.length === 0) {
@@ -3833,6 +3860,9 @@ function renderizarListaCompraVenta() {
         const cumpleBusq = texto.includes(buscar);
         return cumpleCat && cumpleBusq;
     });
+    
+    // ORDENAR: activos primero, ocultos al final
+    filtrados = ordenarProductos(filtrados);
     
     const tbody = document.getElementById('listaCompraBody');
     
@@ -3897,6 +3927,9 @@ function renderizarListaCliente() {
         return cumpleCat && cumpleBusq;
     });
     
+    // ORDENAR: activos primero, ocultos al final
+    filtrados = ordenarProductos(filtrados);
+    
     const tbody = document.getElementById('listaClienteBody');
     
     if (filtrados.length === 0) {
@@ -3952,6 +3985,9 @@ function renderizarPromociones() {
         const cumpleBusq = texto.includes(buscar);
         return (tienePromo || tieneDescuento) && cumpleCat && cumpleBusq;
     });
+    
+    // ORDENAR: activos primero, ocultos al final
+    promociones = ordenarProductos(promociones);
     
     const container = document.getElementById('listaPromocionesContainer');
     
@@ -4015,6 +4051,8 @@ function generarPDFListaVenta() {
         const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
         return cumpleCat && cumpleBusq;
     });
+    
+    filtrados = ordenarProductos(filtrados);
     
     if (filtrados.length === 0) {
         mostrarNotificacion('❌ No hay productos para generar el PDF');
@@ -4111,6 +4149,8 @@ function generarPDFListaCompraVenta() {
         const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
         return cumpleCat && cumpleBusq;
     });
+    
+    filtrados = ordenarProductos(filtrados);
     
     if (filtrados.length === 0) {
         mostrarNotificacion('❌ No hay productos para generar el PDF');
@@ -4218,6 +4258,8 @@ function generarPDFListaCliente() {
         return cumpleCat && cumpleBusq;
     });
     
+    filtrados = ordenarProductos(filtrados);
+    
     if (filtrados.length === 0) {
         mostrarNotificacion('❌ No hay productos para generar el PDF');
         return;
@@ -4315,6 +4357,8 @@ function generarPDFPromociones() {
         const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
         return (tienePromo || tieneDescuento) && cumpleCat && cumpleBusq;
     });
+    
+    promociones = ordenarProductos(promociones);
     
     if (promociones.length === 0) {
         mostrarNotificacion('❌ No hay promociones para generar el PDF');
@@ -4446,6 +4490,8 @@ function compartirListaVenta() {
         return cumpleCat && cumpleBusq;
     });
     
+    filtrados = ordenarProductos(filtrados);
+    
     if (filtrados.length === 0) {
         mostrarNotificacion('❌ No hay productos para compartir');
         return;
@@ -4489,6 +4535,8 @@ function compartirListaCompraVenta() {
         const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
         return cumpleCat && cumpleBusq;
     });
+    
+    filtrados = ordenarProductos(filtrados);
     
     if (filtrados.length === 0) {
         mostrarNotificacion('❌ No hay productos para compartir');
@@ -4536,6 +4584,8 @@ function compartirListaCliente() {
         return cumpleCat && cumpleBusq;
     });
     
+    filtrados = ordenarProductos(filtrados);
+    
     if (filtrados.length === 0) {
         mostrarNotificacion('❌ No hay productos para compartir');
         return;
@@ -4580,6 +4630,8 @@ function compartirPromociones() {
         const cumpleBusq = texto.includes(filtroBusq.toLowerCase());
         return (tienePromo || tieneDescuento) && cumpleCat && cumpleBusq;
     });
+    
+    promociones = ordenarProductos(promociones);
     
     if (promociones.length === 0) {
         mostrarNotificacion('❌ No hay promociones para compartir');
@@ -4644,7 +4696,7 @@ window.onload = function() {
             textoPromo: "",
             vigenciaPromo: "",
             precioCompra: "60",
-            activo: "SI"  // <--- NUEVO CAMPO POR DEFECTO
+            activo: "SI"
         }).then(() => mostrarNotificacion("➕ Plantilla creada al final.")).catch(err => alert(err.message));
     };
 
