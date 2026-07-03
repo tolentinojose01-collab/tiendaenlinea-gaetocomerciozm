@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0">
     <title>GAETO COMERCIOS - Sistema Completo</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -38,8 +38,9 @@
         .banner-promo-fuera{display:block; background:#e11d48; color:white; padding:12px 15px; font-weight:bold; font-size:14px; text-align:center; border-bottom: 3px solid white;}
         .banner-promo-fuera .vigencia{font-size:11px;display:block;margin-top:3px}
         .codigo{font-size:12px;color:#666;margin-bottom:5px;font-family:monospace}
-        .imagen-area{width:100%;background:white;display:flex;justify-content:center;align-items:center;height:200px}
-        .imagen-area img{max-width:100%;max-height:100%;object-fit:contain}
+        .imagen-area{width:100%;background:white;display:flex;justify-content:center;align-items:center;height:200px;position:relative;overflow:hidden}
+        .imagen-area img{max-width:100%;max-height:100%;object-fit:contain;transition:transform 0.3s ease}
+        .imagen-area .zoom-icon{position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,0.6);color:white;padding:2px 10px;border-radius:12px;font-size:10px;pointer-events:none;backdrop-filter:blur(5px)}
         .sin-imagen{color:#94a3b8;text-align:center;font-size:12px}
         .info{padding:15px}
         .titulo{font-size:1.1rem;font-weight:bold;display:flex;align-items:center;flex-wrap:wrap;gap:5px}
@@ -53,13 +54,14 @@
         .stock-normal{background:#bbf7d0;color:#166534}
         .stock-agotado{background:#e5e7eb;color:#4b5563}
         .descuento-badge{background:#e11d48;color:white;padding:1px 8px;border-radius:20px;font-size:10px;margin-left:4px}
-        .oculto-badge{background:#fecaca;color:#991b1b;padding:1px 8px;border-radius:20px;font-size:10px;margin-left:4px}
+        .oculto-badge{background:#fecaca;color:#991b1b;padding:1px 8px;border-radius:20px;font-size:10px;margin-left:4px;display:none}
+        .modo-admin .oculto-badge{display:inline-block}
         .acciones{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
         .acciones input{width:60px;padding:6px;border-radius:30px;border:1px solid #ccc;text-align:center;font-size:12px}
         .btn-agregar{background:#ff9800;color:white;border:none;padding:6px 12px;border-radius:30px;cursor:pointer;font-weight:bold;flex:1;font-size:12px}
         .btn-wa{background:#25d366;color:white;text-decoration:none;text-align:center;padding:6px 12px;border-radius:30px;font-weight:bold;flex:1;font-size:12px}
-        .btn-editar{background:#8b5cf6;color:white;border:none;padding:6px 12px;border-radius:30px;cursor:pointer;font-weight:bold;flex:1;font-size:12px}
-        .btn-editar:hover{background:#7c3aed}
+        .btn-editar{background:#8b5cf6;color:white;border:none;padding:6px 12px;border-radius:30px;cursor:pointer;font-weight:bold;flex:1;font-size:12px;display:none}
+        .modo-admin .btn-editar{display:block}
         .editor-area{margin-top:12px;border-top:1px solid #ddd;padding-top:12px;display:none}
         .editor-area.visible{display:block !important}
         .campo-row{margin-bottom:10px}
@@ -70,6 +72,131 @@
         .btn-guardar{background:#2563eb;color:white;border:none;padding:8px;border-radius:30px;width:100%;margin-bottom:6px;cursor:pointer;font-weight:bold;font-size:12px}
         .botones-edicion{display:flex;gap:8px;margin-top:8px}
         .btn-eliminar{flex:1;padding:6px;border-radius:30px;border:none;color:white;cursor:pointer;background:#b91c1c;font-weight:bold;font-size:12px}
+        
+        /* ===== MODAL DE IMÁGENES CON ZOOM ===== */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            cursor: zoom-out;
+            animation: fadeIn 0.3s ease;
+        }
+        .image-modal.visible { display: flex; }
+        .image-modal img {
+            max-width: 100%;
+            max-height: 95vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            cursor: zoom-in;
+            touch-action: pan-x pan-y pinch-zoom;
+            transition: transform 0.2s ease;
+        }
+        .image-modal img.zoomed {
+            transform: scale(2);
+            cursor: zoom-out;
+        }
+        .image-modal .close-modal {
+            position: fixed;
+            top: 20px;
+            right: 25px;
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10000;
+            background: rgba(0,0,0,0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: all 0.3s;
+            user-select: none;
+        }
+        .image-modal .close-modal:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+        .image-modal .image-counter {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            background: rgba(0,0,0,0.5);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .image-modal .nav-arrows {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.6);
+            font-size: 40px;
+            cursor: pointer;
+            padding: 15px 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+        }
+        .image-modal .nav-arrows:hover {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .image-modal .nav-arrows.prev { left: 20px; }
+        .image-modal .nav-arrows.next { right: 20px; }
+        .image-modal .nav-arrows.hidden { display: none; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @media (max-width: 600px) {
+            .image-modal .close-modal {
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 28px;
+            }
+            .image-modal .nav-arrows {
+                width: 40px;
+                height: 40px;
+                font-size: 24px;
+                padding: 10px;
+            }
+            .image-modal .nav-arrows.prev { left: 10px; }
+            .image-modal .nav-arrows.next { right: 10px; }
+            .image-modal .image-counter {
+                font-size: 12px;
+                padding: 4px 14px;
+                bottom: 20px;
+            }
+        }
         
         /* ===== VISTA PARA CELULAR PEQUEÑO - 2 COLUMNAS ===== */
         @media (max-width: 480px) {
@@ -91,6 +218,12 @@
                 max-height: 100%;
                 object-fit: contain;
                 padding: 3px;
+            }
+            .imagen-area .zoom-icon {
+                font-size: 8px;
+                padding: 1px 6px;
+                bottom: 4px;
+                right: 5px;
             }
             .info {
                 padding: 8px;
@@ -287,6 +420,10 @@
                 object-fit: contain;
                 padding: 4px;
             }
+            .imagen-area .zoom-icon {
+                font-size: 9px;
+                padding: 1px 8px;
+            }
             .info {
                 padding: 10px;
             }
@@ -474,6 +611,9 @@
             }
             .imagen-area {
                 height: 200px;
+            }
+            .imagen-area:hover img {
+                transform: scale(1.05);
             }
             .editor-area {
                 display: none;
@@ -673,6 +813,15 @@
         <button class="btn-registro-cancelar" id="btnRegistroCancelar">❌ Cancelar pedido</button>
         <p class="footer-text">🔒 Tus datos son seguros y solo se usan para tu pedido</p>
     </div>
+</div>
+
+<!-- ===== MODAL DE IMÁGENES CON ZOOM ===== -->
+<div class="image-modal" id="imageModal">
+    <span class="close-modal" id="closeImageModal">✕</span>
+    <span class="nav-arrows prev" id="prevImage">‹</span>
+    <span class="nav-arrows next" id="nextImage">›</span>
+    <img id="modalImage" src="" alt="Imagen del producto">
+    <div class="image-counter" id="imageCounter">1 / 1</div>
 </div>
 
 <div class="encabezado">
@@ -1105,6 +1254,158 @@ function toggleEditor(id) {
 }
 
 // ============================================================
+//  VISOR DE IMÁGENES CON ZOOM (LIGHTBOX)
+// ============================================================
+let imagenesProductos = [];
+let currentImageIndex = 0;
+let isZoomed = false;
+
+function abrirVisorImagenes(productoId) {
+    const prod = productos.find(p => p.id === productoId);
+    if (!prod || !prod.imagenUrl) {
+        mostrarNotificacion("❌ Este producto no tiene imagen");
+        return;
+    }
+    
+    imagenesProductos = productos.filter(p => p.imagenUrl && p.imagenUrl.trim() !== "");
+    currentImageIndex = imagenesProductos.findIndex(p => p.id === productoId);
+    
+    if (currentImageIndex === -1) {
+        imagenesProductos = [prod];
+        currentImageIndex = 0;
+    }
+    
+    mostrarImagenModal(currentImageIndex);
+    document.getElementById('imageModal').classList.add('visible');
+    document.body.style.overflow = 'hidden';
+    isZoomed = false;
+}
+
+function mostrarImagenModal(index) {
+    if (index < 0) index = imagenesProductos.length - 1;
+    if (index >= imagenesProductos.length) index = 0;
+    currentImageIndex = index;
+    
+    const img = document.getElementById('modalImage');
+    const counter = document.getElementById('imageCounter');
+    const prevBtn = document.getElementById('prevImage');
+    const nextBtn = document.getElementById('nextImage');
+    
+    img.src = imagenesProductos[index].imagenUrl;
+    img.alt = imagenesProductos[index].nombre || 'Producto';
+    img.classList.remove('zoomed');
+    img.style.transform = 'scale(1)';
+    isZoomed = false;
+    
+    if (imagenesProductos.length > 1) {
+        counter.textContent = `${index + 1} / ${imagenesProductos.length}`;
+        counter.style.display = 'block';
+        prevBtn.classList.remove('hidden');
+        nextBtn.classList.remove('hidden');
+    } else {
+        counter.style.display = 'none';
+        prevBtn.classList.add('hidden');
+        nextBtn.classList.add('hidden');
+    }
+}
+
+function cerrarVisorImagenes() {
+    document.getElementById('imageModal').classList.remove('visible');
+    document.body.style.overflow = '';
+    isZoomed = false;
+}
+
+// Eventos del visor
+document.getElementById('closeImageModal').onclick = cerrarVisorImagenes;
+
+document.getElementById('imageModal').onclick = function(e) {
+    if (e.target === this) {
+        cerrarVisorImagenes();
+    }
+};
+
+document.getElementById('prevImage').onclick = function(e) {
+    e.stopPropagation();
+    mostrarImagenModal(currentImageIndex - 1);
+};
+
+document.getElementById('nextImage').onclick = function(e) {
+    e.stopPropagation();
+    mostrarImagenModal(currentImageIndex + 1);
+};
+
+// Zoom con clic en la imagen
+document.getElementById('modalImage').onclick = function(e) {
+    e.stopPropagation();
+    isZoomed = !isZoomed;
+    this.classList.toggle('zoomed');
+    this.style.cursor = isZoomed ? 'zoom-out' : 'zoom-in';
+    if (!isZoomed) {
+        this.style.transform = 'scale(1)';
+    }
+};
+
+// Gestos táctiles para zoom (pinch)
+let initialPinchDistance = 0;
+let currentScale = 1;
+
+document.getElementById('modalImage').addEventListener('touchstart', function(e) {
+    if (e.touches.length === 2) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        initialPinchDistance = Math.hypot(
+            touch1.clientX - touch2.clientX,
+            touch1.clientY - touch2.clientY
+        );
+        currentScale = isZoomed ? 2 : 1;
+    }
+}, { passive: true });
+
+document.getElementById('modalImage').addEventListener('touchmove', function(e) {
+    if (e.touches.length === 2) {
+        e.preventDefault();
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const newDistance = Math.hypot(
+            touch1.clientX - touch2.clientX,
+            touch1.clientY - touch2.clientY
+        );
+        const scale = Math.min(Math.max((newDistance / initialPinchDistance) * currentScale, 0.5), 3);
+        this.style.transform = `scale(${scale})`;
+        isZoomed = scale > 1.2;
+        this.style.cursor = isZoomed ? 'zoom-out' : 'zoom-in';
+    }
+}, { passive: false });
+
+document.getElementById('modalImage').addEventListener('touchend', function(e) {
+    if (e.changedTouches.length === 2) {
+        const scale = parseFloat(this.style.transform.replace('scale(', '').replace(')', '')) || 1;
+        if (scale > 1.2) {
+            this.classList.add('zoomed');
+            this.style.transform = 'scale(2)';
+            isZoomed = true;
+        } else {
+            this.classList.remove('zoomed');
+            this.style.transform = 'scale(1)';
+            isZoomed = false;
+        }
+    }
+}, { passive: true });
+
+// Cerrar con tecla ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        cerrarVisorImagenes();
+    }
+    if (e.key === 'ArrowLeft' && document.getElementById('imageModal').classList.contains('visible')) {
+        mostrarImagenModal(currentImageIndex - 1);
+    }
+    if (e.key === 'ArrowRight' && document.getElementById('imageModal').classList.contains('visible')) {
+        mostrarImagenModal(currentImageIndex + 1);
+    }
+});
+
+// ============================================================
 //  ABRIR MODAL ADMIN - CON 3 CLICS (SEGURIDAD OCULTA)
 // ============================================================
 let contadorClicksLogo = 0;
@@ -1201,6 +1502,7 @@ function activarModoAdmin() {
     document.getElementById('toolbar').style.display = 'flex'; 
     document.getElementById('adminPanel').classList.add('visible');
     document.body.classList.add('admin-panel-abierto');
+    document.body.classList.add('modo-admin');
     renderizarProductos();
     actualizarPanelAdmin();
     iniciarListenerCompras();
@@ -1213,6 +1515,7 @@ function desactivarModoAdmin() {
     document.getElementById('toolbar').style.display = 'none'; 
     document.getElementById('adminPanel').classList.remove('visible');
     document.body.classList.remove('admin-panel-abierto');
+    document.body.classList.remove('modo-admin');
     cerrarTodosLosEditores();
     renderizarProductos();
     if (comprasListener) {
@@ -1379,7 +1682,7 @@ function renderizarFiltros() {
 }
 
 // ============================================================
-//  RENDERIZAR PRODUCTOS CON BOTÓN EDITAR
+//  RENDERIZAR PRODUCTOS CON BOTÓN EDITAR Y VISOR DE IMÁGENES
 // ============================================================
 function renderizarProductos() {
     const contenedor = document.getElementById('contenedorProductos');
@@ -1420,6 +1723,26 @@ function renderizarProductos() {
         const ocultoBadge = (modoAdmin && estaOculto) ? `<span class="oculto-badge">🔒 OCULTO</span>` : '';
         const botonEditar = modoAdmin ? `<button class="btn-editar" onclick="toggleEditor('${p.id}')">✏️ EDITAR</button>` : '';
         
+        const campoVisibilidad = modoAdmin ? `
+        <div class="campo-row">
+            <label>👁️ Visibilidad en catálogo</label>
+            <select id="edit-activo-${p.id}">
+                <option value="SI" ${obtenerCampoActivo(p) === 'SI' ? 'selected' : ''}>✅ Activo (Visible)</option>
+                <option value="NO" ${obtenerCampoActivo(p) === 'NO' ? 'selected' : ''}>🔒 Inactivo (Oculto)</option>
+            </select>
+        </div>
+        ` : '';
+        
+        const botonEliminar = modoAdmin ? `
+        <div class="botones-edicion">
+            <button class="btn-eliminar" onclick="eliminarProducto('${p.id}')">🗑️ ELIMINAR PRODUCTO</button>
+        </div>
+        ` : '';
+        
+        const clickImagen = p.imagenUrl ? `onclick="abrirVisorImagenes('${p.id}')"` : '';
+        const cursorImagen = p.imagenUrl ? 'cursor:pointer;' : '';
+        const iconoZoom = p.imagenUrl ? `<div class="zoom-icon">🔍</div>` : '';
+        
         return `
             <div class="producto" id="prod-${p.id}" style="${estaOculto && modoAdmin ? 'opacity:0.7; border:2px dashed #fecaca;' : ''}">
                 ${esPromoValida ? `<div class="banner-promo-fuera">${p.textoPromo.toUpperCase()}${p.vigenciaPromo ? `<span class="vigencia">VIGENCIA: ${formatearFecha(p.vigenciaPromo)}</span>` : ''}</div>` : ''}
@@ -1427,8 +1750,9 @@ function renderizarProductos() {
                 <div class="info" style="padding-bottom:5px;">
                     <div class="codigo">CÓDIGO: ${p.codigo || 'S/C'}</div>
                 </div>
-                <div class="imagen-area">
+                <div class="imagen-area" ${clickImagen} style="${cursorImagen}">
                     ${p.imagenUrl ? `<img src="${p.imagenUrl}" alt="${p.nombre}">` : '<div class="sin-imagen">📷 Sin Imagen</div>'}
+                    ${iconoZoom}
                 </div>
                 <div class="info">
                     <div class="titulo">${p.nombre} ${descuentoTexto} ${ocultoBadge}</div>
@@ -1447,7 +1771,7 @@ function renderizarProductos() {
                         <a class="btn-wa" href="https://wa.me/522282877441?text=${encodeURIComponent('Hola, me interesa: ' + p.nombre)}" target="_blank">💬 CONSULTAR</a>
                         ${botonEditar}
                     </div>
-                    <div class="editor-area" id="edit-area-${p.id}">
+                    <div class="editor-area" id="edit-area-${p.id}" style="display: ${modoAdmin ? 'block' : 'none'};">
                         <hr style="margin-bottom:15px; border:0; border-top:1px dashed #ccc;">
                         <h4 style="margin-bottom:10px; color:#002b5c;">🛠️ Editar Producto</h4>
                         <div class="campo-row"><label>Código</label><input type="text" id="edit-codigo-${p.id}" value="${p.codigo || ''}"></div>
@@ -1458,13 +1782,7 @@ function renderizarProductos() {
                         <div class="campo-row"><label>Descuento (%)</label><input type="number" id="edit-descuento-${p.id}" value="${p.descuento || '0'}"></div>
                         <div class="campo-row"><label>Precio de Compra ($)</label><input type="number" step="0.01" id="edit-precioCompra-${p.id}" value="${p.precioCompra || ''}"></div>
                         <div class="campo-row"><label>Stock</label><input type="number" id="edit-stock-${p.id}" value="${p.stock || '0'}"></div>
-                        <div class="campo-row">
-                            <label>👁️ Visibilidad en catálogo</label>
-                            <select id="edit-activo-${p.id}">
-                                <option value="SI" ${obtenerCampoActivo(p) === 'SI' ? 'selected' : ''}>✅ Activo (Visible)</option>
-                                <option value="NO" ${obtenerCampoActivo(p) === 'NO' ? 'selected' : ''}>🔒 Inactivo (Oculto)</option>
-                            </select>
-                        </div>
+                        ${campoVisibilidad}
                         <div class="campo-row">
                             <label style="color:#2563eb; font-weight:bold;">📸 Cargar Foto desde Celular o PC</label>
                             <input type="file" id="file-input-${p.id}" accept="image/*" onchange="procesarFotoLocal(this, '${p.id}')">
@@ -1480,9 +1798,7 @@ function renderizarProductos() {
                         <div class="campo-row"><label>Texto del Banner Promocional</label><input type="text" id="edit-textopromo-${p.id}" value="${p.textoPromo || ''}"></div>
                         <div class="campo-row"><label>Vigencia de Promoción</label><input type="date" id="edit-vigencia-${p.id}" value="${p.vigenciaPromo || ''}"></div>
                         <button class="btn-guardar" onclick="guardarCambios('${p.id}')">💾 GUARDAR CAMBIOS</button>
-                        <div class="botones-edicion">
-                            <button class="btn-eliminar" onclick="eliminarProducto('${p.id}')">🗑️ ELIMINAR PRODUCTO</button>
-                        </div>
+                        ${botonEliminar}
                     </div>
                 </div>
             </div>
