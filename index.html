@@ -37,10 +37,54 @@
         .banner-promo-fuera{display:block; background:#e11d48; color:white; padding:12px 15px; font-weight:bold; font-size:14px; text-align:center; border-bottom: 3px solid white;}
         .banner-promo-fuera .vigencia{font-size:11px;display:block;margin-top:3px}
         .codigo{font-size:12px;color:#666;margin-bottom:5px;font-family:monospace}
-        .imagen-area{width:100%;background:white;display:flex;justify-content:center;align-items:center;height:200px;position:relative;overflow:hidden;cursor:pointer}
-        .imagen-area img{max-width:100%;max-height:100%;object-fit:contain;transition:transform 0.3s ease}
-        .imagen-area .zoom-icon{position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,0.6);color:white;padding:2px 10px;border-radius:12px;font-size:10px;pointer-events:none;backdrop-filter:blur(5px)}
-        .sin-imagen{color:#94a3b8;text-align:center;font-size:12px;padding:20px}
+        
+        /* ===== ÁREA DE IMAGEN MEJORADA ===== */
+        .imagen-area {
+            width: 100%;
+            background: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            min-height: 150px;
+            border-bottom: 1px solid #eef2f5;
+        }
+        .imagen-area img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+            display: block;
+        }
+        .imagen-area .sin-imagen {
+            color: #94a3b8;
+            text-align: center;
+            font-size: 12px;
+            padding: 20px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f8fafc;
+        }
+        .imagen-area .zoom-icon {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 10px;
+            pointer-events: none;
+            backdrop-filter: blur(5px);
+            z-index: 5;
+        }
+        
         .info{padding:15px}
         .titulo{font-size:1.1rem;font-weight:bold;display:flex;align-items:center;flex-wrap:wrap;gap:5px}
         .descripcion{color:#334155;margin:5px 0;font-size:0.85rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -72,7 +116,7 @@
         .botones-edicion{display:flex;gap:8px;margin-top:8px}
         .btn-eliminar{flex:1;padding:6px;border-radius:30px;border:none;color:white;cursor:pointer;background:#b91c1c;font-weight:bold;font-size:12px;touch-action:manipulation}
         
-        /* ===== MODAL DE IMÁGENES CON ZOOM ===== */
+        /* ===== MODAL DE IMÁGENES CON ZOOM - MEJORADO PARA MÓVILES ===== */
         .image-modal {
             display: none;
             position: fixed;
@@ -80,24 +124,30 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.92);
+            background: rgba(0, 0, 0, 0.95);
             z-index: 9999;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
             cursor: zoom-out;
             animation: fadeIn 0.3s ease;
+            touch-action: none;
         }
         .image-modal.visible { display: flex; }
         .image-modal img {
             max-width: 100%;
-            max-height: 95vh;
+            max-height: 90vh;
             object-fit: contain;
             border-radius: 8px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             cursor: zoom-in;
-            touch-action: pan-x pan-y pinch-zoom;
+            touch-action: none;
             transition: transform 0.2s ease;
+            image-rendering: auto;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            display: block;
         }
         .image-modal img.zoomed {
             transform: scale(2);
@@ -106,50 +156,56 @@
         .image-modal .close-modal {
             position: fixed;
             top: 20px;
-            right: 25px;
+            right: 20px;
             color: white;
-            font-size: 35px;
+            font-size: 30px;
             font-weight: bold;
             cursor: pointer;
             z-index: 10000;
-            background: rgba(0,0,0,0.5);
-            width: 50px;
-            height: 50px;
+            background: rgba(0,0,0,0.6);
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255,255,255,0.2);
             transition: all 0.3s;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
-        .image-modal .close-modal:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
+        .image-modal .close-modal:active { 
+            background: rgba(255,255,255,0.2); 
+            transform: scale(0.9); 
+        }
         .image-modal .image-counter {
             position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            color: rgba(255,255,255,0.7);
+            color: rgba(255,255,255,0.8);
             font-size: 14px;
-            background: rgba(0,0,0,0.5);
-            padding: 6px 18px;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 20px;
             border-radius: 20px;
             font-weight: bold;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.1);
+            z-index: 10001;
+            pointer-events: none;
         }
         .image-modal .nav-arrows {
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            color: rgba(255,255,255,0.6);
-            font-size: 40px;
+            color: rgba(255,255,255,0.7);
+            font-size: 30px;
             cursor: pointer;
-            padding: 15px 10px;
-            background: rgba(0,0,0,0.3);
+            padding: 15px 12px;
+            background: rgba(0,0,0,0.4);
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -157,10 +213,15 @@
             transition: all 0.3s;
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(5px);
+            z-index: 10001;
+            -webkit-tap-highlight-color: transparent;
         }
-        .image-modal .nav-arrows:hover { background: rgba(255,255,255,0.2); color: white; }
-        .image-modal .nav-arrows.prev { left: 20px; }
-        .image-modal .nav-arrows.next { right: 20px; }
+        .image-modal .nav-arrows:active { 
+            background: rgba(255,255,255,0.2); 
+            transform: translateY(-50%) scale(0.9); 
+        }
+        .image-modal .nav-arrows.prev { left: 15px; }
+        .image-modal .nav-arrows.next { right: 15px; }
         .image-modal .nav-arrows.hidden { display: none; }
 
         @keyframes fadeIn {
@@ -169,11 +230,47 @@
         }
 
         @media (max-width: 600px) {
-            .image-modal .close-modal { top: 15px; right: 15px; width: 40px; height: 40px; font-size: 28px; }
-            .image-modal .nav-arrows { width: 40px; height: 40px; font-size: 24px; padding: 10px; }
+            .image-modal .close-modal { 
+                top: 15px; 
+                right: 15px; 
+                width: 40px; 
+                height: 40px; 
+                font-size: 24px; 
+            }
+            .image-modal .nav-arrows { 
+                width: 40px; 
+                height: 40px; 
+                font-size: 20px; 
+                padding: 10px; 
+            }
             .image-modal .nav-arrows.prev { left: 10px; }
             .image-modal .nav-arrows.next { right: 10px; }
-            .image-modal .image-counter { font-size: 12px; padding: 4px 14px; bottom: 20px; }
+            .image-modal .image-counter { 
+                font-size: 12px; 
+                padding: 6px 16px; 
+                bottom: 20px; 
+            }
+            .image-modal img {
+                max-height: 85vh;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .image-modal .close-modal { 
+                top: 10px; 
+                right: 10px; 
+                width: 36px; 
+                height: 36px; 
+                font-size: 20px; 
+            }
+            .image-modal .nav-arrows { 
+                width: 34px; 
+                height: 34px; 
+                font-size: 16px; 
+                padding: 8px; 
+            }
+            .image-modal .nav-arrows.prev { left: 5px; }
+            .image-modal .nav-arrows.next { right: 5px; }
         }
         
         @media (max-width: 480px) {
@@ -181,9 +278,9 @@
             body.admin-panel-abierto{padding-bottom:280px}
             #contenedorProductos { grid-template-columns: repeat(2, 1fr); gap: 8px; }
             .producto { border-radius: 14px; }
-            .imagen-area { height: 100px; background: #f8fafc; }
+            .imagen-area { height: 120px; background: #f8fafc; min-height: 100px; }
             .imagen-area img { max-width: 100%; max-height: 100%; object-fit: contain; padding: 3px; }
-            .imagen-area .zoom-icon { font-size: 8px; padding: 1px 6px; bottom: 4px; right: 5px; }
+            .imagen-area .zoom-icon { font-size: 8px; padding: 2px 8px; bottom: 4px; right: 5px; }
             .info { padding: 8px; }
             .titulo { font-size: 0.7rem; gap: 2px; }
             .descripcion { font-size: 0.6rem; margin: 2px 0; -webkit-line-clamp: 1; }
@@ -236,9 +333,9 @@
             body.admin-panel-abierto{padding-bottom:280px}
             #contenedorProductos { grid-template-columns: repeat(3, 1fr); gap: 10px; }
             .producto { border-radius: 16px; }
-            .imagen-area { height: 130px; background: #f8fafc; }
+            .imagen-area { height: 140px; background: #f8fafc; min-height: 120px; }
             .imagen-area img { max-width: 100%; max-height: 100%; object-fit: contain; padding: 4px; }
-            .imagen-area .zoom-icon { font-size: 9px; padding: 1px 8px; }
+            .imagen-area .zoom-icon { font-size: 9px; padding: 2px 10px; }
             .info { padding: 10px; }
             .titulo { font-size: 0.8rem; gap: 3px; }
             .descripcion { font-size: 0.7rem; margin: 3px 0; -webkit-line-clamp: 2; }
@@ -1316,26 +1413,50 @@ function mostrarNotificacion(mensaje, duracion) {
 }
 
 // ============================================================
-//  VISOR DE IMÁGENES CON ZOOM
+//  VISOR DE IMÁGENES CON ZOOM - CORREGIDO PARA MÓVILES
 // ============================================================
 function abrirVisorImagenes(productoId) {
     var prod = productos.find(function(p) { return p.id === productoId; });
-    if (!prod || !prod.imagenUrl) {
+    if (!prod) {
+        mostrarNotificacion("❌ Producto no encontrado");
+        return;
+    }
+    
+    var imagenUrl = prod.imagenUrl;
+    if (!imagenUrl || imagenUrl.trim() === "") {
         mostrarNotificacion("❌ Este producto no tiene imagen");
         return;
     }
     
-    imagenesProductos = productos.filter(function(p) { return p.imagenUrl && p.imagenUrl.trim() !== ""; });
-    currentImageIndex = imagenesProductos.findIndex(function(p) { return p.id === productoId; });
+    // Obtener todas las imágenes de productos que tienen imagen
+    imagenesProductos = productos.filter(function(p) { 
+        return p.imagenUrl && p.imagenUrl.trim() !== ""; 
+    });
+    
+    // Si no hay otras imágenes, usar solo este producto
+    if (imagenesProductos.length === 0) {
+        imagenesProductos = [prod];
+    }
+    
+    // Encontrar el índice del producto actual
+    currentImageIndex = imagenesProductos.findIndex(function(p) { 
+        return p.id === productoId; 
+    });
     
     if (currentImageIndex === -1) {
-        imagenesProductos = [prod];
+        // Si no se encuentra, agregar al inicio
+        imagenesProductos.unshift(prod);
         currentImageIndex = 0;
     }
     
+    // Mostrar la imagen en el modal
     mostrarImagenModal(currentImageIndex);
-    document.getElementById('imageModal').classList.add('visible');
-    document.body.style.overflow = 'hidden';
+    var modal = document.getElementById('imageModal');
+    if (modal) {
+        modal.classList.add('visible');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
     isZoomed = false;
 }
 
@@ -1348,61 +1469,184 @@ function mostrarImagenModal(index) {
     var counter = document.getElementById('imageCounter');
     var prevBtn = document.getElementById('prevImage');
     var nextBtn = document.getElementById('nextImage');
+    var modal = document.getElementById('imageModal');
     
-    img.src = imagenesProductos[index].imagenUrl;
-    img.alt = imagenesProductos[index].nombre || 'Producto';
+    if (!img) return;
+    
+    var producto = imagenesProductos[index];
+    var imagenUrl = producto.imagenUrl || '';
+    
+    // Mostrar la imagen
+    img.src = imagenUrl;
+    img.alt = producto.nombre || 'Producto';
     img.classList.remove('zoomed');
     img.style.transform = 'scale(1)';
     isZoomed = false;
+    img.style.display = 'block';
     
+    // Mostrar contador y navegación
     if (imagenesProductos.length > 1) {
-        counter.textContent = (index + 1) + ' / ' + imagenesProductos.length;
-        counter.style.display = 'block';
-        prevBtn.classList.remove('hidden');
-        nextBtn.classList.remove('hidden');
+        if (counter) {
+            counter.textContent = (index + 1) + ' / ' + imagenesProductos.length;
+            counter.style.display = 'block';
+        }
+        if (prevBtn) prevBtn.classList.remove('hidden');
+        if (nextBtn) nextBtn.classList.remove('hidden');
     } else {
-        counter.style.display = 'none';
-        prevBtn.classList.add('hidden');
-        nextBtn.classList.add('hidden');
+        if (counter) counter.style.display = 'none';
+        if (prevBtn) prevBtn.classList.add('hidden');
+        if (nextBtn) nextBtn.classList.add('hidden');
+    }
+    
+    // Asegurar que el modal esté visible
+    if (modal) {
+        modal.style.display = 'flex';
     }
 }
 
 function cerrarVisorImagenes() {
-    document.getElementById('imageModal').classList.remove('visible');
+    var modal = document.getElementById('imageModal');
+    if (modal) {
+        modal.classList.remove('visible');
+        modal.style.display = 'none';
+    }
     document.body.style.overflow = '';
     isZoomed = false;
 }
 
-document.getElementById('closeImageModal').onclick = cerrarVisorImagenes;
-document.getElementById('imageModal').onclick = function(e) {
+// Eventos del modal de imágenes
+document.getElementById('closeImageModal').addEventListener('click', function(e) {
+    e.stopPropagation();
+    cerrarVisorImagenes();
+});
+
+document.getElementById('imageModal').addEventListener('click', function(e) {
     if (e.target === this) cerrarVisorImagenes();
-};
-document.getElementById('prevImage').onclick = function(e) {
+});
+
+document.getElementById('prevImage').addEventListener('click', function(e) {
     e.stopPropagation();
     mostrarImagenModal(currentImageIndex - 1);
-};
-document.getElementById('nextImage').onclick = function(e) {
+});
+
+document.getElementById('nextImage').addEventListener('click', function(e) {
     e.stopPropagation();
     mostrarImagenModal(currentImageIndex + 1);
-};
+});
 
-document.getElementById('modalImage').onclick = function(e) {
+// ===== ZOOM CON CLICK EN LA IMAGEN =====
+document.getElementById('modalImage').addEventListener('click', function(e) {
     e.stopPropagation();
     isZoomed = !isZoomed;
     this.classList.toggle('zoomed');
     this.style.cursor = isZoomed ? 'zoom-out' : 'zoom-in';
-    if (!isZoomed) this.style.transform = 'scale(1)';
-};
+    if (!isZoomed) {
+        this.style.transform = 'scale(1)';
+    } else {
+        this.style.transform = 'scale(2)';
+    }
+});
 
+// ===== ZOOM CON PINCH (DEDOS) PARA MÓVILES =====
+var initialPinchDistance = 0;
+var currentScale = 1;
+var pinchStartScale = 1;
+
+document.getElementById('modalImage').addEventListener('touchstart', function(e) {
+    if (e.touches.length === 2) {
+        e.preventDefault();
+        var touch1 = e.touches[0];
+        var touch2 = e.touches[1];
+        initialPinchDistance = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+        pinchStartScale = isZoomed ? 2 : 1;
+        currentScale = pinchStartScale;
+    }
+}, { passive: false });
+
+document.getElementById('modalImage').addEventListener('touchmove', function(e) {
+    if (e.touches.length === 2) {
+        e.preventDefault();
+        var touch1 = e.touches[0];
+        var touch2 = e.touches[1];
+        var newDistance = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+        var scale = Math.min(Math.max((newDistance / initialPinchDistance) * pinchStartScale, 0.5), 4);
+        currentScale = scale;
+        this.style.transform = 'scale(' + scale + ')';
+        isZoomed = scale > 1.2;
+        this.style.cursor = isZoomed ? 'zoom-out' : 'zoom-in';
+        if (isZoomed) {
+            this.classList.add('zoomed');
+        } else {
+            this.classList.remove('zoomed');
+        }
+    }
+}, { passive: false });
+
+document.getElementById('modalImage').addEventListener('touchend', function(e) {
+    if (e.changedTouches.length === 2) {
+        // Si el zoom es menor a 1.2, resetear
+        if (currentScale < 1.2) {
+            this.style.transform = 'scale(1)';
+            this.classList.remove('zoomed');
+            isZoomed = false;
+        } else if (currentScale >= 1.2 && currentScale < 2) {
+            this.style.transform = 'scale(2)';
+            this.classList.add('zoomed');
+            isZoomed = true;
+        } else {
+            this.classList.add('zoomed');
+            isZoomed = true;
+        }
+    }
+}, { passive: true });
+
+// ===== TECLADO (ESC, FLECHAS) =====
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') cerrarVisorImagenes();
     if (e.key === 'ArrowLeft' && document.getElementById('imageModal').classList.contains('visible')) {
+        e.preventDefault();
         mostrarImagenModal(currentImageIndex - 1);
     }
     if (e.key === 'ArrowRight' && document.getElementById('imageModal').classList.contains('visible')) {
+        e.preventDefault();
         mostrarImagenModal(currentImageIndex + 1);
     }
 });
+
+// ===== SWIPE PARA MÓVILES (deslizar para cambiar imagen) =====
+var touchStartX = 0;
+var touchStartY = 0;
+var isSwiping = false;
+
+document.getElementById('modalImage').addEventListener('touchstart', function(e) {
+    if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        isSwiping = true;
+    }
+}, { passive: true });
+
+document.getElementById('modalImage').addEventListener('touchmove', function(e) {
+    if (e.touches.length === 1 && isSwiping) {
+        var deltaX = e.touches[0].clientX - touchStartX;
+        var deltaY = e.touches[0].clientY - touchStartY;
+        // Si el desplazamiento horizontal es mayor que el vertical y mayor a 50px
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+            isSwiping = false;
+            if (deltaX > 0) {
+                // Deslizar a la derecha = imagen anterior
+                mostrarImagenModal(currentImageIndex - 1);
+            } else {
+                // Deslizar a la izquierda = imagen siguiente
+                mostrarImagenModal(currentImageIndex + 1);
+            }
+        }
+    }
+}, { passive: true });
+
+document.getElementById('modalImage').addEventListener('touchend', function(e) {
+    isSwiping = false;
+}, { passive: true });
 
 // ============================================================
 //  RENDERIZAR FILTROS
@@ -1422,7 +1666,7 @@ function renderizarFiltros() {
 }
 
 // ============================================================
-//  RENDERIZAR PRODUCTOS
+//  RENDERIZAR PRODUCTOS - CORREGIDO (IMÁGENES Y ZOOM)
 // ============================================================
 function renderizarProductos() {
     var contenedor = document.getElementById('contenedorProductos');
@@ -1465,11 +1709,66 @@ function renderizarProductos() {
         
         var botonEliminar = modoAdmin ? '<div class="botones-edicion"><button class="btn-eliminar" onclick="eliminarProducto(\'' + p.id + '\')">🗑️ ELIMINAR PRODUCTO</button></div>' : '';
         
-        var clickImagen = p.imagenUrl ? 'onclick="abrirVisorImagenes(\'' + p.id + '\')"' : '';
-        var cursorImagen = p.imagenUrl ? 'cursor:pointer;' : '';
-        var iconoZoom = p.imagenUrl ? '<div class="zoom-icon">🔍</div>' : '';
+        // ===== IMAGEN CON SOPORTE PARA ZOOM =====
+        var imagenHTML = '';
+        var clickImagen = '';
+        var iconoZoom = '';
+        var imagenSrc = p.imagenUrl || '';
         
-        return '<div class="producto" id="prod-' + p.id + '" style="' + (estaOculto && modoAdmin ? 'opacity:0.7; border:2px dashed #fecaca;' : '') + '">' + (esPromoValida ? '<div class="banner-promo-fuera">' + p.textoPromo.toUpperCase() + (p.vigenciaPromo ? '<span class="vigencia">VIGENCIA: ' + formatearFecha(p.vigenciaPromo) + '</span>' : '') + '</div>' : '') + etiquetaPromo + '<div class="info" style="padding-bottom:5px;"><div class="codigo">CÓDIGO: ' + (p.codigo || 'S/C') + '</div></div><div class="imagen-area" ' + clickImagen + ' style="' + cursorImagen + '">' + (p.imagenUrl ? '<img src="' + p.imagenUrl + '" alt="' + p.nombre + '">' : '<div class="sin-imagen">📷 Sin Imagen</div>') + iconoZoom + '</div><div class="info"><div class="titulo">' + p.nombre + ' ' + descuentoTexto + ' ' + ocultoBadge + '</div><div class="descripcion">' + (p.descripcion || '') + '</div><div><span class="categoria-texto">' + (p.categoria || 'General') + '</span>' + stockHTML + '</div><div class="precio">' + (descNum > 0 ? '<span class="precio-antes">$' + parseFloat(p.precioLista).toFixed(2) + '</span>' : '') + '<span class="' + precioClase + '">$' + pFinal.toFixed(2) + '</span></div><div class="acciones"><input type="number" id="cant-' + p.id + '" value="1" min="1"><button class="btn-agregar" onclick="agregarAlCarrito(\'' + p.id + '\')">🛒 AGREGAR</button><a class="btn-wa" href="https://wa.me/522282877441?text=' + encodeURIComponent('Hola, me interesa: ' + p.nombre) + '" target="_blank">💬 CONSULTAR</a>' + botonEditar + '</div><div class="editor-area" id="edit-area-' + p.id + '"><hr style="margin-bottom:15px; border:0; border-top:1px dashed #ccc;"><h4 style="margin-bottom:10px; color:#002b5c;">🛠️ Editar Producto</h4><div class="campo-row"><label>Código</label><input type="text" id="edit-codigo-' + p.id + '" value="' + (p.codigo || '') + '"></div><div class="campo-row"><label>Nombre del Producto</label><input type="text" id="edit-nombre-' + p.id + '" value="' + (p.nombre || '') + '"></div><div class="campo-row"><label>Descripción</label><textarea id="edit-descripcion-' + p.id + '">' + (p.descripcion || '') + '</textarea></div><div class="campo-row"><label>Categoría</label><input type="text" id="edit-categoria-' + p.id + '" value="' + (p.categoria || '') + '"></div><div class="campo-row"><label>Precio de Lista ($)</label><input type="number" step="0.01" id="edit-precio-' + p.id + '" value="' + (p.precioLista || '') + '"></div><div class="campo-row"><label>Descuento (%)</label><input type="number" id="edit-descuento-' + p.id + '" value="' + (p.descuento || '0') + '"></div><div class="campo-row"><label>Precio de Compra ($)</label><input type="number" step="0.01" id="edit-precioCompra-' + p.id + '" value="' + (p.precioCompra || '') + '"></div><div class="campo-row"><label>Stock</label><input type="number" id="edit-stock-' + p.id + '" value="' + (p.stock || '0') + '"></div>' + campoVisibilidad + '<div class="campo-row"><label style="color:#2563eb; font-weight:bold;">📸 Cargar Foto desde Celular o PC</label><input type="file" id="file-input-' + p.id + '" accept="image/*" onchange="procesarFotoLocal(this, \'' + p.id + '\')"></div><div class="campo-row"><label>URL de la Imagen (Texto de respaldo)</label><input type="text" id="edit-imagen-' + p.id + '" value="' + (p.imagenUrl || '') + '"></div><div class="campo-row"><label>¿Activar Banner de Promoción?</label><select id="edit-promo-' + p.id + '"><option value="NO" ' + (p.promoFuera==='NO'?'selected':'') + '>NO</option><option value="SI" ' + (p.promoFuera==='SI'?'selected':'') + '>SI</option></select></div><div class="campo-row"><label>Texto del Banner Promocional</label><input type="text" id="edit-textopromo-' + p.id + '" value="' + (p.textoPromo || '') + '"></div><div class="campo-row"><label>Vigencia de Promoción</label><input type="date" id="edit-vigencia-' + p.id + '" value="' + (p.vigenciaPromo || '') + '"></div><button class="btn-guardar" onclick="guardarCambios(\'' + p.id + '\')">💾 GUARDAR CAMBIOS</button>' + botonEliminar + '</div></div></div>';
+        if (imagenSrc && imagenSrc.trim() !== "") {
+            // La imagen existe, mostrar con zoom
+            clickImagen = 'onclick="abrirVisorImagenes(\'' + p.id + '\')"';
+            iconoZoom = '<div class="zoom-icon">🔍</div>';
+            imagenHTML = '<img src="' + imagenSrc + '" alt="' + (p.nombre || 'Producto') + '" loading="lazy" style="max-width:100%;max-height:100%;object-fit:contain;" onerror="this.style.display=\'none\';this.parentElement.querySelector(\'.sin-imagen\').style.display=\'flex\';">';
+            imagenHTML += '<div class="sin-imagen" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;justify-content:center;align-items:center;background:#f8fafc;color:#94a3b8;font-size:12px;">📷 Sin Imagen</div>';
+        } else {
+            // Sin imagen
+            imagenHTML = '<div class="sin-imagen">📷 Sin Imagen</div>';
+            iconoZoom = '';
+            clickImagen = '';
+        }
+        
+        return '<div class="producto" id="prod-' + p.id + '" style="' + (estaOculto && modoAdmin ? 'opacity:0.7; border:2px dashed #fecaca;' : '') + '">' + 
+            (esPromoValida ? '<div class="banner-promo-fuera">' + p.textoPromo.toUpperCase() + (p.vigenciaPromo ? '<span class="vigencia">VIGENCIA: ' + formatearFecha(p.vigenciaPromo) + '</span>' : '') + '</div>' : '') + 
+            etiquetaPromo + 
+            '<div class="info" style="padding-bottom:5px;"><div class="codigo">CÓDIGO: ' + (p.codigo || 'S/C') + '</div></div>' + 
+            '<div class="imagen-area" ' + clickImagen + ' style="cursor:pointer;position:relative;overflow:hidden;background:#f8fafc;">' + 
+                imagenHTML + 
+                iconoZoom + 
+            '</div>' + 
+            '<div class="info">' + 
+                '<div class="titulo">' + p.nombre + ' ' + descuentoTexto + ' ' + ocultoBadge + '</div>' + 
+                '<div class="descripcion">' + (p.descripcion || '') + '</div>' + 
+                '<div><span class="categoria-texto">' + (p.categoria || 'General') + '</span>' + stockHTML + '</div>' + 
+                '<div class="precio">' + (descNum > 0 ? '<span class="precio-antes">$' + parseFloat(p.precioLista).toFixed(2) + '</span>' : '') + '<span class="' + precioClase + '">$' + pFinal.toFixed(2) + '</span></div>' + 
+                '<div class="acciones">' + 
+                    '<input type="number" id="cant-' + p.id + '" value="1" min="1">' + 
+                    '<button class="btn-agregar" onclick="agregarAlCarrito(\'' + p.id + '\')">🛒 AGREGAR</button>' + 
+                    '<a class="btn-wa" href="https://wa.me/522282877441?text=' + encodeURIComponent('Hola, me interesa: ' + p.nombre) + '" target="_blank">💬 CONSULTAR</a>' + 
+                    botonEditar + 
+                '</div>' + 
+                '<div class="editor-area" id="edit-area-' + p.id + '">' + 
+                    '<hr style="margin-bottom:15px; border:0; border-top:1px dashed #ccc;">' + 
+                    '<h4 style="margin-bottom:10px; color:#002b5c;">🛠️ Editar Producto</h4>' + 
+                    '<div class="campo-row"><label>Código</label><input type="text" id="edit-codigo-' + p.id + '" value="' + (p.codigo || '') + '"></div>' + 
+                    '<div class="campo-row"><label>Nombre del Producto</label><input type="text" id="edit-nombre-' + p.id + '" value="' + (p.nombre || '') + '"></div>' + 
+                    '<div class="campo-row"><label>Descripción</label><textarea id="edit-descripcion-' + p.id + '">' + (p.descripcion || '') + '</textarea></div>' + 
+                    '<div class="campo-row"><label>Categoría</label><input type="text" id="edit-categoria-' + p.id + '" value="' + (p.categoria || '') + '"></div>' + 
+                    '<div class="campo-row"><label>Precio de Lista ($)</label><input type="number" step="0.01" id="edit-precio-' + p.id + '" value="' + (p.precioLista || '') + '"></div>' + 
+                    '<div class="campo-row"><label>Descuento (%)</label><input type="number" id="edit-descuento-' + p.id + '" value="' + (p.descuento || '0') + '"></div>' + 
+                    '<div class="campo-row"><label>Precio de Compra ($)</label><input type="number" step="0.01" id="edit-precioCompra-' + p.id + '" value="' + (p.precioCompra || '') + '"></div>' + 
+                    '<div class="campo-row"><label>Stock</label><input type="number" id="edit-stock-' + p.id + '" value="' + (p.stock || '0') + '"></div>' + 
+                    campoVisibilidad + 
+                    '<div class="campo-row"><label style="color:#2563eb; font-weight:bold;">📸 Cargar Foto desde Celular o PC</label><input type="file" id="file-input-' + p.id + '" accept="image/*" onchange="procesarFotoLocal(this, \'' + p.id + '\')"></div>' + 
+                    '<div class="campo-row"><label>URL de la Imagen (Texto de respaldo)</label><input type="text" id="edit-imagen-' + p.id + '" value="' + (p.imagenUrl || '') + '"></div>' + 
+                    '<div class="campo-row"><label>¿Activar Banner de Promoción?</label><select id="edit-promo-' + p.id + '"><option value="NO" ' + (p.promoFuera==='NO'?'selected':'') + '>NO</option><option value="SI" ' + (p.promoFuera==='SI'?'selected':'') + '>SI</option></select></div>' + 
+                    '<div class="campo-row"><label>Texto del Banner Promocional</label><input type="text" id="edit-textopromo-' + p.id + '" value="' + (p.textoPromo || '') + '"></div>' + 
+                    '<div class="campo-row"><label>Vigencia de Promoción</label><input type="date" id="edit-vigencia-' + p.id + '" value="' + (p.vigenciaPromo || '') + '"></div>' + 
+                    '<button class="btn-guardar" onclick="guardarCambios(\'' + p.id + '\')">💾 GUARDAR CAMBIOS</button>' + 
+                    botonEliminar + 
+                '</div>' + 
+            '</div>' + 
+        '</div>';
     }).join('');
 }
 
