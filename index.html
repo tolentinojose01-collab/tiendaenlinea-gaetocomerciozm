@@ -15,14 +15,14 @@
         .badge-admin{position:absolute;bottom:5px;right:15px;background:#ff9800;color:#000;font-size:10px;padding:2px 8px;border-radius:20px;display:none}
         .banner{background:#1e2a3e;color:#ffd966;text-align:center;padding:10px;border-radius:60px;margin-bottom:20px;font-size:13px;line-height:1.4}
         .toolbar{background:#1e2a3e;padding:12px;border-radius:20px;display:none;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:25px;position:sticky;top:0;z-index:150;box-shadow:0 4px 12px rgba(0,0,0,0.2)}
-        .toolbar button{background:#2d3a4e;border:none;padding:8px 16px;border-radius:40px;color:white;cursor:pointer;font-size:13px;font-weight:bold}
+        .toolbar button{background:#2d3a4e;border:none;padding:8px 16px;border-radius:40px;color:white;cursor:pointer;font-size:13px;font-weight:bold;touch-action:manipulation}
         .toolbar .share{background:#25d366}
         .toolbar .admin-btn{background:#2563eb}
         .toolbar .promo-btn{background:#e11d48}
         .contenedor-busqueda {max-width:500px; margin: 0 auto 20px auto; display: flex; gap: 10px;}
         .busqueda-input {flex: 1; padding: 12px 20px; border-radius: 40px; border: 1px solid #ccc; outline: none; font-size: 14px;}
         .filtro-categorias{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:25px}
-        .filtro-btn{background:#e2e8f0;border:none;padding:8px 20px;border-radius:40px;font-weight:bold;cursor:pointer}
+        .filtro-btn{background:#e2e8f0;border:none;padding:8px 20px;border-radius:40px;font-weight:bold;cursor:pointer;touch-action:manipulation}
         .filtro-btn.activo{background:#002b5c;color:white}
         
         #contenedorProductos {
@@ -57,9 +57,9 @@
         .modo-admin .oculto-badge{display:inline-block}
         .acciones{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
         .acciones input{width:60px;padding:6px;border-radius:30px;border:1px solid #ccc;text-align:center;font-size:12px}
-        .btn-agregar{background:#ff9800;color:white;border:none;padding:6px 12px;border-radius:30px;cursor:pointer;font-weight:bold;flex:1;font-size:12px}
+        .btn-agregar{background:#ff9800;color:white;border:none;padding:6px 12px;border-radius:30px;cursor:pointer;font-weight:bold;flex:1;font-size:12px;touch-action:manipulation}
         .btn-wa{background:#25d366;color:white;text-decoration:none;text-align:center;padding:6px 12px;border-radius:30px;font-weight:bold;flex:1;font-size:12px}
-        .btn-editar{background:#8b5cf6;color:white;border:none;padding:6px 12px;border-radius:30px;cursor:pointer;font-weight:bold;flex:1;font-size:12px;display:none}
+        .btn-editar{background:#8b5cf6;color:white;border:none;padding:6px 12px;border-radius:30px;cursor:pointer;font-weight:bold;flex:1;font-size:12px;display:none;touch-action:manipulation}
         .modo-admin .btn-editar{display:block}
         .editor-area{margin-top:12px;border-top:1px solid #ddd;padding-top:12px;display:none}
         .editor-area.visible{display:block !important}
@@ -68,9 +68,9 @@
         .campo-row input, .campo-row textarea, .campo-row select{width:100%;padding:8px 12px;border-radius:25px;border:1px solid #ccc;font-size:12px;outline:none}
         .campo-row textarea{border-radius:12px;height:50px;resize:none;font-size:12px}
         .campo-row input[type="file"] {border: 1px dashed #2563eb;background: #eff6ff;border-radius: 12px;padding: 10px;cursor: pointer;font-size:11px}
-        .btn-guardar{background:#2563eb;color:white;border:none;padding:8px;border-radius:30px;width:100%;margin-bottom:6px;cursor:pointer;font-weight:bold;font-size:12px}
+        .btn-guardar{background:#2563eb;color:white;border:none;padding:8px;border-radius:30px;width:100%;margin-bottom:6px;cursor:pointer;font-weight:bold;font-size:12px;touch-action:manipulation}
         .botones-edicion{display:flex;gap:8px;margin-top:8px}
-        .btn-eliminar{flex:1;padding:6px;border-radius:30px;border:none;color:white;cursor:pointer;background:#b91c1c;font-weight:bold;font-size:12px}
+        .btn-eliminar{flex:1;padding:6px;border-radius:30px;border:none;color:white;cursor:pointer;background:#b91c1c;font-weight:bold;font-size:12px;touch-action:manipulation}
         
         /* ===== MODAL DE IMÁGENES CON ZOOM ===== */
         .image-modal {
@@ -220,7 +220,7 @@
             .btn-enviar-wa { font-size: 11px; padding: 6px; }
             .admin-panel { padding: 12px; }
             .admin-panel h2 { font-size: 16px; }
-            .tabs-admin button { font-size: 10px; padding: 4px 10px; }
+            .tabs-admin button { font-size: 12px; padding: 10px 14px; min-height:44px; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
             .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
             .stat-card { padding: 8px; }
             .stat-card .numero { font-size: 16px; }
@@ -228,6 +228,7 @@
             .admin-header { flex-direction: column; gap: 8px; align-items: stretch; }
             .admin-header h2 { font-size: 16px; text-align: center; }
             .btn-cerrar-panel { font-size: 12px; padding: 6px 12px; }
+            .tab-precios-btn { padding: 12px 16px !important; font-size: 14px !important; min-height:44px; touch-action:manipulation; }
         }
         
         @media (min-width: 481px) and (max-width: 768px) {
@@ -276,6 +277,8 @@
             .admin-header { flex-direction: column; gap: 8px; align-items: stretch; }
             .admin-header h2 { font-size: 18px; text-align: center; }
             .btn-cerrar-panel { font-size: 12px; padding: 6px 12px; }
+            .tabs-admin button { padding: 12px 16px; font-size: 14px; min-height:44px; touch-action:manipulation; }
+            .tab-precios-btn { padding: 12px 16px !important; font-size: 14px !important; min-height:44px; touch-action:manipulation; }
         }
         
         @media (min-width: 769px) and (max-width: 1024px) {
@@ -311,11 +314,11 @@
         .tabla-container td{padding:8px;border-bottom:1px solid #e2e8f0}
         .tabla-container tr:hover{background:#f1f5f9}
         .tabs-admin{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
-        .tabs-admin button{padding:8px 16px;border:2px solid #e2e8f0;background:white;border-radius:30px;cursor:pointer;font-weight:600;font-size:12px;transition:all 0.3s}
+        .tabs-admin button{padding:8px 16px;border:2px solid #e2e8f0;background:white;border-radius:30px;cursor:pointer;font-weight:600;font-size:12px;transition:all 0.3s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
         .tabs-admin button.activo{background:#002b5c;color:white;border-color:#002b5c}
         .tab-content{display:none}
         .tab-content.visible{display:block}
-        .btn-accion{padding:4px 10px;border:none;border-radius:20px;cursor:pointer;font-size:11px;font-weight:bold}
+        .btn-accion{padding:4px 10px;border:none;border-radius:20px;cursor:pointer;font-size:11px;font-weight:bold;touch-action:manipulation}
         .btn-confirmar{background:#22c55e;color:white}
         .btn-entregar{background:#3b82f6;color:white}
         .btn-cancelar{background:#ef4444;color:white}
@@ -323,24 +326,24 @@
         .btn-pendiente{background:#f59e0b;color:white}
         .btn-en-ruta{background:#06b6d4;color:white}
         .btn-editar-stock{background:#f59e0b;color:white}
-        .btn-filtrar{background:#2563eb;color:white;border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-weight:bold}
-        .btn-limpiar{background:#e2e8f0;color:#334155;border:none;padding:8px 20px;border-radius:20px;cursor:pointer}
-        .btn-buscar-tabla{background:#2563eb;color:white;border:none;padding:8px 20px;border-radius:30px;cursor:pointer;font-weight:bold}
-        .btn-eliminar-cliente{background:#ef4444;color:white;border:none;border-radius:20px;cursor:pointer;font-size:12px;padding:4px 12px}
+        .btn-filtrar{background:#2563eb;color:white;border:none;padding:8px 20px;border-radius:20px;cursor:pointer;font-weight:bold;touch-action:manipulation}
+        .btn-limpiar{background:#e2e8f0;color:#334155;border:none;padding:8px 20px;border-radius:20px;cursor:pointer;touch-action:manipulation}
+        .btn-buscar-tabla{background:#2563eb;color:white;border:none;padding:8px 20px;border-radius:30px;cursor:pointer;font-weight:bold;touch-action:manipulation}
+        .btn-eliminar-cliente{background:#ef4444;color:white;border:none;border-radius:20px;cursor:pointer;font-size:12px;padding:4px 12px;touch-action:manipulation}
         .btn-eliminar-cliente:hover{background:#dc2626}
-        .btn-historial{background:#8b5cf6;color:white;border:none;border-radius:20px;cursor:pointer;font-size:12px;padding:4px 12px}
+        .btn-historial{background:#8b5cf6;color:white;border:none;border-radius:20px;cursor:pointer;font-size:12px;padding:4px 12px;touch-action:manipulation}
         .btn-historial:hover{background:#7c3aed}
-        .btn-compra{background:#059669;color:white;border:none;border-radius:20px;cursor:pointer;font-size:12px;padding:4px 12px}
+        .btn-compra{background:#059669;color:white;border:none;border-radius:20px;cursor:pointer;font-size:12px;padding:4px 12px;touch-action:manipulation}
         .btn-compra:hover{background:#047857}
-        .btn-pdf{background:#dc2626;color:white;border:none;border-radius:20px;cursor:pointer;font-size:12px;padding:4px 10px}
+        .btn-pdf{background:#dc2626;color:white;border:none;border-radius:20px;cursor:pointer;font-size:12px;padding:4px 10px;touch-action:manipulation}
         .btn-pdf:hover{background:#b91c1c}
         .carrito-panel{position:fixed;bottom:0;left:0;right:0;background:#1e293b;color:white;padding:15px;border-radius:24px 24px 0 0;max-height:50vh;overflow-y:auto;z-index:200;box-shadow:0 -5px 15px rgba(0,0,0,0.3)}
         .carrito-item{display:flex;justify-content:space-between;border-bottom:1px solid #475569;padding:8px 0;font-size:13px}
         .total-carrito{text-align:right;font-size:1.3rem;margin:10px 0;font-weight:bold}
         .telefono-carrito{background:#2d3a4e;color:#fff;text-align:center;padding:8px;border-radius:60px;margin-top:10px;font-weight:bold;text-decoration:none;display:block;font-size:12px}
-        .btn-enviar-wa{background:#25d366;color:white;text-decoration:none;display:block;width:100%;padding:12px;border-radius:40px;font-weight:bold;text-align:center;border:none;font-size:16px}
+        .btn-enviar-wa{background:#25d366;color:white;text-decoration:none;display:block;width:100%;padding:12px;border-radius:40px;font-weight:bold;text-align:center;border:none;font-size:16px;touch-action:manipulation}
         
-        /* ===== MODAL DE CONTRASEÑA - CORREGIDO ===== */
+        /* ===== MODAL DE CONTRASEÑA ===== */
         .modal-pwd {
             display: none;
             position: fixed;
@@ -394,6 +397,7 @@
             font-weight: bold;
             font-size: 14px;
             margin: 3px;
+            touch-action: manipulation;
         }
         .modal-pwd-content button:hover {
             background: #1a3a6b;
@@ -416,7 +420,7 @@
         .modal-stock-content h3{color:#002b5c;margin-bottom:5px}
         .modal-stock-content .producto-nombre{font-size:14px;color:#64748b;margin-bottom:15px}
         .modal-stock-content .btn-group{display:flex;gap:10px;margin-bottom:10px}
-        .modal-stock-content .btn-group button{flex:1;padding:10px;border:none;border-radius:30px;cursor:pointer;font-weight:bold;font-size:14px;transition:all 0.3s}
+        .modal-stock-content .btn-group button{flex:1;padding:10px;border:none;border-radius:30px;cursor:pointer;font-weight:bold;font-size:14px;transition:all 0.3s;touch-action:manipulation}
         .modal-stock-content .btn-group .btn-sumar{background:#2563eb;color:white}
         .modal-stock-content .btn-group .btn-sumar.active{background:#1d4ed8;box-shadow:0 0 0 2px #2563eb}
         .modal-stock-content .btn-group .btn-poner{background:#e2e8f0;color:#334155}
@@ -425,7 +429,7 @@
         .modal-stock-content input{width:100%;padding:12px;border-radius:20px;border:2px solid #e2e8f0;text-align:center;margin:10px 0;font-size:18px;outline:none;transition:border 0.3s}
         .modal-stock-content input:focus{border-color:#2563eb}
         .modal-stock-content .btn-actions{display:flex;gap:10px;margin-top:5px}
-        .modal-stock-content .btn-actions button{flex:1;padding:12px;border:none;border-radius:30px;cursor:pointer;font-weight:bold;font-size:15px;transition:background 0.3s}
+        .modal-stock-content .btn-actions button{flex:1;padding:12px;border:none;border-radius:30px;cursor:pointer;font-weight:bold;font-size:15px;transition:background 0.3s;touch-action:manipulation}
         .modal-stock-content .btn-actions .btn-guardar{background:#2563eb;color:white}
         .modal-stock-content .btn-actions .btn-guardar:hover{background:#1d4ed8}
         .modal-stock-content .btn-actions .btn-cancelar{background:#e2e8f0;color:#64748b}
@@ -440,12 +444,12 @@
         .modal-registro-content .campo-row label{font-weight:600;font-size:13px;color:#334155;display:block;margin-bottom:4px}
         .modal-registro-content .campo-row input{width:100%;padding:12px 16px;border-radius:30px;border:2px solid #e2e8f0;font-size:14px;outline:none;transition:border 0.3s}
         .modal-registro-content .campo-row input:focus{border-color:#2563eb}
-        .btn-registro-confirmar{background:#25d366;color:white;border:none;padding:14px;border-radius:40px;width:100%;font-weight:bold;font-size:16px;cursor:pointer;margin-top:10px;transition:background 0.3s}
+        .btn-registro-confirmar{background:#25d366;color:white;border:none;padding:14px;border-radius:40px;width:100%;font-weight:bold;font-size:16px;cursor:pointer;margin-top:10px;transition:background 0.3s;touch-action:manipulation}
         .btn-registro-confirmar:hover{background:#1ea85a}
-        .btn-registro-cancelar{background:#f1f5f9;color:#64748b;border:none;padding:10px;border-radius:40px;width:100%;font-weight:bold;font-size:14px;cursor:pointer;margin-top:8px;transition:background 0.3s}
+        .btn-registro-cancelar{background:#f1f5f9;color:#64748b;border:none;padding:10px;border-radius:40px;width:100%;font-weight:bold;font-size:14px;cursor:pointer;margin-top:8px;transition:background 0.3s;touch-action:manipulation}
         .btn-registro-cancelar:hover{background:#e2e8f0}
         .modal-registro-content .footer-text{font-size:11px;color:#94a3b8;text-align:center;margin-top:15px}
-        .btn-buscar-cliente{background:#2563eb;color:white;border:none;padding:12px 18px;border-radius:30px;cursor:pointer;font-weight:bold;margin-top:22px;white-space:nowrap;transition:background 0.3s}
+        .btn-buscar-cliente{background:#2563eb;color:white;border:none;padding:12px 18px;border-radius:30px;cursor:pointer;font-weight:bold;margin-top:22px;white-space:nowrap;transition:background 0.3s;touch-action:manipulation}
         .btn-buscar-cliente:hover{background:#1d4ed8}
         .mensaje-cliente-encontrado{display:none;background:#bbf7d0;color:#166534;padding:10px;border-radius:16px;text-align:center;margin-bottom:15px;font-size:13px;font-weight:bold}
         .mensaje-cliente-no-encontrado{display:none;background:#fecaca;color:#b91c1c;padding:10px;border-radius:16px;text-align:center;margin-bottom:15px;font-size:13px;font-weight:bold}
@@ -453,7 +457,7 @@
         .lista-precios-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:15px}
         .lista-precios-header h3{color:#002b5c;font-size:18px}
         .lista-precios-header .acciones-lista{display:flex;gap:10px;flex-wrap:wrap}
-        .lista-precios-header .acciones-lista button{padding:8px 16px;border:none;border-radius:30px;cursor:pointer;font-weight:bold;font-size:12px}
+        .lista-precios-header .acciones-lista button{padding:8px 16px;border:none;border-radius:30px;cursor:pointer;font-weight:bold;font-size:12px;touch-action:manipulation}
         .btn-pdf-lista{background:#dc2626;color:white}
         .btn-pdf-cliente{background:#2563eb;color:white}
         .btn-imprimir-lista{background:#2563eb;color:white}
@@ -474,6 +478,7 @@
         .lista-precios-tabla .categoria-tag{background:#e2e8f0;padding:2px 10px;border-radius:12px;font-size:10px}
         .tab-precios{display:none}
         .tab-precios.visible{display:block}
+        .tab-precios-btn{padding:8px 16px;border:none;border-radius:30px;cursor:pointer;font-weight:bold;font-size:13px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
         .precio-cliente{font-size:13px;color:#002b5c;font-weight:bold}
         .precio-cliente-grande{font-size:18px;color:#002b5c;font-weight:bold}
         .promo-card{background:white;border-radius:16px;padding:20px;margin-bottom:20px;border:2px solid #e11d48;box-shadow:0 4px 15px rgba(225,29,72,0.15);position:relative;page-break-inside:avoid}
@@ -485,7 +490,7 @@
         .promo-card .promo-codigo{font-family:monospace;font-size:11px;color:#64748b}
         .admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
         .admin-header h2{margin:0;color:#002b5c}
-        .btn-cerrar-panel{background:#ef4444;color:white;border:none;padding:8px 20px;border-radius:30px;cursor:pointer;font-weight:bold;font-size:14px}
+        .btn-cerrar-panel{background:#ef4444;color:white;border:none;padding:8px 20px;border-radius:30px;cursor:pointer;font-weight:bold;font-size:14px;touch-action:manipulation}
         .btn-cerrar-panel:hover{background:#dc2626}
         
         @media print {
@@ -714,8 +719,8 @@
 
     <div class="tab-content" id="tabCompras">
         <div style="display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap;">
-            <button id="btnNuevaCompra" style="background:#2563eb; color:white; border:none; padding:12px 25px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:14px;">➕ NUEVA COMPRA</button>
-            <button id="btnVerCompras" style="background:#8b5cf6; color:white; border:none; padding:12px 25px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:14px;">📋 VER HISTORIAL</button>
+            <button id="btnNuevaCompra" style="background:#2563eb; color:white; border:none; padding:12px 25px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:14px; touch-action:manipulation;">➕ NUEVA COMPRA</button>
+            <button id="btnVerCompras" style="background:#8b5cf6; color:white; border:none; padding:12px 25px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:14px; touch-action:manipulation;">📋 VER HISTORIAL</button>
         </div>
         <div id="formNuevaCompra" style="display:none; background:#f8fafc; padding:20px; border-radius:16px; border:2px solid #2563eb; margin-bottom:20px;">
             <h3 style="color:#002b5c; margin-bottom:15px;">📦 REGISTRAR COMPRA A PROVEEDOR</h3>
@@ -735,7 +740,7 @@
                     </select>
                     <input type="number" id="compraCantidad" placeholder="Cantidad" style="flex:1; padding:10px; border-radius:30px; border:1px solid #ccc; min-width:80px;">
                     <input type="number" step="0.01" id="compraPrecio" placeholder="Precio" style="flex:1; padding:10px; border-radius:30px; border:1px solid #ccc; min-width:80px;">
-                    <button id="btnAgregarProductoCompra" style="background:#22c55e; color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold;">➕ Agregar</button>
+                    <button id="btnAgregarProductoCompra" style="background:#22c55e; color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold; touch-action:manipulation;">➕ Agregar</button>
                 </div>
             </div>
             <div class="tabla-container" style="margin-bottom:15px;">
@@ -745,8 +750,8 @@
                 </table>
             </div>
             <div style="display:flex; gap:15px; margin-top:10px;">
-                <button id="btnGuardarCompra" style="background:#2563eb; color:white; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:15px;">💾 GUARDAR COMPRA</button>
-                <button id="btnCancelarCompra" style="background:#e2e8f0; color:#334155; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:15px;">❌ CANCELAR</button>
+                <button id="btnGuardarCompra" style="background:#2563eb; color:white; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:15px; touch-action:manipulation;">💾 GUARDAR COMPRA</button>
+                <button id="btnCancelarCompra" style="background:#e2e8f0; color:#334155; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:15px; touch-action:manipulation;">❌ CANCELAR</button>
             </div>
         </div>
         <div id="historialCompras" style="display:block;">
@@ -795,10 +800,10 @@
 
     <div class="tab-content" id="tabListasPrecios">
         <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
-            <button onclick="mostrarTabPrecios('venta')" id="btnTabVenta" style="background:#002b5c; color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:13px;">💰 LISTA DE VENTA</button>
-            <button onclick="mostrarTabPrecios('compra')" id="btnTabCompra" style="background:#e2e8f0; color:#334155; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:13px;">📊 COMPRA Y VENTA</button>
-            <button onclick="mostrarTabPrecios('cliente')" id="btnTabCliente" style="background:#e2e8f0; color:#334155; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:13px;">🧾 PARA CLIENTE</button>
-            <button onclick="mostrarTabPrecios('promociones')" id="btnTabPromociones" style="background:#e2e8f0; color:#334155; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:13px;">🔥 PROMOCIONES</button>
+            <button id="btnTabVenta" class="tab-precios-btn" data-tab="venta" style="background:#002b5c; color:white;">💰 LISTA DE VENTA</button>
+            <button id="btnTabCompra" class="tab-precios-btn" data-tab="compra" style="background:#e2e8f0; color:#334155;">📊 COMPRA Y VENTA</button>
+            <button id="btnTabCliente" class="tab-precios-btn" data-tab="cliente" style="background:#e2e8f0; color:#334155;">🧾 PARA CLIENTE</button>
+            <button id="btnTabPromociones" class="tab-precios-btn" data-tab="promociones" style="background:#e2e8f0; color:#334155;">🔥 PROMOCIONES</button>
         </div>
         <div id="tabVenta" class="tab-precios visible">
             <div class="lista-precios-container" id="contenidoImprimirVenta">
@@ -815,8 +820,8 @@
                     <select id="filtroVentaCategoria" onchange="filtrarListaVenta()">
                         <option value="TODOS">Todas las categorías</option>
                     </select>
-                    <button onclick="filtrarListaVenta()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:bold;">Filtrar</button>
-                    <button onclick="limpiarFiltrosVenta()" style="background:#e2e8f0; border:none; padding:8px 16px; border-radius:30px; cursor:pointer;">Limpiar</button>
+                    <button onclick="filtrarListaVenta()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:bold; touch-action:manipulation;">Filtrar</button>
+                    <button onclick="limpiarFiltrosVenta()" style="background:#e2e8f0; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; touch-action:manipulation;">Limpiar</button>
                 </div>
                 <div class="lista-precios-tabla" id="listaVentaTabla">
                     <table>
@@ -849,8 +854,8 @@
                     <select id="filtroCompraCategoria" onchange="filtrarListaCompra()">
                         <option value="TODOS">Todas las categorías</option>
                     </select>
-                    <button onclick="filtrarListaCompra()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:bold;">Filtrar</button>
-                    <button onclick="limpiarFiltrosCompra()" style="background:#e2e8f0; border:none; padding:8px 16px; border-radius:30px; cursor:pointer;">Limpiar</button>
+                    <button onclick="filtrarListaCompra()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:bold; touch-action:manipulation;">Filtrar</button>
+                    <button onclick="limpiarFiltrosCompra()" style="background:#e2e8f0; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; touch-action:manipulation;">Limpiar</button>
                 </div>
                 <div class="lista-precios-tabla" id="listaCompraTabla">
                     <table>
@@ -881,8 +886,8 @@
                     <select id="filtroClienteCategoria" onchange="filtrarListaCliente()">
                         <option value="TODOS">Todas las categorías</option>
                     </select>
-                    <button onclick="filtrarListaCliente()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:bold;">Filtrar</button>
-                    <button onclick="limpiarFiltrosCliente()" style="background:#e2e8f0; border:none; padding:8px 16px; border-radius:30px; cursor:pointer;">Limpiar</button>
+                    <button onclick="filtrarListaCliente()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:bold; touch-action:manipulation;">Filtrar</button>
+                    <button onclick="limpiarFiltrosCliente()" style="background:#e2e8f0; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; touch-action:manipulation;">Limpiar</button>
                 </div>
                 <div class="lista-precios-tabla" id="listaClienteTabla">
                     <table>
@@ -913,8 +918,8 @@
                     <select id="filtroPromoCategoria" onchange="filtrarPromociones()">
                         <option value="TODOS">Todas las categorías</option>
                     </select>
-                    <button onclick="filtrarPromociones()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:bold;">Filtrar</button>
-                    <button onclick="limpiarFiltrosPromo()" style="background:#e2e8f0; border:none; padding:8px 16px; border-radius:30px; cursor:pointer;">Limpiar</button>
+                    <button onclick="filtrarPromociones()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; font-weight:bold; touch-action:manipulation;">Filtrar</button>
+                    <button onclick="limpiarFiltrosPromo()" style="background:#e2e8f0; border:none; padding:8px 16px; border-radius:30px; cursor:pointer; touch-action:manipulation;">Limpiar</button>
                 </div>
                 <div id="listaPromocionesContainer"></div>
                 <div class="pie-pagina no-print">
@@ -927,10 +932,10 @@
     <!-- ====== PESTAÑA ÓRDENES DE COMPRA ====== -->
     <div class="tab-content" id="tabOrdenCompra">
         <div style="display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap;">
-            <button id="btnNuevaOrdenCompra" style="background:#2563eb; color:white; border:none; padding:12px 25px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:14px;">
+            <button id="btnNuevaOrdenCompra" style="background:#2563eb; color:white; border:none; padding:12px 25px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:14px; touch-action:manipulation;">
                 📝 NUEVA ORDEN DE COMPRA
             </button>
-            <button id="btnVerOrdenesCompra" style="background:#8b5cf6; color:white; border:none; padding:12px 25px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:14px;">
+            <button id="btnVerOrdenesCompra" style="background:#8b5cf6; color:white; border:none; padding:12px 25px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:14px; touch-action:manipulation;">
                 📋 VER HISTORIAL
             </button>
         </div>
@@ -945,7 +950,7 @@
                     <select id="ordenProveedorSelect" style="width:100%; padding:10px; border-radius:30px; border:1px solid #ccc; font-size:14px;">
                         <option value="">Seleccionar proveedor...</option>
                     </select>
-                    <button id="btnNuevoProveedorCompra" style="margin-top:5px; background:#f59e0b; color:white; border:none; padding:6px 15px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:12px;">➕ Nuevo Proveedor</button>
+                    <button id="btnNuevoProveedorCompra" style="margin-top:5px; background:#f59e0b; color:white; border:none; padding:6px 15px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:12px; touch-action:manipulation;">➕ Nuevo Proveedor</button>
                 </div>
                 <div class="campo-row">
                     <label>📅 Fecha de Orden</label>
@@ -963,8 +968,8 @@
                     <div class="campo-row"><label>Correo</label><input type="email" id="nuevoProvCorreo" placeholder="Ej: ventas@xyz.com"></div>
                     <div class="campo-row" style="grid-column: span 2;"><label>Dirección</label><input type="text" id="nuevoProvDireccion" placeholder="Ej: Calle Principal #123"></div>
                 </div>
-                <button id="btnGuardarProveedor" style="background:#22c55e; color:white; border:none; padding:8px 20px; border-radius:30px; cursor:pointer; font-weight:bold;">💾 Guardar Proveedor</button>
-                <button id="btnCancelarProveedor" style="background:#e2e8f0; color:#334155; border:none; padding:8px 20px; border-radius:30px; cursor:pointer; font-weight:bold;">❌ Cancelar</button>
+                <button id="btnGuardarProveedor" style="background:#22c55e; color:white; border:none; padding:8px 20px; border-radius:30px; cursor:pointer; font-weight:bold; touch-action:manipulation;">💾 Guardar Proveedor</button>
+                <button id="btnCancelarProveedor" style="background:#e2e8f0; color:#334155; border:none; padding:8px 20px; border-radius:30px; cursor:pointer; font-weight:bold; touch-action:manipulation;">❌ Cancelar</button>
             </div>
             
             <hr style="margin:15px 0; border:0; border-top:2px dashed #ccc;">
@@ -978,7 +983,7 @@
                     </select>
                     <input type="number" id="ordenCantidad" placeholder="Cantidad" style="flex:1; padding:10px; border-radius:30px; border:1px solid #ccc; min-width:80px;">
                     <input type="number" step="0.01" id="ordenPrecio" placeholder="Precio Compra" style="flex:1; padding:10px; border-radius:30px; border:1px solid #ccc; min-width:80px;">
-                    <button id="btnAgregarProductoOrden" style="background:#22c55e; color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold;">➕ Agregar</button>
+                    <button id="btnAgregarProductoOrden" style="background:#22c55e; color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold; touch-action:manipulation;">➕ Agregar</button>
                 </div>
             </div>
             
@@ -997,16 +1002,16 @@
                     <span id="ordenTotalMostrar" style="font-size:24px; font-weight:bold; color:#002b5c;">$0.00</span>
                 </div>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <button id="btnGuardarOrdenCompra" style="background:#2563eb; color:white; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:15px;">
+                    <button id="btnGuardarOrdenCompra" style="background:#2563eb; color:white; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:15px; touch-action:manipulation;">
                         💾 GUARDAR ORDEN
                     </button>
-                    <button id="btnImprimirOrdenCompra" style="background:#f59e0b; color:white; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:15px;">
+                    <button id="btnImprimirOrdenCompra" style="background:#f59e0b; color:white; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:15px; touch-action:manipulation;">
                         🖨️ IMPRIMIR
                     </button>
-                    <button id="btnWhatsappOrdenCompra" style="background:#25d366; color:white; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:15px;">
+                    <button id="btnWhatsappOrdenCompra" style="background:#25d366; color:white; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:15px; touch-action:manipulation;">
                         📲 WHATSAPP
                     </button>
-                    <button id="btnCancelarOrdenCompra" style="background:#e2e8f0; color:#334155; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:15px;">
+                    <button id="btnCancelarOrdenCompra" style="background:#e2e8f0; color:#334155; border:none; padding:12px 30px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:15px; touch-action:manipulation;">
                         ❌ CANCELAR
                     </button>
                 </div>
@@ -1038,14 +1043,14 @@
 </div>
 
 <div id="carritoPanel" class="carrito-panel no-print">
-    <div style="display:flex;justify-content:space-between;align-items:center;"><strong>🛒 MI PEDIDO</strong><button id="vaciarCarritoBtn" style="background:#b91c1c;border:none;color:white;padding:4px 12px;border-radius:20px;font-size:11px;cursor:pointer;">Vaciar</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;"><strong>🛒 MI PEDIDO</strong><button id="vaciarCarritoBtn" style="background:#b91c1c;border:none;color:white;padding:4px 12px;border-radius:20px;font-size:11px;cursor:pointer;touch-action:manipulation;">Vaciar</button></div>
     <div id="carritoLista" style="margin-top:10px;">🛍️ Vacío</div>
     <div id="totalCarrito" class="total-carrito">Total: $0.00</div>
     <a href="#" id="enviarPedidoBtn" class="btn-enviar-wa">📲 ENVIAR PEDIDO POR WHATSAPP</a>
     <a href="https://wa.me/522282877441" target="_blank" class="telefono-carrito">📞 WhatsApp de Soporte: 228 287 7441</a>
 </div>
 
-<!-- ===== MODAL DE CONTRASEÑA - CORREGIDO ===== -->
+<!-- ===== MODAL DE CONTRASEÑA ===== -->
 <div class="modal-pwd no-print" id="modalPwd">
     <div class="modal-pwd-content">
         <h3>🔐 Acceso Administrador</h3>
@@ -1100,7 +1105,7 @@ function abrirModalAdmin() {
     mostrarNotificacion("🔐 Ingresa tu clave de administrador");
 }
 
-// Evento para el logo - 3 clics (VERSIÓN CORREGIDA)
+// Evento para el logo - 3 clics
 document.addEventListener('DOMContentLoaded', function() {
     var logo = document.getElementById('logoAdmin');
     if (logo) {
@@ -1109,12 +1114,10 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             
             contadorClicksLogo++;
-            console.log('Clic en logo: ' + contadorClicksLogo);
             
             clearTimeout(window.temporizadorClicks);
             window.temporizadorClicks = setTimeout(function() { 
                 contadorClicksLogo = 0; 
-                console.log('Contador reiniciado');
             }, 2000);
             
             if (contadorClicksLogo >= 3) {
@@ -1123,8 +1126,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 abrirModalAdmin();
             }
         });
-    } else {
-        console.error('Logo no encontrado');
     }
 });
 
@@ -2132,21 +2133,64 @@ function imprimirTicketCotizacion(cotizacionId) {
 //  FUNCIONES DE LISTAS DE PRECIOS
 // ============================================================
 function mostrarTabPrecios(tab) {
-    document.querySelectorAll('.tab-precios').forEach(function(t) { t.classList.remove('visible'); });
-    var tabs = ['venta', 'compra', 'cliente', 'promociones'];
-    tabs.forEach(function(t) {
-        var btn = document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1));
-        if (t === tab) {
-            document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('visible');
-            if (btn) { btn.style.background = '#002b5c'; btn.style.color = 'white'; }
-        } else {
-            if (btn) { btn.style.background = '#e2e8f0'; btn.style.color = '#334155'; }
+    // Ocultar todas las pestañas de precios
+    var tabsPrecios = document.querySelectorAll('.tab-precios');
+    tabsPrecios.forEach(function(t) {
+        t.classList.remove('visible');
+    });
+    
+    // Mostrar la pestaña seleccionada
+    var tabMap = {
+        'venta': 'tabVenta',
+        'compra': 'tabCompra',
+        'cliente': 'tabCliente',
+        'promociones': 'tabPromociones'
+    };
+    
+    var tabId = tabMap[tab];
+    if (tabId) {
+        var elemento = document.getElementById(tabId);
+        if (elemento) {
+            elemento.classList.add('visible');
+        }
+    }
+    
+    // Actualizar estilos de botones
+    var btnMap = {
+        'venta': 'btnTabVenta',
+        'compra': 'btnTabCompra',
+        'cliente': 'btnTabCliente',
+        'promociones': 'btnTabPromociones'
+    };
+    
+    Object.keys(btnMap).forEach(function(key) {
+        var btn = document.getElementById(btnMap[key]);
+        if (btn) {
+            if (key === tab) {
+                btn.style.background = '#002b5c';
+                btn.style.color = 'white';
+            } else {
+                btn.style.background = '#e2e8f0';
+                btn.style.color = '#334155';
+            }
         }
     });
-    if (tab === 'venta') renderizarListaVenta();
-    else if (tab === 'compra') renderizarListaCompraVenta();
-    else if (tab === 'cliente') renderizarListaCliente();
-    else if (tab === 'promociones') renderizarPromociones();
+    
+    // Renderizar según la pestaña
+    switch(tab) {
+        case 'venta': 
+            if (typeof renderizarListaVenta === 'function') renderizarListaVenta(); 
+            break;
+        case 'compra': 
+            if (typeof renderizarListaCompraVenta === 'function') renderizarListaCompraVenta(); 
+            break;
+        case 'cliente': 
+            if (typeof renderizarListaCliente === 'function') renderizarListaCliente(); 
+            break;
+        case 'promociones': 
+            if (typeof renderizarPromociones === 'function') renderizarPromociones(); 
+            break;
+    }
 }
 
 function renderizarListaVenta() {
@@ -2349,7 +2393,7 @@ function generarPDFListaCliente() { mostrarNotificacion("📄 Preparando PDF..."
 function generarPDFPromociones() { mostrarNotificacion("📄 Preparando PDF..."); imprimirPromociones(); }
 
 // ============================================================
-//  FUNCIONES COMPARTIR LISTAS (CORREGIDAS)
+//  FUNCIONES COMPARTIR LISTAS
 // ============================================================
 function compartirListaVenta() {
     var tbody = document.getElementById('listaVentaBody');
@@ -2506,37 +2550,78 @@ function compartirPromociones() {
 }
 
 // ============================================================
-//  PANEL ADMIN - PESTAÑAS
+//  PANEL ADMIN - PESTAÑAS (CORREGIDO PARA MÓVILES)
 // ============================================================
-document.querySelectorAll('.tabs-admin button').forEach(function(btn) {
-    btn.onclick = function() {
-        document.querySelectorAll('.tabs-admin button').forEach(function(b) { b.classList.remove('activo'); });
-        this.classList.add('activo');
-        document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('visible'); });
-        var tabId = this.dataset.tab;
-        var tabContent = document.getElementById(tabId);
-        if (tabContent) tabContent.classList.add('visible');
-        
-        switch(tabId) {
-            case 'tabInventario': renderizarInventario(); break;
-            case 'tabPedidos': renderizarPedidos(); break;
-            case 'tabClientes': renderizarClientes(); break;
-            case 'tabCompras': renderizarCompras(); break;
-            case 'tabReportes': renderizarHistoricoVentas(); break;
-            case 'tabListasPrecios':
-                if (document.getElementById('tabVenta').classList.contains('visible')) renderizarListaVenta();
-                else if (document.getElementById('tabCompra').classList.contains('visible')) renderizarListaCompraVenta();
-                else if (document.getElementById('tabCliente').classList.contains('visible')) renderizarListaCliente();
-                else if (document.getElementById('tabPromociones').classList.contains('visible')) renderizarPromociones();
-                else mostrarTabPrecios('venta');
-                break;
-            case 'tabOrdenCompra':
-                actualizarSelectProductosOrden();
-                actualizarSelectProveedores();
-                renderizarOrdenesCompra();
-                break;
-        }
-    };
+document.addEventListener('DOMContentLoaded', function() {
+    var tabs = document.querySelectorAll('.tabs-admin button');
+    tabs.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            document.querySelectorAll('.tabs-admin button').forEach(function(b) {
+                b.classList.remove('activo');
+            });
+            this.classList.add('activo');
+            
+            document.querySelectorAll('.tab-content').forEach(function(t) {
+                t.classList.remove('visible');
+            });
+            
+            var tabId = this.dataset.tab;
+            var tabContent = document.getElementById(tabId);
+            if (tabContent) {
+                tabContent.classList.add('visible');
+            }
+            
+            switch(tabId) {
+                case 'tabInventario': 
+                    renderizarInventario(); 
+                    break;
+                case 'tabPedidos': 
+                    renderizarPedidos(); 
+                    break;
+                case 'tabClientes': 
+                    renderizarClientes(); 
+                    break;
+                case 'tabCompras': 
+                    renderizarCompras(); 
+                    break;
+                case 'tabReportes': 
+                    renderizarHistoricoVentas(); 
+                    break;
+                case 'tabListasPrecios':
+                    if (document.getElementById('tabVenta').classList.contains('visible')) {
+                        renderizarListaVenta();
+                    } else if (document.getElementById('tabCompra').classList.contains('visible')) {
+                        renderizarListaCompraVenta();
+                    } else if (document.getElementById('tabCliente').classList.contains('visible')) {
+                        renderizarListaCliente();
+                    } else if (document.getElementById('tabPromociones').classList.contains('visible')) {
+                        renderizarPromociones();
+                    } else {
+                        mostrarTabPrecios('venta');
+                    }
+                    break;
+                case 'tabOrdenCompra':
+                    actualizarSelectProductosOrden();
+                    actualizarSelectProveedores();
+                    renderizarOrdenesCompra();
+                    break;
+            }
+        });
+    });
+    
+    // EVENTOS PARA BOTONES DE LISTAS DE PRECIOS
+    var precioBtns = document.querySelectorAll('.tab-precios-btn');
+    precioBtns.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var tab = this.dataset.tab;
+            mostrarTabPrecios(tab);
+        });
+    });
 });
 
 // ============================================================
