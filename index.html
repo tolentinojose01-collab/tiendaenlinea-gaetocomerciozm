@@ -2,26 +2,28 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GAETO COMERCIOS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>GAETO COMERCIOS - Sistema Completo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;padding:16px;padding-bottom:120px}
-        .encabezado{text-align:center;background:white;border-radius:20px;padding:15px;margin-bottom:15px;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
+        body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f5;padding:16px;padding-bottom:160px;touch-action:manipulation}
+        .encabezado{text-align:center;background:white;border-radius:20px;padding:15px;margin-bottom:15px;position:relative;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
         .logo{max-width:220px;width:80%;cursor:pointer}
-        .badge-admin{background:#ff9800;color:#000;font-size:10px;padding:2px 10px;border-radius:20px;display:inline-block;margin-top:5px;display:none}
+        .badge-admin{position:absolute;bottom:5px;right:15px;background:#ff9800;color:#000;font-size:9px;padding:2px 10px;border-radius:20px;display:none}
         .banner{background:#1e2a3e;color:#ffd966;text-align:center;padding:10px;border-radius:20px;margin-bottom:15px;font-size:12px;line-height:1.5}
-        .banner div{margin:2px 0}
-        .toolbar{background:#1e2a3e;padding:10px;border-radius:16px;display:none;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:15px;position:sticky;top:0;z-index:100}
-        .toolbar button{background:#2d3a4e;border:none;padding:6px 14px;border-radius:30px;color:white;font-size:12px;cursor:pointer;font-weight:bold}
-        .toolbar .admin-btn{background:#2563eb}
+        .toolbar{background:#1e2a3e;padding:10px;border-radius:16px;display:none;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:15px;position:sticky;top:0;z-index:100}
+        .toolbar button{background:#2d3a4e;border:none;padding:6px 14px;border-radius:30px;color:white;font-size:11px;cursor:pointer;font-weight:bold}
         .toolbar .share{background:#25d366}
+        .toolbar .admin-btn{background:#2563eb}
+        .toolbar .promo-btn{background:#e11d48}
         .contenedor-busqueda{max-width:500px;margin:0 auto 15px auto}
         .busqueda-input{width:100%;padding:12px 18px;border-radius:30px;border:1px solid #ddd;font-size:14px;outline:none}
-        .busqueda-input:focus{border-color:#002b5c}
-        .filtro-categorias{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:15px}
+        .filtro-categorias{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:15px}
         .filtro-btn{background:#e2e8f0;border:none;padding:6px 16px;border-radius:30px;font-size:12px;font-weight:bold;cursor:pointer}
         .filtro-btn.activo{background:#002b5c;color:white}
         #contenedorProductos{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
@@ -29,146 +31,160 @@
         @media(min-width:900px){#contenedorProductos{grid-template-columns:repeat(4,1fr)}}
         .producto{background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);position:relative;transition:transform 0.2s}
         .producto:active{transform:scale(0.97)}
-        .producto .etiqueta-promo{position:absolute;top:10px;right:10px;background:#e11d48;color:white;padding:4px 12px;border-radius:20px;font-size:10px;font-weight:bold;z-index:5}
-        .banner-promo-fuera{background:#e11d48;color:white;padding:8px 12px;font-weight:bold;font-size:11px;text-align:center}
-        .codigo{font-size:10px;color:#888;padding:8px 10px 0;font-family:monospace}
-        .imagen-area{width:100%;background:white;display:flex;justify-content:center;align-items:center;height:160px;overflow:hidden;position:relative}
+        .producto .etiqueta-promo{position:absolute;top:10px;right:10px;background:#e11d48;color:white;padding:3px 12px;border-radius:20px;font-size:9px;font-weight:bold;z-index:5}
+        .banner-promo-fuera{background:#e11d48;color:white;padding:6px 12px;font-weight:bold;font-size:10px;text-align:center}
+        .codigo{font-size:9px;color:#888;padding:6px 10px 0;font-family:monospace}
+        .imagen-area{width:100%;background:white;display:flex;justify-content:center;align-items:center;height:160px;overflow:hidden;position:relative;cursor:pointer}
         .imagen-area img{max-width:100%;max-height:100%;object-fit:contain}
-        .sin-imagen{color:#94a3b8;font-size:12px;text-align:center;padding:20px}
-        .info{padding:10px 12px 12px}
-        .titulo{font-size:14px;font-weight:bold;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
-        .descripcion{color:#475569;font-size:12px;margin:3px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-        .categoria-texto{background:#e2e8f0;padding:1px 10px;border-radius:12px;font-size:9px;display:inline-block}
-        .stock-badge{padding:1px 8px;border-radius:12px;font-size:9px;margin-left:4px;display:inline-block}
+        .sin-imagen{color:#94a3b8;font-size:11px;text-align:center;padding:20px}
+        .info{padding:8px 12px 12px}
+        .titulo{font-size:13px;font-weight:bold;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+        .descripcion{color:#475569;font-size:11px;margin:3px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .categoria-texto{background:#e2e8f0;padding:1px 10px;border-radius:12px;font-size:8px;display:inline-block}
+        .stock-badge{padding:1px 8px;border-radius:12px;font-size:8px;margin-left:4px;display:inline-block}
         .stock-bajo{background:#fecaca;color:#b91c1c}
         .stock-normal{background:#bbf7d0;color:#166534}
         .stock-agotado{background:#e5e7eb;color:#4b5563}
-        .precio{font-size:18px;font-weight:bold;color:#002b5c;margin:5px 0}
-        .precio-antes{text-decoration:line-through;font-size:13px;color:#999;margin-right:6px}
+        .precio{font-size:17px;font-weight:bold;color:#002b5c;margin:4px 0}
+        .precio-antes{text-decoration:line-through;font-size:12px;color:#999;margin-right:5px}
         .precio-promo{color:#e11d48}
-        .descuento-badge{background:#e11d48;color:white;padding:1px 8px;border-radius:12px;font-size:9px;margin-left:4px}
-        .oculto-badge{background:#fecaca;color:#991b1b;padding:1px 8px;border-radius:12px;font-size:9px;display:none}
+        .descuento-badge{background:#e11d48;color:white;padding:1px 8px;border-radius:12px;font-size:8px;margin-left:4px}
+        .oculto-badge{background:#fecaca;color:#991b1b;padding:1px 8px;border-radius:12px;font-size:8px;display:none}
         body.modo-admin .oculto-badge{display:inline-block}
-        .acciones{display:flex;gap:5px;margin:8px 0;flex-wrap:wrap}
-        .acciones input{width:50px;padding:5px;border-radius:20px;border:1px solid #ddd;text-align:center;font-size:12px}
-        .btn-agregar{background:#ff9800;color:white;border:none;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:bold;cursor:pointer;flex:1}
-        .btn-wa{background:#25d366;color:white;text-decoration:none;text-align:center;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:bold;flex:1}
-        .btn-editar{background:#8b5cf6;color:white;border:none;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:bold;flex:1;cursor:pointer;display:none}
+        .acciones{display:flex;gap:4px;margin:6px 0;flex-wrap:wrap}
+        .acciones input{width:45px;padding:4px;border-radius:20px;border:1px solid #ddd;text-align:center;font-size:11px}
+        .btn-agregar{background:#ff9800;color:white;border:none;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:bold;cursor:pointer;flex:1}
+        .btn-wa{background:#25d366;color:white;text-decoration:none;text-align:center;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:bold;flex:1}
+        .btn-editar{background:#8b5cf6;color:white;border:none;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:bold;flex:1;cursor:pointer;display:none}
         body.modo-admin .btn-editar{display:block}
-        .editor-area{display:none;margin-top:10px;border-top:1px solid #ddd;padding-top:10px}
+        .editor-area{display:none;margin-top:8px;border-top:1px solid #ddd;padding-top:8px}
         .editor-area.visible{display:block}
-        .campo-row{margin-bottom:8px}
-        .campo-row label{font-weight:bold;font-size:11px;display:block;margin-bottom:3px}
-        .campo-row input,.campo-row textarea,.campo-row select{width:100%;padding:6px 10px;border-radius:20px;border:1px solid #ddd;font-size:12px;outline:none}
-        .campo-row textarea{height:40px;resize:none}
-        .campo-row input[type="file"]{border:1px dashed #2563eb;background:#eff6ff;padding:8px}
-        .btn-guardar{background:#2563eb;color:white;border:none;padding:8px;border-radius:30px;width:100%;font-weight:bold;cursor:pointer;font-size:12px;margin-top:5px}
-        .btn-eliminar{background:#b91c1c;color:white;border:none;padding:6px;border-radius:30px;width:100%;font-weight:bold;cursor:pointer;font-size:12px;margin-top:4px}
+        .campo-row{margin-bottom:6px}
+        .campo-row label{font-weight:bold;font-size:10px;display:block;margin-bottom:2px}
+        .campo-row input,.campo-row textarea,.campo-row select{width:100%;padding:5px 10px;border-radius:20px;border:1px solid #ddd;font-size:11px;outline:none}
+        .campo-row textarea{height:35px;resize:none}
+        .campo-row input[type="file"]{border:1px dashed #2563eb;background:#eff6ff;padding:6px}
+        .btn-guardar{background:#2563eb;color:white;border:none;padding:6px;border-radius:30px;width:100%;font-weight:bold;cursor:pointer;font-size:11px;margin-top:4px}
+        .btn-eliminar{background:#b91c1c;color:white;border:none;padding:5px;border-radius:30px;width:100%;font-weight:bold;cursor:pointer;font-size:11px;margin-top:3px}
         .admin-panel{display:none;background:white;border-radius:16px;padding:16px;margin-bottom:15px;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
         .admin-panel.visible{display:block}
         .admin-panel h2{color:#002b5c;font-size:16px;margin-bottom:12px}
-        .tabs-admin{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-        .tabs-admin button{padding:6px 14px;border:2px solid #e2e8f0;background:white;border-radius:20px;font-size:11px;font-weight:bold;cursor:pointer}
+        .tabs-admin{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+        .tabs-admin button{padding:5px 12px;border:2px solid #e2e8f0;background:white;border-radius:20px;font-size:10px;font-weight:bold;cursor:pointer}
         .tabs-admin button.activo{background:#002b5c;color:white;border-color:#002b5c}
         .tab-content{display:none}
         .tab-content.visible{display:block}
         .tabla-container{overflow-x:auto;background:#f8fafc;border-radius:12px;padding:10px;border:1px solid #e2e8f0}
-        .tabla-container table{width:100%;border-collapse:collapse;font-size:11px}
-        .tabla-container th{background:#e2e8f0;padding:6px 8px;text-align:left}
-        .tabla-container td{padding:6px 8px;border-bottom:1px solid #e2e8f0}
-        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
-        .stat-card{background:#f8fafc;padding:12px;border-radius:12px;text-align:center;border:1px solid #e2e8f0}
-        .stat-card .numero{font-size:20px;font-weight:bold;color:#002b5c}
-        .stat-card h4{font-size:11px;color:#64748b}
-        .carrito-panel{position:fixed;bottom:0;left:0;right:0;background:#1e293b;color:white;padding:12px 16px;border-radius:20px 20px 0 0;max-height:40vh;overflow-y:auto;z-index:200;box-shadow:0 -4px 15px rgba(0,0,0,0.3)}
-        .carrito-item{display:flex;justify-content:space-between;border-bottom:1px solid #475569;padding:6px 0;font-size:12px}
-        .total-carrito{text-align:right;font-size:18px;font-weight:bold;margin:8px 0}
-        .btn-enviar-wa{background:#25d366;color:white;text-decoration:none;display:block;width:100%;padding:10px;border-radius:30px;font-weight:bold;text-align:center;border:none;font-size:14px}
+        .tabla-container table{width:100%;border-collapse:collapse;font-size:10px}
+        .tabla-container th{background:#e2e8f0;padding:5px 8px;text-align:left}
+        .tabla-container td{padding:5px 8px;border-bottom:1px solid #e2e8f0}
+        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+        .stat-card{background:#f8fafc;padding:10px;border-radius:12px;text-align:center;border:1px solid #e2e8f0}
+        .stat-card .numero{font-size:18px;font-weight:bold;color:#002b5c}
+        .stat-card h4{font-size:10px;color:#64748b}
+        .chart-container{background:#f8fafc;padding:12px;border-radius:12px;margin-bottom:12px;border:1px solid #e2e8f0}
+        .chart-container canvas{max-height:180px;max-width:100%}
+        .carrito-panel{position:fixed;bottom:0;left:0;right:0;background:#1e293b;color:white;padding:10px 16px;border-radius:20px 20px 0 0;max-height:40vh;overflow-y:auto;z-index:200;box-shadow:0 -4px 15px rgba(0,0,0,0.3)}
+        .carrito-item{display:flex;justify-content:space-between;border-bottom:1px solid #475569;padding:5px 0;font-size:12px}
+        .total-carrito{text-align:right;font-size:17px;font-weight:bold;margin:6px 0}
+        .btn-enviar-wa{background:#25d366;color:white;text-decoration:none;display:block;width:100%;padding:8px;border-radius:30px;font-weight:bold;text-align:center;border:none;font-size:13px}
+        .telefono-carrito{background:#2d3a4e;color:#fff;text-align:center;padding:4px;border-radius:30px;margin-top:6px;font-weight:bold;text-decoration:none;display:block;font-size:10px}
         .modal-pwd{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);justify-content:center;align-items:center;z-index:999}
-        .modal-pwd-content{background:white;padding:30px;border-radius:20px;text-align:center;width:90%;max-width:320px}
+        .modal-pwd-content{background:white;padding:25px;border-radius:20px;text-align:center;width:90%;max-width:320px}
         .modal-pwd-content h3{color:#002b5c}
-        .modal-pwd-content input{width:100%;padding:12px;border-radius:30px;border:2px solid #ddd;text-align:center;margin:12px 0;font-size:16px;outline:none}
-        .modal-pwd-content button{background:#002b5c;color:white;border:none;padding:10px 30px;border-radius:30px;font-weight:bold;cursor:pointer;font-size:14px}
+        .modal-pwd-content input{width:100%;padding:10px;border-radius:30px;border:2px solid #ddd;text-align:center;margin:10px 0;font-size:16px;outline:none}
+        .modal-pwd-content button{background:#002b5c;color:white;border:none;padding:8px 25px;border-radius:30px;font-weight:bold;cursor:pointer;font-size:13px}
         .modal-stock{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:300;padding:20px}
-        .modal-stock-content{background:white;padding:25px;border-radius:20px;width:100%;max-width:380px}
-        .modal-stock-content h3{color:#002b5c;text-align:center}
-        .modal-stock-content input{width:100%;padding:12px;border-radius:20px;border:2px solid #ddd;text-align:center;margin:12px 0;font-size:18px}
-        .modal-stock-content .btn-group{display:flex;gap:10px;margin:10px 0}
-        .modal-stock-content .btn-group button{flex:1;padding:10px;border:none;border-radius:30px;font-weight:bold;cursor:pointer}
+        .modal-stock-content{background:white;padding:20px;border-radius:20px;width:100%;max-width:380px}
+        .modal-stock-content h3{color:#002b5c;text-align:center;font-size:16px}
+        .modal-stock-content input{width:100%;padding:10px;border-radius:20px;border:2px solid #ddd;text-align:center;margin:10px 0;font-size:16px}
+        .modal-stock-content .btn-group{display:flex;gap:8px;margin:8px 0}
+        .modal-stock-content .btn-group button{flex:1;padding:8px;border:none;border-radius:30px;font-weight:bold;cursor:pointer;font-size:12px}
         .modal-stock-content .btn-group .btn-sumar{background:#2563eb;color:white}
         .modal-stock-content .btn-group .btn-sumar.active{background:#1d4ed8}
         .modal-stock-content .btn-group .btn-poner{background:#e2e8f0;color:#334155}
         .modal-stock-content .btn-group .btn-poner.active{background:#f59e0b;color:white}
-        .modal-stock-content .btn-actions{display:flex;gap:10px;margin-top:10px}
-        .modal-stock-content .btn-actions button{flex:1;padding:10px;border:none;border-radius:30px;font-weight:bold;cursor:pointer}
+        .modal-stock-content .btn-actions{display:flex;gap:8px;margin-top:8px}
+        .modal-stock-content .btn-actions button{flex:1;padding:8px;border:none;border-radius:30px;font-weight:bold;cursor:pointer;font-size:12px}
         .modal-stock-content .btn-actions .btn-guardar{background:#2563eb;color:white}
         .modal-stock-content .btn-actions .btn-cancelar{background:#e2e8f0;color:#64748b}
         .modal-registro{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:3002;padding:20px}
-        .modal-registro-content{background:white;padding:25px;border-radius:20px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto}
-        .modal-registro-content h2{color:#002b5c;text-align:center;font-size:18px}
-        .modal-registro-content .subtitulo{font-size:12px;color:#64748b;text-align:center;margin-bottom:15px}
-        .btn-buscar-cliente{background:#2563eb;color:white;border:none;padding:10px 15px;border-radius:30px;cursor:pointer;font-weight:bold;white-space:nowrap}
-        .btn-registro-confirmar{background:#25d366;color:white;border:none;padding:12px;border-radius:30px;width:100%;font-weight:bold;font-size:15px;cursor:pointer;margin-top:8px}
-        .btn-registro-cancelar{background:#e2e8f0;color:#64748b;border:none;padding:10px;border-radius:30px;width:100%;font-weight:bold;cursor:pointer;margin-top:6px}
-        .mensaje-cliente-encontrado{display:none;background:#bbf7d0;color:#166534;padding:8px;border-radius:12px;text-align:center;font-size:12px;margin-bottom:10px}
-        .mensaje-cliente-no-encontrado{display:none;background:#fecaca;color:#b91c1c;padding:8px;border-radius:12px;text-align:center;font-size:12px;margin-bottom:10px}
-        .toast-notificacion{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#065f46;color:white;padding:12px 20px;border-radius:30px;font-weight:bold;font-size:13px;z-index:9999;display:none;text-align:center;max-width:90%}
+        .modal-registro-content{background:white;padding:20px;border-radius:20px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto}
+        .modal-registro-content h2{color:#002b5c;text-align:center;font-size:17px}
+        .modal-registro-content .subtitulo{font-size:11px;color:#64748b;text-align:center;margin-bottom:12px}
+        .btn-buscar-cliente{background:#2563eb;color:white;border:none;padding:8px 12px;border-radius:30px;cursor:pointer;font-weight:bold;font-size:11px;white-space:nowrap}
+        .btn-registro-confirmar{background:#25d366;color:white;border:none;padding:10px;border-radius:30px;width:100%;font-weight:bold;font-size:14px;cursor:pointer;margin-top:6px}
+        .btn-registro-cancelar{background:#e2e8f0;color:#64748b;border:none;padding:8px;border-radius:30px;width:100%;font-weight:bold;cursor:pointer;margin-top:5px;font-size:13px}
+        .mensaje-cliente-encontrado{display:none;background:#bbf7d0;color:#166534;padding:6px;border-radius:12px;text-align:center;font-size:11px;margin-bottom:8px}
+        .mensaje-cliente-no-encontrado{display:none;background:#fecaca;color:#b91c1c;padding:6px;border-radius:12px;text-align:center;font-size:11px;margin-bottom:8px}
+        .toast-notificacion{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#065f46;color:white;padding:10px 20px;border-radius:30px;font-weight:bold;font-size:12px;z-index:9999;display:none;text-align:center;max-width:90%}
         .vista-previa-impresion{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:white;z-index:999999;overflow-y:auto;padding:15px}
         .vista-previa-impresion.visible{display:block}
-        .vista-previa-impresion .cerrar-preview{position:sticky;top:0;background:#1e293b;color:white;padding:12px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:15px;z-index:10}
-        .vista-previa-impresion .cerrar-preview button{background:#ef4444;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;cursor:pointer}
+        .vista-previa-impresion .cerrar-preview{position:sticky;top:0;background:#1e293b;color:white;padding:10px 15px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:12px;z-index:10}
+        .vista-previa-impresion .cerrar-preview button{background:#ef4444;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;cursor:pointer;font-size:12px}
         .vista-previa-impresion .cerrar-preview .btn-imprimir-preview{background:#2563eb}
-        .vista-previa-impresion .header-preview{text-align:center;margin-bottom:15px}
-        .vista-previa-impresion .header-preview img{max-width:150px}
-        .vista-previa-impresion table{width:100%;border-collapse:collapse;font-size:10px}
-        .vista-previa-impresion th{background:#002b5c;color:white;padding:6px;text-align:left;border:1px solid #002b5c}
-        .vista-previa-impresion td{padding:5px 8px;border-bottom:1px solid #e2e8f0}
-        .btn-accion{padding:3px 8px;border:none;border-radius:12px;font-size:10px;font-weight:bold;cursor:pointer}
+        .vista-previa-impresion .header-preview{text-align:center;margin-bottom:12px}
+        .vista-previa-impresion .header-preview img{max-width:140px}
+        .vista-previa-impresion table{width:100%;border-collapse:collapse;font-size:8px;page-break-inside:auto}
+        .vista-previa-impresion th{background:#002b5c;color:white;padding:4px 6px;text-align:left;border:1px solid #002b5c;font-size:7px}
+        .vista-previa-impresion td{padding:3px 6px;border-bottom:1px solid #e2e8f0;font-size:7px}
+        .vista-previa-impresion tr{page-break-inside:avoid}
+        .btn-accion{padding:2px 6px;border:none;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer}
         .btn-confirmar{background:#22c55e;color:white}
         .btn-entregar{background:#3b82f6;color:white}
         .btn-cancelar{background:#ef4444;color:white}
         .btn-surtido{background:#8b5cf6;color:white}
         .btn-pendiente{background:#f59e0b;color:white}
         .btn-en-ruta{background:#06b6d4;color:white}
-        .btn-pdf{background:#dc2626;color:white;border:none;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:bold;cursor:pointer}
-        .btn-editar-stock{background:#f59e0b;color:white;border:none;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:bold;cursor:pointer}
-        .btn-historial{background:#8b5cf6;color:white;border:none;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:bold;cursor:pointer}
-        .btn-eliminar-cliente{background:#ef4444;color:white;border:none;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:bold;cursor:pointer}
-        .telefono-carrito{background:#2d3a4e;color:#fff;text-align:center;padding:6px;border-radius:30px;margin-top:8px;font-weight:bold;text-decoration:none;display:block;font-size:11px}
-        .lista-precios-container{background:white;border-radius:12px;padding:15px;border:1px solid #e2e8f0;margin-bottom:15px}
-        .lista-precios-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px}
-        .lista-precios-header h3{color:#002b5c;font-size:15px}
-        .lista-precios-header .acciones-lista{display:flex;gap:6px;flex-wrap:wrap}
-        .lista-precios-header .acciones-lista button{padding:5px 12px;border:none;border-radius:20px;font-weight:bold;font-size:10px;cursor:pointer}
-        .btn-pdf-lista{background:#dc2626;color:white}
-        .btn-imprimir-lista{background:#2563eb;color:white}
-        .btn-whatsapp-lista{background:#25d366;color:white}
-        .lista-precios-filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-        .lista-precios-filtros input,.lista-precios-filtros select{padding:6px 12px;border-radius:20px;border:1px solid #ddd;font-size:11px;flex:1;min-width:100px}
+        .btn-pdf{background:#dc2626;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer}
+        .btn-editar-stock{background:#f59e0b;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer}
+        .btn-historial{background:#8b5cf6;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer}
+        .btn-eliminar-cliente{background:#ef4444;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer}
+        .btn-pdf-lista{background:#dc2626;color:white;border:none;padding:4px 10px;border-radius:20px;font-weight:bold;font-size:9px;cursor:pointer}
+        .btn-imprimir-lista{background:#2563eb;color:white;border:none;padding:4px 10px;border-radius:20px;font-weight:bold;font-size:9px;cursor:pointer}
+        .btn-whatsapp-lista{background:#25d366;color:white;border:none;padding:4px 10px;border-radius:20px;font-weight:bold;font-size:9px;cursor:pointer}
+        .btn-pdf-cliente{background:#2563eb;color:white;border:none;padding:4px 10px;border-radius:20px;font-weight:bold;font-size:9px;cursor:pointer}
+        .btn-promociones-lista{background:#e11d48;color:white;border:none;padding:4px 10px;border-radius:20px;font-weight:bold;font-size:9px;cursor:pointer}
+        .lista-precios-container{background:white;border-radius:12px;padding:12px;border:1px solid #e2e8f0;margin-bottom:12px}
+        .lista-precios-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+        .lista-precios-header h3{color:#002b5c;font-size:14px}
+        .lista-precios-header .acciones-lista{display:flex;gap:4px;flex-wrap:wrap}
+        .lista-precios-filtros{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+        .lista-precios-filtros input,.lista-precios-filtros select{padding:4px 10px;border-radius:20px;border:1px solid #ddd;font-size:10px;flex:1;min-width:80px}
+        .lista-precios-tabla{overflow-x:auto;font-size:10px}
+        .lista-precios-tabla table{width:100%;border-collapse:collapse}
+        .lista-precios-tabla th{background:#002b5c;color:white;padding:5px 8px;text-align:left;font-size:8px;white-space:nowrap}
+        .lista-precios-tabla td{padding:4px 8px;border-bottom:1px solid #e2e8f0;font-size:9px}
         .tab-precios{display:none}
         .tab-precios.visible{display:block}
-        .promo-card{border:2px solid #e11d48;border-radius:12px;padding:15px;margin-bottom:12px;position:relative;page-break-inside:avoid}
-        .promo-card .promo-badge{position:absolute;top:-8px;right:12px;background:#e11d48;color:white;padding:2px 12px;border-radius:12px;font-size:9px;font-weight:bold}
-        .promo-card .promo-titulo{font-size:15px;font-weight:bold;color:#002b5c}
-        .promo-card .promo-precio{font-size:20px;font-weight:bold;color:#e11d48}
-        .promo-card .promo-antes{text-decoration:line-through;color:#999;font-size:13px;margin-right:8px}
+        .promo-card{border:2px solid #e11d48;border-radius:12px;padding:12px;margin-bottom:10px;position:relative;page-break-inside:avoid}
+        .promo-card .promo-badge{position:absolute;top:-8px;right:10px;background:#e11d48;color:white;padding:2px 10px;border-radius:12px;font-size:8px;font-weight:bold}
+        .promo-card .promo-titulo{font-size:14px;font-weight:bold;color:#002b5c}
+        .promo-card .promo-precio{font-size:18px;font-weight:bold;color:#e11d48}
+        .promo-card .promo-antes{text-decoration:line-through;color:#999;font-size:12px;margin-right:6px}
+        .visor-imagen{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);justify-content:center;align-items:center;z-index:99999;padding:20px}
+        .visor-imagen.visible{display:flex}
+        .visor-imagen img{max-width:95%;max-height:95%;object-fit:contain}
+        .visor-imagen .cerrar-visor{position:absolute;top:20px;right:30px;color:white;font-size:40px;cursor:pointer;font-weight:bold}
+        .visor-imagen .info-visor{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:white;padding:8px 20px;border-radius:30px;font-size:14px;text-align:center}
+        .reporte-cliente{background:white;padding:15px;border-radius:12px;border:1px solid #e2e8f0;margin:10px 0}
+        .btn-cerrar-reporte{background:#ef4444;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;cursor:pointer}
+        .btn-whatsapp-reporte{background:#25d366;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;cursor:pointer}
+        .btn-imprimir-reporte{background:#2563eb;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;cursor:pointer}
+        .btn-buscar-tabla{background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
         @media print{.vista-previa-impresion .cerrar-preview{display:none!important}}
-        .oculto{display:none!important}
-        .text-center{text-align:center}
-        .mt-8{margin-top:8px}
-        .gap-8{gap:8px}
-        .flex{display:flex}
-        .flex-wrap{flex-wrap:wrap}
-        .items-center{align-items:center}
-        .w-full{width:100%}
-        .btn-buscar-tabla{background:#2563eb;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer}
-        .btn-filtrar{background:#2563eb;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer}
-        .btn-limpiar{background:#e2e8f0;color:#334155;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer}
     </style>
 </head>
 <body>
 
 <div id="toastNotificacion" class="toast-notificacion">✅ Mensaje enviado</div>
+
+<!-- VISOR DE IMÁGENES -->
+<div class="visor-imagen" id="visorImagen">
+    <span class="cerrar-visor" onclick="cerrarVisor()">✕</span>
+    <img id="visorImagenSrc" src="" alt="Producto">
+    <div class="info-visor" id="visorImagenInfo">Producto</div>
+</div>
 
 <!-- VISTA PREVIA IMPRESIÓN -->
 <div class="vista-previa-impresion" id="vistaPreviaImpresion">
@@ -182,60 +198,12 @@
     <div id="contenidoVistaPrevia"></div>
 </div>
 
-<!-- MODAL STOCK -->
-<div class="modal-stock" id="modalStock">
-    <div class="modal-stock-content">
-        <h3>📦 Ajustar Inventario</h3>
-        <p class="producto-nombre" id="modalStockProducto" style="text-align:center;color:#64748b;font-size:13px;margin:5px 0 10px">Producto</p>
-        <div class="btn-group">
-            <button class="btn-sumar active" id="btnStockSumar">➕ Agregar</button>
-            <button class="btn-poner" id="btnStockPoner">📝 Poner Total</button>
-        </div>
-        <p class="instruccion" id="modalStockInstruccion" style="font-size:12px;color:#64748b;text-align:center">Ingresa la cantidad a AGREGAR</p>
-        <input type="number" id="modalStockInput" placeholder="Cantidad" min="0">
-        <div class="btn-actions">
-            <button class="btn-guardar" id="btnStockGuardar">💾 Guardar</button>
-            <button class="btn-cancelar" id="btnStockCancelar">❌ Cancelar</button>
-        </div>
-    </div>
-</div>
+<!-- MODALES -->
+<div class="modal-stock" id="modalStock"><div class="modal-stock-content"><h3>📦 Ajustar Inventario</h3><p style="text-align:center;color:#64748b;font-size:12px;margin:5px 0 10px" id="modalStockProducto">Producto</p><div class="btn-group"><button class="btn-sumar active" id="btnStockSumar">➕ Agregar</button><button class="btn-poner" id="btnStockPoner">📝 Poner Total</button></div><p style="font-size:11px;color:#64748b;text-align:center" id="modalStockInstruccion">Ingresa la cantidad a AGREGAR</p><input type="number" id="modalStockInput" placeholder="Cantidad" min="0"><div class="btn-actions"><button class="btn-guardar" id="btnStockGuardar">💾 Guardar</button><button class="btn-cancelar" id="btnStockCancelar">❌ Cancelar</button></div></div></div>
 
-<!-- MODAL REGISTRO -->
-<div class="modal-registro" id="modalRegistro">
-    <div class="modal-registro-content">
-        <h2>📝 Registro de Pedido</h2>
-        <p class="subtitulo">Ingresa tu teléfono para cargar tus datos</p>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-            <div style="flex:1">
-                <label style="font-weight:bold;font-size:12px;display:block;margin-bottom:3px">📱 Teléfono *</label>
-                <input type="tel" id="regTelefono" placeholder="Ej: 2281234567" style="width:100%;padding:10px 14px;border-radius:30px;border:2px solid #e2e8f0;font-size:14px;outline:none">
-            </div>
-            <button id="btnBuscarCliente" class="btn-buscar-cliente" style="margin-top:20px">🔍 Buscar</button>
-        </div>
-        <div id="clienteEncontrado" class="mensaje-cliente-encontrado">✅ Cliente encontrado</div>
-        <div id="clienteNoEncontrado" class="mensaje-cliente-no-encontrado">❌ Cliente no encontrado</div>
-        <div class="campo-row"><label>👤 Nombre completo *</label><input type="text" id="regNombre" placeholder="Ej: Juan Pérez"></div>
-        <div class="campo-row"><label>🏢 Negocio (opcional)</label><input type="text" id="regNegocio" placeholder="Ej: Tienda El Sol"></div>
-        <div class="campo-row"><label>📍 Dirección *</label><input type="text" id="regDireccion" placeholder="Calle #123, Colonia, Ciudad"></div>
-        <div class="campo-row"><label>🏷️ Referencia</label><input type="text" id="regReferencia" placeholder="Esquina con Av. Reforma"></div>
-        <button class="btn-registro-confirmar" id="btnRegistroConfirmar">📲 GENERAR PEDIDO</button>
-        <button class="btn-registro-cancelar" id="btnRegistroCancelar">❌ Cancelar</button>
-    </div>
-</div>
+<div class="modal-registro" id="modalRegistro"><div class="modal-registro-content"><h2>📝 Registro de Pedido</h2><p class="subtitulo">Ingresa tu teléfono para cargar tus datos</p><div style="display:flex;gap:6px;align-items:center;margin-bottom:8px"><div style="flex:1"><label style="font-weight:bold;font-size:11px;display:block;margin-bottom:2px">📱 Teléfono *</label><input type="tel" id="regTelefono" placeholder="Ej: 2281234567" style="width:100%;padding:8px 12px;border-radius:30px;border:2px solid #e2e8f0;font-size:13px;outline:none"></div><button id="btnBuscarCliente" class="btn-buscar-cliente" style="margin-top:18px">🔍 Buscar</button></div><div id="clienteEncontrado" class="mensaje-cliente-encontrado">✅ Cliente encontrado</div><div id="clienteNoEncontrado" class="mensaje-cliente-no-encontrado">❌ Cliente no encontrado</div><div class="campo-row"><label>👤 Nombre completo *</label><input type="text" id="regNombre" placeholder="Ej: Juan Pérez"></div><div class="campo-row"><label>🏢 Negocio (opcional)</label><input type="text" id="regNegocio" placeholder="Ej: Tienda El Sol"></div><div class="campo-row"><label>📍 Dirección *</label><input type="text" id="regDireccion" placeholder="Calle #123, Colonia, Ciudad"></div><div class="campo-row"><label>🏷️ Referencia</label><input type="text" id="regReferencia" placeholder="Esquina con Av. Reforma"></div><button class="btn-registro-confirmar" id="btnRegistroConfirmar">📲 GENERAR PEDIDO</button><button class="btn-registro-cancelar" id="btnRegistroCancelar">❌ Cancelar</button></div></div>
 
-<!-- MODAL CONTRASEÑA -->
-<div class="modal-pwd" id="modalPwd">
-    <div class="modal-pwd-content">
-        <h3>🔐 Acceso Administrador</h3>
-        <p style="font-size:13px;color:#666;margin:5px 0 10px">Introduce tu clave de acceso</p>
-        <input type="password" id="pwdInput" placeholder="••••••">
-        <div>
-            <button id="btnEntrarAdmin">Entrar</button>
-            <button id="btnCancelarAdmin" style="background:#e2e8f0;color:#334155;margin-left:8px">Cancelar</button>
-        </div>
-        <p class="intentos-msg" id="intentosMsg" style="font-size:11px;color:#999;margin-top:8px">Intentos disponibles: 3</p>
-    </div>
-</div>
+<div class="modal-pwd" id="modalPwd"><div class="modal-pwd-content"><h3>🔐 Acceso Administrador</h3><p style="font-size:12px;color:#666;margin:5px 0 10px">Introduce tu clave de acceso</p><input type="password" id="pwdInput" placeholder="••••••"><div><button id="btnEntrarAdmin">Entrar</button><button id="btnCancelarAdmin" style="background:#e2e8f0;color:#334155;margin-left:8px">Cancelar</button></div><p style="font-size:10px;color:#999;margin-top:6px" id="intentosMsg">Intentos disponibles: 3</p></div></div>
 
 <!-- ENCABEZADO -->
 <div class="encabezado">
@@ -272,6 +240,7 @@
         <button data-tab="tabClientes">👥 Clientes</button>
         <button data-tab="tabCompras">🛒 Compras</button>
         <button data-tab="tabListasPrecios">📊 Listas</button>
+        <button data-tab="tabReportes">📊 Reportes</button>
     </div>
 
     <div class="tab-content visible" id="tabDashboard">
@@ -283,216 +252,142 @@
             <div class="stat-card"><h4>⚠️ Stock Bajo</h4><div class="numero" id="statStockBajo" style="color:#b91c1c;">0</div></div>
             <div class="stat-card"><h4>📈 Utilidad</h4><div class="numero" id="statUtilidad">$0</div></div>
         </div>
-        <div style="background:#f8fafc;padding:15px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:12px">
-            <h4 style="margin-bottom:10px;font-size:13px;">📈 Ventas por Día</h4>
-            <canvas id="ventasChart" style="max-height:200px;max-width:100%"></canvas>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div style="background:#f8fafc;padding:15px;border-radius:12px;border:1px solid #e2e8f0">
-                <h4 style="margin-bottom:10px;font-size:13px;">🏷️ Categorías</h4>
-                <canvas id="categoriasChart" style="max-height:150px;max-width:100%"></canvas>
-            </div>
-            <div style="background:#f8fafc;padding:15px;border-radius:12px;border:1px solid #e2e8f0">
-                <h4 style="margin-bottom:10px;font-size:13px;">🔥 Más Vendidos</h4>
-                <canvas id="topProductosChart" style="max-height:150px;max-width:100%"></canvas>
-            </div>
+        <div class="chart-container"><h4 style="margin-bottom:8px;font-size:12px;">📈 Ventas por Día</h4><canvas id="ventasChart" style="max-height:180px;max-width:100%"></canvas></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="chart-container"><h4 style="margin-bottom:8px;font-size:12px;">🏷️ Categorías</h4><canvas id="categoriasChart" style="max-height:130px;max-width:100%"></canvas></div>
+            <div class="chart-container"><h4 style="margin-bottom:8px;font-size:12px;">🔥 Más Vendidos</h4><canvas id="topProductosChart" style="max-height:130px;max-width:100%"></canvas></div>
         </div>
     </div>
 
     <div class="tab-content" id="tabInventario">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-            <input type="text" id="buscarInventario" placeholder="🔍 Buscar..." style="flex:1;padding:8px 14px;border-radius:30px;border:1px solid #ddd;font-size:12px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <input type="text" id="buscarInventario" placeholder="🔍 Buscar..." style="flex:1;padding:6px 12px;border-radius:30px;border:1px solid #ddd;font-size:11px">
             <button id="btnBuscarInventario" class="btn-buscar-tabla">Buscar</button>
-            <button onclick="imprimirInventario()" style="background:#2563eb;color:white;border:none;padding:6px 14px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer">🖨️</button>
-            <button onclick="generarPDFInventario()" style="background:#dc2626;color:white;border:none;padding:6px 14px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer">📄</button>
-            <button onclick="compartirInventarioWhatsApp()" style="background:#25d366;color:white;border:none;padding:6px 14px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer">📲</button>
+            <button onclick="imprimirInventario()" style="background:#2563eb;color:white;border:none;padding:5px 12px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">🖨️</button>
+            <button onclick="generarPDFInventario()" style="background:#dc2626;color:white;border:none;padding:5px 12px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">📄</button>
+            <button onclick="compartirInventarioWhatsApp()" style="background:#25d366;color:white;border:none;padding:5px 12px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">📲</button>
         </div>
-        <div class="tabla-container">
-            <table>
-                <thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead>
-                <tbody id="inventarioTabla"></tbody>
-            </table>
-        </div>
+        <div class="tabla-container"><table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="inventarioTabla"></tbody></table></div>
     </div>
 
     <div class="tab-content" id="tabPedidos">
-        <div class="tabla-container">
-            <table>
-                <thead><tr><th>Folio</th><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
-                <tbody id="pedidosTabla"><tr><td colspan="7" style="text-align:center;color:#94a3b8;">No hay pedidos</td></tr></tbody>
-            </table>
-        </div>
+        <div class="tabla-container"><table><thead><tr><th>Folio</th><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="pedidosTabla"></tbody></table></div>
     </div>
 
     <div class="tab-content" id="tabClientes">
-        <div style="display:flex;gap:8px;margin-bottom:10px">
-            <input type="text" id="buscarClientes" placeholder="🔍 Buscar..." style="flex:1;padding:8px 14px;border-radius:30px;border:1px solid #ddd;font-size:12px">
-            <button id="btnBuscarClientes" class="btn-buscar-tabla">Buscar</button>
-        </div>
-        <div class="tabla-container">
-            <table>
-                <thead><tr><th>N°</th><th>Nombre</th><th>Teléfono</th><th>Dirección</th><th>Pedidos</th><th>Total</th><th>Acciones</th></tr></thead>
-                <tbody id="clientesTabla"></tbody>
-            </table>
-        </div>
+        <div style="display:flex;gap:6px;margin-bottom:8px"><input type="text" id="buscarClientes" placeholder="🔍 Buscar..." style="flex:1;padding:6px 12px;border-radius:30px;border:1px solid #ddd;font-size:11px"><button id="btnBuscarClientes" class="btn-buscar-tabla">Buscar</button></div>
+        <div class="tabla-container"><table><thead><tr><th>N°</th><th>Nombre</th><th>Teléfono</th><th>Dirección</th><th>Pedidos</th><th>Total</th><th>Acciones</th></tr></thead><tbody id="clientesTabla"></tbody></table></div>
+        <div id="reporteClienteContainer" style="display:none;margin-top:10px"></div>
     </div>
 
     <div class="tab-content" id="tabCompras">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-            <button id="btnNuevaCompra" style="background:#2563eb;color:white;border:none;padding:8px 16px;border-radius:30px;font-weight:bold;font-size:12px;cursor:pointer">➕ NUEVA COMPRA</button>
-            <button id="btnVerCompras" style="background:#8b5cf6;color:white;border:none;padding:8px 16px;border-radius:30px;font-weight:bold;font-size:12px;cursor:pointer">📋 VER HISTORIAL</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <button id="btnNuevaCompra" style="background:#2563eb;color:white;border:none;padding:6px 14px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer">➕ NUEVA COMPRA</button>
+            <button id="btnVerCompras" style="background:#8b5cf6;color:white;border:none;padding:6px 14px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer">📋 VER HISTORIAL</button>
         </div>
-        <div id="formNuevaCompra" style="display:none;background:#f8fafc;padding:15px;border-radius:12px;border:2px solid #2563eb;margin-bottom:10px">
-            <h3 style="color:#002b5c;font-size:14px;margin-bottom:10px">📦 REGISTRAR COMPRA</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div id="formNuevaCompra" style="display:none;background:#f8fafc;padding:12px;border-radius:12px;border:2px solid #2563eb;margin-bottom:8px">
+            <h3 style="color:#002b5c;font-size:13px;margin-bottom:8px">📦 REGISTRAR COMPRA</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
                 <div class="campo-row"><label>🏢 Proveedor *</label><input type="text" id="compraProveedor" placeholder="Ej: Distribuidora XYZ"></div>
                 <div class="campo-row"><label>📅 Fecha</label><input type="date" id="compraFecha"></div>
                 <div class="campo-row"><label>🧾 Factura</label><input type="text" id="compraFactura" placeholder="Ej: FAC-001"></div>
                 <div class="campo-row"><label>💳 Total</label><input type="number" step="0.01" id="compraTotal" placeholder="0.00"></div>
             </div>
             <div class="campo-row"><label>📝 Observaciones</label><textarea id="compraObservaciones" rows="2" placeholder="Notas..."></textarea></div>
-            <hr style="margin:10px 0;border:0;border-top:2px dashed #ccc">
-            <h4 style="color:#002b5c;font-size:13px;margin-bottom:8px">📦 PRODUCTOS</h4>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-                <select id="compraProductoSelect" style="flex:2;padding:8px;border-radius:20px;border:1px solid #ddd;min-width:120px">
-                    <option value="">Seleccionar...</option>
-                </select>
-                <input type="number" id="compraCantidad" placeholder="Cant" style="flex:1;padding:8px;border-radius:20px;border:1px solid #ddd;min-width:60px">
-                <input type="number" step="0.01" id="compraPrecio" placeholder="Precio" style="flex:1;padding:8px;border-radius:20px;border:1px solid #ddd;min-width:60px">
-                <button id="btnAgregarProductoCompra" style="background:#22c55e;color:white;border:none;padding:8px 14px;border-radius:20px;font-weight:bold;cursor:pointer">➕</button>
+            <hr style="margin:8px 0;border:0;border-top:2px dashed #ccc">
+            <h4 style="color:#002b5c;font-size:12px;margin-bottom:6px">📦 PRODUCTOS</h4>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+                <select id="compraProductoSelect" style="flex:2;padding:6px;border-radius:20px;border:1px solid #ddd;min-width:100px;font-size:11px"><option value="">Seleccionar...</option></select>
+                <input type="number" id="compraCantidad" placeholder="Cant" style="flex:1;padding:6px;border-radius:20px;border:1px solid #ddd;min-width:50px;font-size:11px">
+                <input type="number" step="0.01" id="compraPrecio" placeholder="Precio" style="flex:1;padding:6px;border-radius:20px;border:1px solid #ddd;min-width:50px;font-size:11px">
+                <button id="btnAgregarProductoCompra" style="background:#22c55e;color:white;border:none;padding:6px 12px;border-radius:20px;font-weight:bold;font-size:11px;cursor:pointer">➕</button>
             </div>
-            <div class="tabla-container" style="margin-bottom:8px">
-                <table>
-                    <thead><tr><th>Producto</th><th>Cant</th><th>Precio</th><th>Subtotal</th><th></th></tr></thead>
-                    <tbody id="productosCompraTabla"></tbody>
-                </table>
-            </div>
-            <div style="display:flex;gap:10px">
-                <button id="btnGuardarCompra" style="background:#2563eb;color:white;border:none;padding:10px 20px;border-radius:30px;font-weight:bold;cursor:pointer">💾 GUARDAR</button>
-                <button id="btnCancelarCompra" style="background:#e2e8f0;color:#334155;border:none;padding:10px 20px;border-radius:30px;font-weight:bold;cursor:pointer">❌ CANCELAR</button>
-            </div>
+            <div class="tabla-container" style="margin-bottom:6px"><table><thead><tr><th>Producto</th><th>Cant</th><th>Precio</th><th>Subtotal</th><th></th></tr></thead><tbody id="productosCompraTabla"></tbody></table></div>
+            <div style="display:flex;gap:8px"><button id="btnGuardarCompra" style="background:#2563eb;color:white;border:none;padding:8px 16px;border-radius:30px;font-weight:bold;font-size:12px;cursor:pointer">💾 GUARDAR</button><button id="btnCancelarCompra" style="background:#e2e8f0;color:#334155;border:none;padding:8px 16px;border-radius:30px;font-weight:bold;font-size:12px;cursor:pointer">❌ CANCELAR</button></div>
         </div>
         <div id="historialCompras" style="display:block">
-            <div style="display:flex;gap:8px;margin-bottom:10px">
-                <input type="text" id="buscarCompras" placeholder="🔍 Buscar..." style="flex:1;padding:8px 14px;border-radius:30px;border:1px solid #ddd;font-size:12px">
-                <button id="btnBuscarCompras" class="btn-buscar-tabla">Buscar</button>
-            </div>
-            <div class="tabla-container">
-                <table>
-                    <thead><tr><th>Folio</th><th>Fecha</th><th>Proveedor</th><th>Total</th><th>Acciones</th></tr></thead>
-                    <tbody id="comprasTabla"></tbody>
-                </table>
-            </div>
+            <div style="display:flex;gap:6px;margin-bottom:8px"><input type="text" id="buscarCompras" placeholder="🔍 Buscar..." style="flex:1;padding:6px 12px;border-radius:30px;border:1px solid #ddd;font-size:11px"><button id="btnBuscarCompras" class="btn-buscar-tabla">Buscar</button></div>
+            <div class="tabla-container"><table><thead><tr><th>Folio</th><th>Fecha</th><th>Proveedor</th><th>Total</th><th>Acciones</th></tr></thead><tbody id="comprasTabla"></tbody></table></div>
+            <div id="detalleCompraContainer" style="display:none;margin-top:10px"></div>
         </div>
     </div>
 
     <div class="tab-content" id="tabListasPrecios">
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-            <button onclick="mostrarTabPrecios('venta')" id="btnTabVenta" style="background:#002b5c;color:white;border:none;padding:6px 14px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer">💰 VENTA</button>
-            <button onclick="mostrarTabPrecios('compra')" id="btnTabCompra" style="background:#e2e8f0;color:#334155;border:none;padding:6px 14px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer">📊 COMPRA</button>
-            <button onclick="mostrarTabPrecios('cliente')" id="btnTabCliente" style="background:#e2e8f0;color:#334155;border:none;padding:6px 14px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer">🧾 CLIENTE</button>
-            <button onclick="mostrarTabPrecios('promociones')" id="btnTabPromociones" style="background:#e2e8f0;color:#334155;border:none;padding:6px 14px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer">🔥 PROMOS</button>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+            <button onclick="mostrarTabPrecios('venta')" id="btnTabVenta" style="background:#002b5c;color:white;border:none;padding:5px 12px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">💰 VENTA</button>
+            <button onclick="mostrarTabPrecios('compra')" id="btnTabCompra" style="background:#e2e8f0;color:#334155;border:none;padding:5px 12px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">📊 COMPRA</button>
+            <button onclick="mostrarTabPrecios('cliente')" id="btnTabCliente" style="background:#e2e8f0;color:#334155;border:none;padding:5px 12px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">🧾 CLIENTE</button>
+            <button onclick="mostrarTabPrecios('promociones')" id="btnTabPromociones" style="background:#e2e8f0;color:#334155;border:none;padding:5px 12px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">🔥 PROMOS</button>
         </div>
         <div id="tabVenta" class="tab-precios visible">
             <div class="lista-precios-container">
-                <div class="lista-precios-header">
-                    <h3>💰 LISTA DE VENTA</h3>
-                    <div class="acciones-lista">
-                        <button class="btn-pdf-lista" onclick="generarPDFListaVenta()">📄 PDF</button>
-                        <button class="btn-imprimir-lista" onclick="imprimirListaVenta()">🖨️</button>
-                        <button class="btn-whatsapp-lista" onclick="compartirListaVenta()">📲</button>
-                    </div>
-                </div>
-                <div class="lista-precios-filtros">
-                    <input type="text" id="filtroVentaBuscar" placeholder="🔍 Buscar..." oninput="filtrarListaVenta()">
-                    <select id="filtroVentaCategoria" onchange="filtrarListaVenta()">
-                        <option value="TODOS">Todas</option>
-                    </select>
-                </div>
-                <div class="lista-precios-tabla" id="listaVentaTabla">
-                    <table>
-                        <thead><tr><th>Código</th><th>Producto</th><th>Precio</th><th>Stock</th></tr></thead>
-                        <tbody id="listaVentaBody"></tbody>
-                    </table>
-                </div>
+                <div class="lista-precios-header"><h3>💰 LISTA DE VENTA</h3><div class="acciones-lista"><button class="btn-pdf-lista" onclick="generarPDFListaVenta()">📄</button><button class="btn-imprimir-lista" onclick="imprimirListaVenta()">🖨️</button><button class="btn-whatsapp-lista" onclick="compartirListaVenta()">📲</button></div></div>
+                <div class="lista-precios-filtros"><input type="text" id="filtroVentaBuscar" placeholder="🔍 Buscar..." oninput="filtrarListaVenta()"><select id="filtroVentaCategoria" onchange="filtrarListaVenta()"><option value="TODOS">Todas</option></select></div>
+                <div class="lista-precios-tabla"><table><thead><tr><th>Código</th><th>Producto</th><th>Precio</th><th>Stock</th></tr></thead><tbody id="listaVentaBody"></tbody></table></div>
             </div>
         </div>
         <div id="tabCompra" class="tab-precios">
             <div class="lista-precios-container">
-                <div class="lista-precios-header">
-                    <h3>📊 COMPRA Y VENTA</h3>
-                    <div class="acciones-lista">
-                        <button class="btn-pdf-lista" onclick="generarPDFListaCompraVenta()">📄 PDF</button>
-                        <button class="btn-imprimir-lista" onclick="imprimirListaCompraVenta()">🖨️</button>
-                        <button class="btn-whatsapp-lista" onclick="compartirListaCompraVenta()">📲</button>
-                    </div>
-                </div>
-                <div class="lista-precios-filtros">
-                    <input type="text" id="filtroCompraBuscar" placeholder="🔍 Buscar..." oninput="filtrarListaCompra()">
-                    <select id="filtroCompraCategoria" onchange="filtrarListaCompra()">
-                        <option value="TODOS">Todas</option>
-                    </select>
-                </div>
-                <div class="lista-precios-tabla" id="listaCompraTabla">
-                    <table>
-                        <thead><tr><th>Código</th><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Margen</th></tr></thead>
-                        <tbody id="listaCompraBody"></tbody>
-                    </table>
-                </div>
+                <div class="lista-precios-header"><h3>📊 COMPRA Y VENTA</h3><div class="acciones-lista"><button class="btn-pdf-lista" onclick="generarPDFListaCompraVenta()">📄</button><button class="btn-imprimir-lista" onclick="imprimirListaCompraVenta()">🖨️</button><button class="btn-whatsapp-lista" onclick="compartirListaCompraVenta()">📲</button></div></div>
+                <div class="lista-precios-filtros"><input type="text" id="filtroCompraBuscar" placeholder="🔍 Buscar..." oninput="filtrarListaCompra()"><select id="filtroCompraCategoria" onchange="filtrarListaCompra()"><option value="TODOS">Todas</option></select></div>
+                <div class="lista-precios-tabla"><table><thead><tr><th>Código</th><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Margen</th><th>Utilidad</th></tr></thead><tbody id="listaCompraBody"></tbody></table></div>
             </div>
         </div>
         <div id="tabCliente" class="tab-precios">
             <div class="lista-precios-container">
-                <div class="lista-precios-header">
-                    <h3>🧾 LISTA PARA CLIENTE</h3>
-                    <div class="acciones-lista">
-                        <button class="btn-pdf-cliente" onclick="generarPDFListaCliente()">📄 PDF</button>
-                        <button class="btn-imprimir-lista" onclick="imprimirListaCliente()">🖨️</button>
-                        <button class="btn-whatsapp-lista" onclick="compartirListaCliente()">📲</button>
-                    </div>
-                </div>
-                <div class="lista-precios-filtros">
-                    <input type="text" id="filtroClienteBuscar" placeholder="🔍 Buscar..." oninput="filtrarListaCliente()">
-                    <select id="filtroClienteCategoria" onchange="filtrarListaCliente()">
-                        <option value="TODOS">Todas</option>
-                    </select>
-                </div>
-                <div class="lista-precios-tabla" id="listaClienteTabla">
-                    <table>
-                        <thead><tr><th>Código</th><th>Producto</th><th>Precio</th></tr></thead>
-                        <tbody id="listaClienteBody"></tbody>
-                    </table>
-                </div>
+                <div class="lista-precios-header"><h3>🧾 LISTA PARA CLIENTE</h3><div class="acciones-lista"><button class="btn-pdf-cliente" onclick="generarPDFListaCliente()">📄</button><button class="btn-imprimir-lista" onclick="imprimirListaCliente()">🖨️</button><button class="btn-whatsapp-lista" onclick="compartirListaCliente()">📲</button></div></div>
+                <div class="lista-precios-filtros"><input type="text" id="filtroClienteBuscar" placeholder="🔍 Buscar..." oninput="filtrarListaCliente()"><select id="filtroClienteCategoria" onchange="filtrarListaCliente()"><option value="TODOS">Todas</option></select></div>
+                <div class="lista-precios-tabla"><table><thead><tr><th>Código</th><th>Producto</th><th>Precio</th></tr></thead><tbody id="listaClienteBody"></tbody></table></div>
             </div>
         </div>
         <div id="tabPromociones" class="tab-precios">
             <div class="lista-precios-container">
-                <div class="lista-precios-header">
-                    <h3>🔥 PROMOCIONES</h3>
-                    <div class="acciones-lista">
-                        <button class="btn-promociones-lista" onclick="generarPDFPromociones()">📄 PDF</button>
-                        <button class="btn-imprimir-lista" onclick="imprimirPromociones()">🖨️</button>
-                        <button class="btn-whatsapp-lista" onclick="compartirPromociones()">📲</button>
-                    </div>
-                </div>
+                <div class="lista-precios-header"><h3>🔥 PROMOCIONES</h3><div class="acciones-lista"><button class="btn-promociones-lista" onclick="generarPDFPromociones()">📄</button><button class="btn-imprimir-lista" onclick="imprimirPromociones()">🖨️</button><button class="btn-whatsapp-lista" onclick="compartirPromociones()">📲</button></div></div>
                 <div id="listaPromocionesContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="tabReportes">
+        <div class="stats-grid">
+            <div class="stat-card"><h4>📊 Total Ventas</h4><div class="numero" id="reportTotalVentas">$0</div></div>
+            <div class="stat-card"><h4>📦 Productos Vendidos</h4><div class="numero" id="reportProductosVendidos">0</div></div>
+            <div class="stat-card"><h4>💰 Utilidad Neta</h4><div class="numero" id="reportUtilidad">$0</div></div>
+            <div class="stat-card"><h4>📈 Ticket Promedio</h4><div class="numero" id="reportTicketPromedio">$0</div></div>
+        </div>
+        <div class="chart-container">
+            <h4 style="margin-bottom:8px;font-size:12px;">📊 Ventas por Mes</h4>
+            <canvas id="ventasMesChart" style="max-height:180px;max-width:100%"></canvas>
+        </div>
+        <div style="margin-top:12px;">
+            <h4 style="font-size:13px;color:#002b5c;margin-bottom:8px;">📋 Histórico de Ventas</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center;">
+                <label style="font-size:10px;font-weight:bold;">Desde:</label>
+                <input type="date" id="fechaDesde" style="padding:4px 10px;border-radius:20px;border:1px solid #ddd;font-size:10px">
+                <label style="font-size:10px;font-weight:bold;">Hasta:</label>
+                <input type="date" id="fechaHasta" style="padding:4px 10px;border-radius:20px;border:1px solid #ddd;font-size:10px">
+                <button id="btnFiltrarVentas" class="btn-filtrar" style="background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">🔍 Filtrar</button>
+                <button id="btnLimpiarFiltros" class="btn-limpiar" style="background:#e2e8f0;color:#334155;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">Limpiar</button>
+                <button onclick="imprimirReporteVentas()" style="background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">🖨️</button>
+                <button onclick="compartirReporteVentas()" style="background:#25d366;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">📲</button>
+            </div>
+            <div class="tabla-container">
+                <table>
+                    <thead><tr><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th></tr></thead>
+                    <tbody id="historicoVentasTabla"></tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
 <!-- PRODUCTOS -->
-<div id="contenedorProductos">
-    <div style="text-align:center;padding:30px;background:white;border-radius:16px;">⏳ Cargando productos...</div>
-</div>
+<div id="contenedorProductos"><div style="text-align:center;padding:30px;background:white;border-radius:16px;">⏳ Cargando productos...</div></div>
 
 <!-- CARRITO -->
 <div id="carritoPanel" class="carrito-panel">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-        <strong>🛒 MI PEDIDO</strong>
-        <button id="vaciarCarritoBtn" style="background:#b91c1c;border:none;color:white;padding:2px 12px;border-radius:20px;font-size:10px;cursor:pointer;">Vaciar</button>
-    </div>
-    <div id="carritoLista" style="margin-top:6px;font-size:13px;">🛍️ Vacío</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;"><strong>🛒 MI PEDIDO</strong><button id="vaciarCarritoBtn" style="background:#b91c1c;border:none;color:white;padding:2px 10px;border-radius:20px;font-size:9px;cursor:pointer;">Vaciar</button></div>
+    <div id="carritoLista" style="margin-top:5px;font-size:12px;">🛍️ Vacío</div>
     <div id="totalCarrito" class="total-carrito">Total: $0.00</div>
     <a href="#" id="enviarPedidoBtn" class="btn-enviar-wa">📲 ENVIAR PEDIDO</a>
     <a href="https://wa.me/522282877441" target="_blank" class="telefono-carrito">📞 Soporte: 228 287 7441</a>
@@ -531,6 +426,432 @@ function mostrarNotificacion(mensaje, duracion = 3000) {
 }
 
 // ============================================================
+// VISOR DE IMÁGENES
+// ============================================================
+function abrirVisor(imagenUrl, nombre) {
+    if (!imagenUrl || imagenUrl === "") {
+        mostrarNotificacion('📷 Este producto no tiene imagen');
+        return;
+    }
+    document.getElementById('visorImagenSrc').src = imagenUrl;
+    document.getElementById('visorImagenInfo').textContent = nombre || 'Producto';
+    document.getElementById('visorImagen').classList.add('visible');
+    document.body.style.overflow = 'hidden';
+}
+function cerrarVisor() {
+    document.getElementById('visorImagen').classList.remove('visible');
+    document.body.style.overflow = 'auto';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') cerrarVisor(); });
+
+// ============================================================
+// FUNCIONES DE IMPRESIÓN REESCRITAS - USAN VENTANA EMERGENTE
+// ============================================================
+
+// Función para generar HTML completo de impresión
+function generarHTMLCompletoImpresion(titulo, contenido) {
+    const fecha = new Date().toLocaleDateString('es-MX');
+    const logoUrl = "https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png";
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${titulo} - GAETO COMERCIOS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            padding: 20px; 
+            background: white; 
+            font-size: 11px;
+        }
+        .header-preview {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-bottom: 2px solid #002b5c;
+        }
+        .header-preview img {
+            max-width: 150px;
+            height: auto;
+            display: block;
+            margin: 0 auto 10px auto;
+        }
+        .header-preview h2 {
+            color: #002b5c;
+            margin: 10px 0 5px 0;
+            font-size: 18px;
+        }
+        .header-preview p {
+            color: #64748b;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+            margin-top: 10px;
+        }
+        th {
+            background: #002b5c !important;
+            color: white !important;
+            padding: 6px 8px;
+            text-align: left;
+            border: 1px solid #002b5c;
+            font-size: 9px;
+        }
+        td {
+            padding: 4px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 9px;
+        }
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        .precio-venta { color: #002b5c; font-weight: bold; }
+        .precio-compra { color: #64748b; }
+        .margen-positivo { color: #16a34a; font-weight: bold; }
+        .margen-negativo { color: #dc2626; font-weight: bold; }
+        .pie {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 2px solid #002b5c;
+            font-size: 9px;
+            color: #64748b;
+        }
+        @page {
+            size: A4 portrait;
+            margin: 10mm 15mm;
+        }
+        @media print {
+            body { padding: 10px; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-preview">
+        <img src="${logoUrl}" alt="GAETO COMERCIOS">
+        <h2>${titulo}</h2>
+        <p>📅 ${fecha}</p>
+        <hr style="border:1px solid #e2e8f0; margin:8px 0;">
+    </div>
+    ${contenido}
+    <div class="pie">
+        📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán, Veracruz, Ver.
+    </div>
+    <div class="no-print" style="text-align:center;margin-top:15px;padding:10px;border-top:1px solid #ccc;">
+        <button onclick="window.print()" style="background:#2563eb;color:white;border:none;padding:8px 20px;border-radius:30px;font-weight:bold;cursor:pointer;font-size:12px;">🖨️ Imprimir</button>
+        <button onclick="window.close()" style="background:#e2e8f0;color:#334155;border:none;padding:8px 20px;border-radius:30px;font-weight:bold;cursor:pointer;font-size:12px;margin-left:8px;">❌ Cerrar</button>
+    </div>
+</body>
+</html>
+    `;
+}
+
+// ============================================================
+// FUNCIONES DE IMPRESIÓN CON VENTANA EMERGENTE
+// ============================================================
+
+// IMPRIMIR INVENTARIO
+function imprimirInventario() {
+    if (productos.length === 0) {
+        mostrarNotificacion('❌ No hay productos');
+        return;
+    }
+    
+    const datos = ordenarProductos([...productos]);
+    let tablaHTML = '<table><thead><tr>';
+    tablaHTML += '<th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th>';
+    tablaHTML += '</tr></thead><tbody>';
+    
+    datos.forEach(p => {
+        const stock = p.stock !== undefined ? p.stock : '-';
+        const stockText = getStockText(stock);
+        const precio = parseFloat(p.precioLista || 0).toFixed(2);
+        const estaOculto = obtenerCampoActivo(p) === 'NO';
+        const nombre = p.nombre + (estaOculto ? ' (OCULTO)' : '');
+        tablaHTML += `<tr>
+            <td>${p.codigo || 'S/C'}</td>
+            <td>${nombre}</td>
+            <td>${p.categoria || 'General'}</td>
+            <td>$${precio}</td>
+            <td>${stock}</td>
+            <td>${stockText}</td>
+        </tr>`;
+    });
+    tablaHTML += '</tbody></table>';
+    
+    const htmlCompleto = generarHTMLCompletoImpresion('📦 INVENTARIO - GAETO COMERCIOS', tablaHTML);
+    const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(htmlCompleto);
+    ventana.document.close();
+}
+
+function generarPDFInventario() { imprimirInventario(); }
+
+// IMPRIMIR LISTA DE VENTA
+function imprimirListaVenta() {
+    if (productos.length === 0) {
+        mostrarNotificacion('❌ No hay productos');
+        return;
+    }
+    
+    const datos = ordenarProductos([...productos]);
+    let tablaHTML = '<table><thead><tr>';
+    tablaHTML += '<th>Código</th><th>Producto</th><th>Precio</th><th>Stock</th>';
+    tablaHTML += '</tr></thead><tbody>';
+    
+    datos.forEach(p => {
+        const pFinal = precioFinal(p);
+        const stock = p.stock !== undefined ? p.stock : '-';
+        const stockText = getStockText(stock);
+        tablaHTML += `<tr>
+            <td>${p.codigo || 'S/C'}</td>
+            <td>${p.nombre}</td>
+            <td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td>
+            <td>${stockText}</td>
+        </tr>`;
+    });
+    tablaHTML += '</tbody></table>';
+    
+    const htmlCompleto = generarHTMLCompletoImpresion('💰 LISTA DE PRECIOS DE VENTA', tablaHTML);
+    const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(htmlCompleto);
+    ventana.document.close();
+}
+
+function generarPDFListaVenta() { imprimirListaVenta(); }
+
+// IMPRIMIR LISTA COMPRA/VENTA
+function imprimirListaCompraVenta() {
+    if (productos.length === 0) {
+        mostrarNotificacion('❌ No hay productos');
+        return;
+    }
+    
+    const datos = ordenarProductos([...productos]);
+    let tablaHTML = '<table><thead><tr>';
+    tablaHTML += '<th>Código</th><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Margen</th><th>Utilidad</th>';
+    tablaHTML += '</tr></thead><tbody>';
+    
+    datos.forEach(p => {
+        const pFinal = precioFinal(p);
+        const precioCompra = parseFloat(p.precioCompra || 0);
+        const utilidad = pFinal - precioCompra;
+        const margen = pFinal > 0 ? ((pFinal - precioCompra) / pFinal * 100) : 0;
+        const margenClass = margen >= 0 ? 'margen-positivo' : 'margen-negativo';
+        const utilidadClass = utilidad >= 0 ? 'margen-positivo' : 'margen-negativo';
+        tablaHTML += `<tr>
+            <td>${p.codigo || 'S/C'}</td>
+            <td>${p.nombre}</td>
+            <td class="precio-compra">$${precioCompra.toFixed(2)}</td>
+            <td class="precio-venta">$${pFinal.toFixed(2)}</td>
+            <td class="${margenClass}">${margen.toFixed(1)}%</td>
+            <td class="${utilidadClass}">$${utilidad.toFixed(2)}</td>
+        </tr>`;
+    });
+    tablaHTML += '</tbody></table>';
+    
+    const htmlCompleto = generarHTMLCompletoImpresion('📊 PRECIOS COMPRA Y VENTA', tablaHTML);
+    const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(htmlCompleto);
+    ventana.document.close();
+}
+
+function generarPDFListaCompraVenta() { imprimirListaCompraVenta(); }
+
+// IMPRIMIR LISTA PARA CLIENTE
+function imprimirListaCliente() {
+    if (productos.length === 0) {
+        mostrarNotificacion('❌ No hay productos');
+        return;
+    }
+    
+    const datos = ordenarProductos([...productos]);
+    let tablaHTML = '<table><thead><tr>';
+    tablaHTML += '<th>Código</th><th>Producto</th><th>Precio</th>';
+    tablaHTML += '</tr></thead><tbody>';
+    
+    datos.forEach(p => {
+        const pFinal = precioFinal(p);
+        tablaHTML += `<tr>
+            <td>${p.codigo || 'S/C'}</td>
+            <td>${p.nombre}</td>
+            <td style="font-weight:bold;color:#002b5c;font-size:14px;">$${pFinal.toFixed(2)}</td>
+        </tr>`;
+    });
+    tablaHTML += '</tbody></table>';
+    
+    const htmlCompleto = generarHTMLCompletoImpresion('🧾 LISTA PARA CLIENTE', tablaHTML);
+    const ventana = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(htmlCompleto);
+    ventana.document.close();
+}
+
+function generarPDFListaCliente() { imprimirListaCliente(); }
+
+// IMPRIMIR PROMOCIONES
+function imprimirPromociones() {
+    const promociones = productos.filter(p => {
+        const tienePromo = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
+        const tieneDescuento = parseFloat(p.descuento) > 0;
+        if (obtenerCampoActivo(p) === 'NO') return false;
+        return tienePromo || tieneDescuento;
+    });
+    
+    if (promociones.length === 0) {
+        mostrarNotificacion('❌ No hay promociones');
+        return;
+    }
+    
+    const promosOrdenadas = ordenarProductos([...promociones]);
+    let cardsHTML = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:15px;">';
+    promosOrdenadas.forEach(p => {
+        const pFinal = precioFinal(p);
+        const descNum = parseFloat(p.descuento) || 0;
+        const esPromoBanner = p.promoFuera === "SI" && p.textoPromo;
+        const precioLista = parseFloat(p.precioLista || 0).toFixed(2);
+        cardsHTML += `
+            <div style="border:2px solid #e11d48;border-radius:12px;padding:15px;page-break-inside:avoid;background:white;">
+                <div style="background:#e11d48;color:white;display:inline-block;padding:2px 14px;border-radius:12px;font-size:9px;font-weight:bold;">${descNum > 0 ? '🔥 ' + descNum + '% OFF' : '📢 PROMO'}</div>
+                <div style="font-weight:bold;font-size:16px;color:#002b5c;margin-top:4px;">${p.nombre}</div>
+                <div style="font-size:10px;color:#64748b;">${p.codigo || 'S/C'}</div>
+                ${esPromoBanner ? `<div style="background:#fef3c7;padding:6px 12px;border-radius:8px;margin:6px 0;font-size:12px;color:#92400e;">📢 ${p.textoPromo}</div>` : ''}
+                <div style="margin-top:6px;">
+                    ${descNum > 0 ? `<span style="text-decoration:line-through;color:#999;font-size:14px;margin-right:8px;">$${precioLista}</span>` : ''}
+                    <span style="font-size:22px;font-weight:bold;color:#e11d48;">$${pFinal.toFixed(2)}</span>
+                </div>
+            </div>
+        `;
+    });
+    cardsHTML += '</div>';
+    
+    const htmlCompleto = generarHTMLCompletoImpresion('🔥 PROMOCIONES ACTIVAS', cardsHTML);
+    const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(htmlCompleto);
+    ventana.document.close();
+}
+
+function generarPDFPromociones() { imprimirPromociones(); }
+
+// IMPRIMIR REPORTE DE VENTAS
+function imprimirReporteVentas() {
+    const filas = document.querySelectorAll('#historicoVentasTabla tr');
+    if (filas.length === 0 || filas[0].textContent.includes('No hay')) {
+        mostrarNotificacion('❌ No hay ventas');
+        return;
+    }
+    
+    let tablaHTML = '<table><thead><tr>';
+    tablaHTML += '<th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th>';
+    tablaHTML += '</tr></thead><tbody>';
+    
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        if (celdas.length >= 5) {
+            tablaHTML += `<tr>
+                <td>${celdas[0].textContent.trim()}</td>
+                <td>${celdas[1].textContent.trim()}</td>
+                <td>${celdas[2].textContent.trim()}</td>
+                <td>${celdas[3].textContent.trim()}</td>
+                <td>${celdas[4].textContent.trim()}</td>
+            </tr>`;
+        }
+    });
+    tablaHTML += '</tbody></table>';
+    
+    const htmlCompleto = generarHTMLCompletoImpresion('📊 HISTÓRICO DE VENTAS', tablaHTML);
+    const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(htmlCompleto);
+    ventana.document.close();
+}
+
+function compartirReporteVentas() {
+    const filas = document.querySelectorAll('#historicoVentasTabla tr');
+    if (filas.length === 0 || filas[0].textContent.includes('No hay')) { mostrarNotificacion('❌ No hay ventas'); return; }
+    let mensaje = "📊 *HISTÓRICO DE VENTAS - GAETO COMERCIOS*\n\n";
+    filas.forEach(f => {
+        const celdas = f.querySelectorAll('td');
+        if (celdas.length >= 4) {
+            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}\n   ${celdas[2].textContent} - ${celdas[3].textContent}\n`;
+        }
+    });
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+// IMPRIMIR REPORTE DE CLIENTE
+function imprimirReporteCliente(clienteId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (!cliente) return;
+    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
+    if (pedidos.length === 0) { mostrarNotificacion('ℹ️ Sin pedidos'); return; }
+    
+    let html = `<div style="font-size:12px;">
+        <h3 style="color:#002b5c;font-size:16px;margin-bottom:8px;">📋 HISTORIAL - ${cliente.nombre}</h3>
+        <p style="color:#64748b;margin-bottom:10px;">📱 ${cliente.telefono} | 📦 ${pedidos.length} pedidos</p>
+        <hr style="border:1px solid #e2e8f0;margin:10px 0;">
+    `;
+    pedidos.forEach((p, i) => {
+        const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A';
+        const estado = p.estado || 'PENDIENTE';
+        const estadoColor = {PENDIENTE:'#f59e0b',CONFIRMADO:'#22c55e',SURTIDO:'#8b5cf6',EN_RUTA:'#06b6d4',ENTREGADO:'#3b82f6',CANCELADO:'#ef4444'};
+        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;">
+                <span>#${i+1} GAETO-${folio}</span>
+                <span>${p.fecha || 'S/F'} <span style="background:${estadoColor[estado]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:8px;">${estado}</span></span>
+            </div>
+            <div style="font-size:10px;color:#475569;margin:4px 0;">${(p.productos || []).map(prod => `${prod.cantidad}x ${prod.nombre}`).join(', ')}</div>
+            <div style="text-align:right;font-weight:bold;color:#002b5c;font-size:14px;">$${parseFloat(p.total||0).toFixed(2)}</div>
+        </div>`;
+    });
+    html += '</div>';
+    
+    const htmlCompleto = generarHTMLCompletoImpresion('📋 HISTORIAL DE PEDIDOS', html);
+    const ventana = window.open('', '_blank', 'width=700,height=600,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(htmlCompleto);
+    ventana.document.close();
+}
+
+// IMPRIMIR DETALLE DE COMPRA
+function imprimirDetalleCompra(id) {
+    const compra = compras.find(c => c.id === id);
+    if (!compra) return;
+    
+    let html = `<div style="font-size:12px;">
+        <h3 style="color:#002b5c;font-size:16px;margin-bottom:8px;">📦 DETALLE DE COMPRA</h3>
+        <p style="color:#64748b;">🏢 ${compra.proveedor} | 📅 ${compra.fecha}</p>
+        <p style="color:#64748b;margin-bottom:10px;">🧾 ${compra.factura || 'S/F'}</p>
+        <hr style="border:1px solid #e2e8f0;margin:10px 0;">
+    `;
+    (compra.productos || []).forEach(p => {
+        html += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted #e2e8f0;font-size:11px;">
+            <span>${p.cantidad}x ${p.nombre}</span>
+            <span>$${parseFloat(p.subtotal||0).toFixed(2)}</span>
+        </div>`;
+    });
+    html += `<div style="text-align:right;font-weight:bold;font-size:16px;color:#002b5c;margin-top:8px;border-top:2px solid #002b5c;padding-top:8px;">TOTAL: $${parseFloat(compra.total||0).toFixed(2)}</div>`;
+    html += '</div>';
+    
+    const htmlCompleto = generarHTMLCompletoImpresion('📦 DETALLE DE COMPRA', html);
+    const ventana = window.open('', '_blank', 'width=700,height=600,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(htmlCompleto);
+    ventana.document.close();
+}
+
+// ============================================================
 // VARIABLES GLOBALES
 // ============================================================
 let productos = [];
@@ -548,12 +869,9 @@ let productosCompraTemp = [];
 let chartVentas = null;
 let chartCategorias = null;
 let chartTopProductos = null;
+let chartVentasMes = null;
 
-// ============================================================
-// FUNCIONES HELPER
-// ============================================================
 function obtenerCampoActivo(p) { return p.activo !== undefined ? p.activo : 'SI'; }
-
 function ordenarProductos(lista) {
     return lista.sort((a, b) => {
         const aActivo = obtenerCampoActivo(a) === 'SI';
@@ -562,19 +880,16 @@ function ordenarProductos(lista) {
         return aActivo ? -1 : 1;
     });
 }
-
 function precioFinal(p) { 
     let precio = parseFloat(p.precioLista) || 0;
     let desc = parseFloat(p.descuento) || 0;
     return precio - (precio * (desc / 100)); 
 }
-
 function formatearFecha(f) { 
     if (!f) return ""; 
     let partes = f.split('-'); 
     return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : f; 
 }
-
 function obtenerCategorias() { 
     let cats = [];
     productos.forEach(p => {
@@ -586,52 +901,15 @@ function obtenerCategorias() {
     cats.sort();
     return cats;
 }
-
 function getStockClass(stock) {
     if (stock === undefined || stock === null || stock <= 0) return 'stock-agotado';
     if (stock <= 5) return 'stock-bajo';
     return 'stock-normal';
 }
-
 function getStockText(stock) {
     if (stock === undefined || stock === null || stock <= 0) return 'Agotado';
     if (stock <= 5) return '¡Stock Bajo!';
     return 'Disponible';
-}
-
-// ============================================================
-// VISTA PREVIA E IMPRESIÓN
-// ============================================================
-function mostrarVistaPrevia(contenidoHTML) {
-    document.getElementById('contenidoVistaPrevia').innerHTML = contenidoHTML;
-    document.getElementById('vistaPreviaImpresion').classList.add('visible');
-    document.body.style.overflow = 'hidden';
-    mostrarNotificacion('📄 Vista previa lista', 1500);
-}
-
-function cerrarVistaPrevia() {
-    document.getElementById('vistaPreviaImpresion').classList.remove('visible');
-    document.body.style.overflow = 'auto';
-}
-
-function imprimirVistaPrevia() {
-    window.print();
-}
-
-function generarHTMLImpresion(titulo, contenido) {
-    const fecha = new Date().toLocaleDateString('es-MX');
-    const logoUrl = "https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png";
-    return `
-        <div class="header-preview">
-            <img src="${logoUrl}" alt="GAETO COMERCIOS" style="max-width:150px;display:block;margin:0 auto 10px">
-            <h2>${titulo}</h2>
-            <p style="color:#64748b;font-size:12px;">📅 ${fecha}</p>
-        </div>
-        ${contenido}
-        <div style="text-align:center;margin-top:20px;padding-top:10px;border-top:2px solid #002b5c;font-size:10px;color:#64748b;">
-            📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán
-        </div>
-    `;
 }
 
 // ============================================================
@@ -647,7 +925,6 @@ database.ref('productos').on('value', (snapshot) => {
     renderizarProductos();
     if (modoAdmin) actualizarPanelAdmin();
 });
-
 database.ref('clientes').on('value', (snapshot) => {
     const data = snapshot.val();
     clientes = [];
@@ -656,7 +933,6 @@ database.ref('clientes').on('value', (snapshot) => {
     }
     if (modoAdmin) renderizarClientes();
 });
-
 database.ref('cotizaciones').on('value', (snapshot) => {
     const data = snapshot.val();
     cotizaciones = [];
@@ -665,10 +941,10 @@ database.ref('cotizaciones').on('value', (snapshot) => {
     }
     if (modoAdmin) {
         renderizarPedidos();
+        renderizarHistoricoVentas();
         actualizarPanelAdmin();
     }
 });
-
 database.ref('compras').on('value', (snapshot) => {
     const data = snapshot.val();
     compras = [];
@@ -689,7 +965,6 @@ document.getElementById('btnStockSumar').onclick = function() {
     document.getElementById('modalStockInput').placeholder = 'Cantidad a agregar';
     document.getElementById('modalStockInput').value = '';
 };
-
 document.getElementById('btnStockPoner').onclick = function() {
     modoStock = 'poner';
     this.classList.add('active');
@@ -698,7 +973,6 @@ document.getElementById('btnStockPoner').onclick = function() {
     document.getElementById('modalStockInput').placeholder = 'Nuevo stock total';
     document.getElementById('modalStockInput').value = '';
 };
-
 document.getElementById('btnStockGuardar').onclick = () => {
     const cantidad = parseInt(document.getElementById('modalStockInput').value);
     if (isNaN(cantidad) || cantidad < 0) {
@@ -719,14 +993,14 @@ document.getElementById('btnStockGuardar').onclick = () => {
         .then(() => {
             mostrarNotificacion(mensaje);
             document.getElementById('modalStock').style.display = 'none';
+            renderizarProductos();
+            if (modoAdmin) actualizarPanelAdmin();
         })
         .catch(err => mostrarNotificacion('❌ Error: ' + err.message));
 };
-
 document.getElementById('btnStockCancelar').onclick = () => {
     document.getElementById('modalStock').style.display = 'none';
 };
-
 function abrirModalStock(id) {
     const prod = productos.find(p => p.id === id);
     if (!prod) return;
@@ -780,7 +1054,6 @@ function renderizarProductos() {
         contenedor.innerHTML = '<div style="padding:30px;text-align:center;background:white;border-radius:16px;color:#64748b;">🔍 Sin coincidencias.</div>';
         return;
     }
-    
     if (modoAdmin) document.body.classList.add('modo-admin');
     else document.body.classList.remove('modo-admin');
     
@@ -802,13 +1075,14 @@ function renderizarProductos() {
         const precioClase = descNum > 0 ? 'precio-promo' : '';
         const ocultoBadge = (modoAdmin && estaOculto) ? `<span class="oculto-badge">🔒 OCULTO</span>` : '';
         const botonEditar = modoAdmin ? `<button class="btn-editar" onclick="toggleEditor('${p.id}')">✏️ EDITAR</button>` : '';
-        const clickImagen = p.imagenUrl ? `onclick="abrirVisorImagenes('${p.id}')"` : '';
+        const clickImagen = p.imagenUrl ? `onclick="abrirVisor('${p.imagenUrl}', '${p.nombre}')"` : '';
+        const cursorImagen = p.imagenUrl ? 'cursor:pointer;' : '';
         
         return `<div class="producto" style="${estaOculto && modoAdmin ? 'opacity:0.6;' : ''}">
             ${esPromoValida ? `<div class="banner-promo-fuera">${p.textoPromo}${p.vigenciaPromo ? ` ⏰${formatearFecha(p.vigenciaPromo)}` : ''}</div>` : ''}
             ${etiquetaPromo}
             <div class="codigo">${p.codigo || 'S/C'}</div>
-            <div class="imagen-area" ${clickImagen}>
+            <div class="imagen-area" ${clickImagen} style="${cursorImagen}">
                 ${p.imagenUrl ? `<img src="${p.imagenUrl}" alt="${p.nombre}" loading="lazy">` : '<div class="sin-imagen">📷 Sin Imagen</div>'}
             </div>
             <div class="info">
@@ -823,8 +1097,8 @@ function renderizarProductos() {
                     ${botonEditar}
                 </div>
                 <div class="editor-area" id="edit-area-${p.id}">
-                    <hr style="margin:8px 0;border:0;border-top:1px dashed #ccc">
-                    <h4 style="font-size:13px;color:#002b5c;margin-bottom:8px;">🛠️ Editar Producto</h4>
+                    <hr style="margin:6px 0;border:0;border-top:1px dashed #ccc">
+                    <h4 style="font-size:12px;color:#002b5c;margin-bottom:6px;">🛠️ Editar Producto</h4>
                     <div class="campo-row"><label>Código</label><input type="text" id="edit-codigo-${p.id}" value="${p.codigo || ''}"></div>
                     <div class="campo-row"><label>Nombre</label><input type="text" id="edit-nombre-${p.id}" value="${p.nombre || ''}"></div>
                     <div class="campo-row"><label>Descripción</label><textarea id="edit-descripcion-${p.id}">${p.descripcion || ''}</textarea></div>
@@ -833,22 +1107,10 @@ function renderizarProductos() {
                     <div class="campo-row"><label>Descuento (%)</label><input type="number" id="edit-descuento-${p.id}" value="${p.descuento || '0'}"></div>
                     <div class="campo-row"><label>Precio Compra ($)</label><input type="number" step="0.01" id="edit-precioCompra-${p.id}" value="${p.precioCompra || ''}"></div>
                     <div class="campo-row"><label>Stock</label><input type="number" id="edit-stock-${p.id}" value="${p.stock || '0'}"></div>
-                    <div class="campo-row"><label>👁️ Visibilidad</label>
-                        <select id="edit-activo-${p.id}">
-                            <option value="SI" ${obtenerCampoActivo(p) === 'SI' ? 'selected' : ''}>✅ Activo</option>
-                            <option value="NO" ${obtenerCampoActivo(p) === 'NO' ? 'selected' : ''}>🔒 Oculto</option>
-                        </select>
-                    </div>
-                    <div class="campo-row"><label style="color:#2563eb;font-weight:bold;">📸 Cargar Foto</label>
-                        <input type="file" id="file-input-${p.id}" accept="image/*" onchange="procesarFotoLocal(this, '${p.id}')">
-                    </div>
+                    <div class="campo-row"><label>👁️ Visibilidad</label><select id="edit-activo-${p.id}"><option value="SI" ${obtenerCampoActivo(p) === 'SI' ? 'selected' : ''}>✅ Activo</option><option value="NO" ${obtenerCampoActivo(p) === 'NO' ? 'selected' : ''}>🔒 Oculto</option></select></div>
+                    <div class="campo-row"><label style="color:#2563eb;font-weight:bold;">📸 Cargar Foto</label><input type="file" id="file-input-${p.id}" accept="image/*" onchange="procesarFotoLocal(this, '${p.id}')"></div>
                     <div class="campo-row"><label>URL Imagen</label><input type="text" id="edit-imagen-${p.id}" value="${p.imagenUrl || ''}"></div>
-                    <div class="campo-row"><label>Banner Promoción</label>
-                        <select id="edit-promo-${p.id}">
-                            <option value="NO" ${p.promoFuera === 'NO' ? 'selected' : ''}>NO</option>
-                            <option value="SI" ${p.promoFuera === 'SI' ? 'selected' : ''}>SI</option>
-                        </select>
-                    </div>
+                    <div class="campo-row"><label>Banner Promoción</label><select id="edit-promo-${p.id}"><option value="NO" ${p.promoFuera === 'NO' ? 'selected' : ''}>NO</option><option value="SI" ${p.promoFuera === 'SI' ? 'selected' : ''}>SI</option></select></div>
                     <div class="campo-row"><label>Texto Banner</label><input type="text" id="edit-textopromo-${p.id}" value="${p.textoPromo || ''}"></div>
                     <div class="campo-row"><label>Vigencia</label><input type="date" id="edit-vigencia-${p.id}" value="${p.vigenciaPromo || ''}"></div>
                     <button class="btn-guardar" onclick="guardarCambios('${p.id}')">💾 GUARDAR</button>
@@ -958,19 +1220,16 @@ function renderizarCarrito() {
         return;
     }
     let total = 0;
+    let mensaje = "*📦 NUEVO PEDIDO - GAETO COMERCIOS*\n\n";
     lista.innerHTML = carrito.map((item, index) => {
         let pFinal = precioFinal(item.producto);
         let subtotal = pFinal * item.cantidad;
         total += subtotal;
-        return `<div class="carrito-item"><span>${item.cantidad}x ${item.producto.nombre}</span><span>$${subtotal.toFixed(2)} <button onclick="eliminarDelCarrito('${item.id}')" style="background:none;border:none;color:#f43f5e;cursor:pointer;font-size:14px;">✕</button></span></div>`;
+        mensaje += `${index+1}. ${item.producto.nombre} - ${item.cantidad}x $${pFinal.toFixed(2)} = $${subtotal.toFixed(2)}\n`;
+        return `<div class="carrito-item"><span>${item.cantidad}x ${item.producto.nombre}</span><span>$${subtotal.toFixed(2)} <button onclick="eliminarDelCarrito('${item.id}')" style="background:none;border:none;color:#f43f5e;cursor:pointer;font-size:13px;">✕</button></span></div>`;
     }).join('');
-    totalCont.innerText = `Total: $${total.toFixed(2)}`;
-    let mensaje = "*📦 NUEVO PEDIDO - GAETO COMERCIOS*\n\n";
-    carrito.forEach((item, i) => {
-        let pFinal = precioFinal(item.producto);
-        mensaje += `${i+1}. ${item.producto.nombre} - ${item.cantidad}x $${pFinal.toFixed(2)} = $${(pFinal*item.cantidad).toFixed(2)}\n`;
-    });
     mensaje += `\n*💰 TOTAL: $${total.toFixed(2)}*`;
+    totalCont.innerText = `Total: $${total.toFixed(2)}`;
     btnEnviar.href = `https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`;
 }
 
@@ -1060,6 +1319,7 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
             mostrarNotificacion('✅ ¡Pedido registrado!');
             carrito = [];
             renderizarCarrito();
+            if (modoAdmin) actualizarPanelAdmin();
         })
         .catch(err => mostrarNotificacion("❌ Error: " + err.message));
 };
@@ -1085,7 +1345,7 @@ function renderizarClientes() {
             <td>${i+1}</td>
             <td>${c.nombre || 'Sin nombre'}</td>
             <td>${c.telefono || 'Sin teléfono'}</td>
-            <td style="font-size:10px;max-width:150px;">${c.direccion || 'Sin dirección'}</td>
+            <td style="font-size:9px;max-width:120px;word-break:break-word;">${c.direccion || 'Sin dirección'}</td>
             <td>${pedidos.length}</td>
             <td>$${total.toFixed(2)}</td>
             <td>
@@ -1108,6 +1368,40 @@ function verHistorialCliente(clienteId) {
     if (!cliente) return;
     const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
     if (pedidos.length === 0) { mostrarNotificacion('ℹ️ Sin pedidos'); return; }
+    
+    let html = `<div class="reporte-cliente">
+        <h3 style="color:#002b5c;font-size:15px;">📋 HISTORIAL - ${cliente.nombre}</h3>
+        <p style="font-size:12px;color:#64748b;">📱 ${cliente.telefono} | 📦 ${pedidos.length} pedidos</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;">
+            <button class="btn-imprimir-reporte" onclick="imprimirReporteCliente('${clienteId}')">🖨️ Imprimir</button>
+            <button class="btn-whatsapp-reporte" onclick="compartirReporteCliente('${clienteId}')">📲 WhatsApp</button>
+        </div>
+        <hr style="margin:8px 0;border:0;border-top:1px solid #e2e8f0;">
+    `;
+    pedidos.forEach((p, i) => {
+        const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A';
+        const estado = p.estado || 'PENDIENTE';
+        const estadoColor = {PENDIENTE:'#f59e0b',CONFIRMADO:'#22c55e',SURTIDO:'#8b5cf6',EN_RUTA:'#06b6d4',ENTREGADO:'#3b82f6',CANCELADO:'#ef4444'};
+        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:6px;">
+            <div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;">
+                <span>#${i+1} GAETO-${folio}</span>
+                <span>${p.fecha || 'S/F'} <span style="background:${estadoColor[estado]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:8px;">${estado}</span></span>
+            </div>
+            <div style="font-size:10px;color:#475569;margin:3px 0;">${(p.productos || []).map(prod => `${prod.cantidad}x ${prod.nombre}`).join(', ')}</div>
+            <div style="text-align:right;font-weight:bold;color:#002b5c;font-size:13px;">$${parseFloat(p.total||0).toFixed(2)}</div>
+        </div>`;
+    });
+    html += `<button class="btn-cerrar-reporte" onclick="document.getElementById('reporteClienteContainer').style.display='none'">❌ Cerrar</button>
+    </div>`;
+    document.getElementById('reporteClienteContainer').innerHTML = html;
+    document.getElementById('reporteClienteContainer').style.display = 'block';
+    document.getElementById('reporteClienteContainer').scrollIntoView({ behavior: 'smooth' });
+}
+
+function compartirReporteCliente(clienteId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (!cliente) return;
+    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
     let mensaje = `📋 *HISTORIAL - ${cliente.nombre}*\n📱 ${cliente.telefono}\n📦 ${pedidos.length} pedidos\n────────────────────\n`;
     pedidos.forEach((p, i) => {
         mensaje += `#${i+1} ${p.fecha || 'S/F'} - $${parseFloat(p.total||0).toFixed(2)} - ${p.estado||'PENDIENTE'}\n`;
@@ -1116,7 +1410,7 @@ function verHistorialCliente(clienteId) {
 }
 
 // ============================================================
-// RENDERIZAR PEDIDOS
+// RENDERIZAR PEDIDOS CON BOTONES DE ESTADO
 // ============================================================
 function renderizarPedidos() {
     const tbody = document.getElementById('pedidosTabla');
@@ -1140,16 +1434,16 @@ function renderizarPedidos() {
             <td><strong>GAETO-${folio}</strong></td>
             <td>${c.fecha || 'S/F'}</td>
             <td>${c.cliente?.nombre || 'Anónimo'}</td>
-            <td style="font-size:10px;max-width:120px;">${productosLista || 'Sin productos'}</td>
+            <td style="font-size:9px;max-width:100px;">${productosLista || 'Sin productos'}</td>
             <td>$${parseFloat(c.total||0).toFixed(2)}</td>
-            <td><span style="background:${estadoColors[estado] || '#999'};color:white;padding:2px 10px;border-radius:12px;font-size:9px;">${estado}</span></td>
+            <td><span style="background:${estadoColors[estado] || '#999'};color:white;padding:2px 8px;border-radius:10px;font-size:8px;">${estado}</span></td>
             <td style="display:flex;gap:3px;flex-wrap:wrap;">
                 ${estado === 'PENDIENTE' ? `<button class="btn-accion btn-confirmar" onclick="cambiarEstado('${c.id}','CONFIRMADO')">✅</button>` : ''}
                 ${estado === 'CONFIRMADO' ? `<button class="btn-accion btn-surtido" onclick="cambiarEstado('${c.id}','SURTIDO')">📦</button>` : ''}
                 ${estado === 'SURTIDO' ? `<button class="btn-accion btn-en-ruta" onclick="cambiarEstado('${c.id}','EN_RUTA')">🚚</button>` : ''}
                 ${estado === 'EN_RUTA' ? `<button class="btn-accion btn-entregar" onclick="cambiarEstado('${c.id}','ENTREGADO')">📍</button>` : ''}
                 ${estado !== 'CANCELADO' && estado !== 'ENTREGADO' ? `<button class="btn-accion btn-cancelar" onclick="cambiarEstado('${c.id}','CANCELADO')">❌</button>` : ''}
-                <button class="btn-pdf" onclick="generarPDFTicket('${c.id}')">📄</button>
+                <button class="btn-pdf" onclick="generarPDFPedido('${c.id}')">📄</button>
             </td>
         </tr>`;
     }).join('');
@@ -1161,7 +1455,7 @@ function cambiarEstado(id, estado) {
         .catch(err => mostrarNotificacion('❌ Error: ' + err.message));
 }
 
-function generarPDFTicket(id) {
+function generarPDFPedido(id) {
     const c = cotizaciones.find(p => p.id === id);
     if (!c) return;
     const ventana = window.open('', '_blank', 'width=380,height=600');
@@ -1170,7 +1464,7 @@ function generarPDFTicket(id) {
     const folio = id.slice(-6).toUpperCase();
     let html = `
         <!DOCTYPE html>
-        <html><head><meta charset="UTF-8"><title>Ticket</title>
+        <html><head><meta charset="UTF-8"><title>Pedido - GAETO COMERCIOS</title>
         <style>
             body{font-family:'Courier New',monospace;width:80mm;margin:0 auto;padding:5px;font-size:11px;}
             .header{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;}
@@ -1188,7 +1482,7 @@ function generarPDFTicket(id) {
         <body>
             <div class="header">
                 <img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png" alt="Logo">
-                <h3>🧾 TICKET</h3>
+                <h3>🧾 TICKET DE PEDIDO</h3>
                 <div>GAETO-${folio}</div>
                 <div>${c.fecha || 'S/F'}</div>
             </div>
@@ -1217,52 +1511,77 @@ function generarPDFTicket(id) {
 }
 
 // ============================================================
-// FUNCIONES DE ADMIN
+// RENDERIZAR COMPRAS CON DETALLE
 // ============================================================
-function actualizarPanelAdmin() {
-    if (!modoAdmin) return;
-    const totalVentas = cotizaciones.reduce((s, c) => s + parseFloat(c.total || 0), 0);
-    document.getElementById('statVentasHoy').textContent = '$' + totalVentas.toFixed(2);
-    document.getElementById('statProductos').textContent = productos.length;
-    document.getElementById('statPedidos').textContent = cotizaciones.length;
-    document.getElementById('statClientes').textContent = clientes.length;
-    const stockBajo = productos.filter(p => p.stock !== undefined && p.stock <= 5).length;
-    document.getElementById('statStockBajo').textContent = stockBajo;
-    document.getElementById('statUtilidad').textContent = '$' + (totalVentas * 0.3).toFixed(2);
-    renderizarInventario();
-    renderizarPedidos();
-    renderizarClientes();
-    renderizarCompras();
-    renderizarGraficas();
-}
-
-function renderizarInventario() {
-    const tbody = document.getElementById('inventarioTabla');
-    if (productos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">No hay productos</td></tr>';
+function renderizarCompras() {
+    const tbody = document.getElementById('comprasTabla');
+    if (compras.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">No hay compras</td></tr>';
         return;
     }
-    tbody.innerHTML = productos.map(p => {
-        const stock = p.stock !== undefined ? p.stock : '-';
-        const stockClass = getStockClass(stock);
-        const stockText = getStockText(stock);
-        const esPromo = (p.promoFuera === "SI" && p.textoPromo) || parseFloat(p.descuento) > 0;
-        const estaOculto = obtenerCampoActivo(p) === 'NO';
-        const precio = parseFloat(p.precioLista || 0).toFixed(2);
-        return `<tr style="${estaOculto ? 'opacity:0.6;background:#fef2f2;' : ''}">
-            <td>${p.codigo || 'S/C'} ${esPromo ? '🔥' : ''}</td>
-            <td>${p.nombre} ${estaOculto ? '<span style="color:#b91c1c;font-size:9px;">(OCULTO)</span>' : ''}</td>
-            <td>${p.categoria || 'General'}</td>
-            <td>$${precio}</td>
-            <td>${stock}</td>
-            <td><span class="stock-badge ${stockClass}">${stockText}</span></td>
-            <td><button class="btn-editar-stock" onclick="abrirModalStock('${p.id}')">📦</button></td>
+    tbody.innerHTML = compras.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||'')).map(c => {
+        const folio = c.id ? c.id.slice(-6).toUpperCase() : 'N/A';
+        return `<tr>
+            <td><strong>COMP-${folio}</strong></td>
+            <td>${c.fecha || 'S/F'}</td>
+            <td>${c.proveedor || 'Sin proveedor'}</td>
+            <td>$${parseFloat(c.total||0).toFixed(2)}</td>
+            <td>
+                <button onclick="verDetalleCompra('${c.id}')" style="background:#8b5cf6;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">📋</button>
+                <button onclick="eliminarCompra('${c.id}')" style="background:#ef4444;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">🗑️</button>
+            </td>
         </tr>`;
     }).join('');
 }
 
+function verDetalleCompra(id) {
+    const compra = compras.find(c => c.id === id);
+    if (!compra) return;
+    
+    let html = `<div class="reporte-cliente">
+        <h3 style="color:#002b5c;font-size:15px;">📦 DETALLE DE COMPRA</h3>
+        <p style="font-size:12px;color:#64748b;">🏢 ${compra.proveedor} | 📅 ${compra.fecha}</p>
+        <p style="font-size:11px;color:#64748b;">🧾 ${compra.factura || 'S/F'}</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;">
+            <button class="btn-imprimir-reporte" onclick="imprimirDetalleCompra('${id}')">🖨️ Imprimir</button>
+            <button class="btn-whatsapp-reporte" onclick="compartirDetalleCompra('${id}')">📲 WhatsApp</button>
+        </div>
+        <hr style="margin:8px 0;border:0;border-top:1px solid #e2e8f0;">
+    `;
+    (compra.productos || []).forEach(p => {
+        html += `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted #e2e8f0;font-size:11px;">
+            <span>${p.cantidad}x ${p.nombre}</span>
+            <span>$${parseFloat(p.subtotal||0).toFixed(2)}</span>
+        </div>`;
+    });
+    html += `<div style="text-align:right;font-weight:bold;font-size:14px;color:#002b5c;margin-top:6px;border-top:2px solid #002b5c;padding-top:6px;">TOTAL: $${parseFloat(compra.total||0).toFixed(2)}</div>
+    <button class="btn-cerrar-reporte" onclick="document.getElementById('detalleCompraContainer').style.display='none'">❌ Cerrar</button>
+    </div>`;
+    document.getElementById('detalleCompraContainer').innerHTML = html;
+    document.getElementById('detalleCompraContainer').style.display = 'block';
+    document.getElementById('detalleCompraContainer').scrollIntoView({ behavior: 'smooth' });
+}
+
+function compartirDetalleCompra(id) {
+    const compra = compras.find(c => c.id === id);
+    if (!compra) return;
+    let mensaje = `📦 *DETALLE DE COMPRA*\n🏢 ${compra.proveedor}\n📅 ${compra.fecha}\n🧾 ${compra.factura || 'S/F'}\n────────────────────\n`;
+    (compra.productos || []).forEach(p => {
+        mensaje += `${p.cantidad}x ${p.nombre} - $${parseFloat(p.subtotal||0).toFixed(2)}\n`;
+    });
+    mensaje += `\n💰 TOTAL: $${parseFloat(compra.total||0).toFixed(2)}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+function eliminarCompra(id) {
+    if (!confirm('⚠️ ¿Eliminar esta compra?')) return;
+    database.ref('compras/' + id).remove()
+        .then(() => mostrarNotificacion('✅ Compra eliminada'))
+        .catch(err => mostrarNotificacion('❌ Error: ' + err.message));
+}
+
 // ============================================================
-// COMPRAS
+// COMPRAS - NUEVA COMPRA
 // ============================================================
 document.getElementById('btnNuevaCompra').onclick = function() {
     document.getElementById('formNuevaCompra').style.display = 'block';
@@ -1333,7 +1652,7 @@ function renderizarProductosCompraTemp() {
     tbody.innerHTML = productosCompraTemp.map((p, i) => {
         return `<tr><td>[${p.codigo}] ${p.nombre}</td><td>${p.cantidad}</td><td>$${p.precioUnitario.toFixed(2)}</td>
         <td>$${p.subtotal.toFixed(2)}</td>
-        <td><button onclick="eliminarProductoCompraTemp(${i})" style="background:#ef4444;color:white;border:none;border-radius:12px;padding:2px 8px;cursor:pointer;">✕</button></td></tr>`;
+        <td><button onclick="eliminarProductoCompraTemp(${i})" style="background:#ef4444;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">✕</button></td></tr>`;
     }).join('');
 }
 
@@ -1371,45 +1690,6 @@ document.getElementById('btnGuardarCompra').onclick = function() {
         })
         .catch(err => mostrarNotificacion('❌ Error: ' + err.message));
 };
-
-function renderizarCompras() {
-    const tbody = document.getElementById('comprasTabla');
-    if (compras.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">No hay compras</td></tr>';
-        return;
-    }
-    tbody.innerHTML = compras.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||'')).map(c => {
-        const folio = c.id ? c.id.slice(-6).toUpperCase() : 'N/A';
-        return `<tr>
-            <td><strong>COMP-${folio}</strong></td>
-            <td>${c.fecha || 'S/F'}</td>
-            <td>${c.proveedor || 'Sin proveedor'}</td>
-            <td>$${parseFloat(c.total||0).toFixed(2)}</td>
-            <td>
-                <button onclick="verDetalleCompra('${c.id}')" style="background:#8b5cf6;color:white;border:none;border-radius:12px;padding:2px 8px;cursor:pointer;">📋</button>
-                <button onclick="eliminarCompra('${c.id}')" style="background:#ef4444;color:white;border:none;border-radius:12px;padding:2px 8px;cursor:pointer;">🗑️</button>
-            </td>
-        </tr>`;
-    }).join('');
-}
-
-function verDetalleCompra(id) {
-    const compra = compras.find(c => c.id === id);
-    if (!compra) return;
-    let mensaje = `📦 *COMPRA - GAETO COMERCIOS*\n📄 Folio: COMP-${id.slice(-6).toUpperCase()}\n🏢 ${compra.proveedor}\n📅 ${compra.fecha}\n\n`;
-    (compra.productos || []).forEach(p => {
-        mensaje += `${p.cantidad}x ${p.nombre} - $${parseFloat(p.subtotal||0).toFixed(2)}\n`;
-    });
-    mensaje += `\n💰 TOTAL: $${parseFloat(compra.total||0).toFixed(2)}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
-}
-
-function eliminarCompra(id) {
-    if (!confirm('⚠️ ¿Eliminar esta compra?')) return;
-    database.ref('compras/' + id).remove()
-        .then(() => mostrarNotificacion('✅ Compra eliminada'))
-        .catch(err => mostrarNotificacion('❌ Error: ' + err.message));
-}
 
 // ============================================================
 // LISTAS DE PRECIOS
@@ -1480,17 +1760,22 @@ function renderizarListaCompraVenta() {
     filtrados = ordenarProductos(filtrados);
     const tbody = document.getElementById('listaCompraBody');
     if (filtrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:15px;">🔍 No hay productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:15px;">🔍 No hay productos</td></tr>';
         return;
     }
     tbody.innerHTML = filtrados.map(p => {
         const pFinal = precioFinal(p);
-        const precioCompra = parseFloat(p.precioCompra || p.precioLista * 0.6 || 0);
+        const precioCompra = parseFloat(p.precioCompra || 0);
+        const utilidad = pFinal - precioCompra;
         const margen = pFinal > 0 ? ((pFinal - precioCompra) / pFinal * 100) : 0;
-        return `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td>
-        <td>$${precioCompra.toFixed(2)}</td>
-        <td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td>
-        <td style="color:${margen >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">${margen.toFixed(1)}%</td></tr>`;
+        return `<tr>
+            <td>${p.codigo || 'S/C'}</td>
+            <td>${p.nombre}</td>
+            <td>$${precioCompra.toFixed(2)}</td>
+            <td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td>
+            <td style="color:${margen >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">${margen.toFixed(1)}%</td>
+            <td style="color:${utilidad >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">$${utilidad.toFixed(2)}</td>
+        </tr>`;
     }).join('');
 }
 
@@ -1519,7 +1804,7 @@ function renderizarListaCliente() {
     tbody.innerHTML = filtrados.map(p => {
         const pFinal = precioFinal(p);
         return `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td>
-        <td style="font-weight:bold;color:#002b5c;font-size:14px;">$${pFinal.toFixed(2)}</td></tr>`;
+        <td style="font-weight:bold;color:#002b5c;font-size:13px;">$${pFinal.toFixed(2)}</td></tr>`;
     }).join('');
 }
 
@@ -1545,13 +1830,16 @@ function renderizarPromociones() {
         return `<div class="promo-card">
             <span class="promo-badge">${descNum > 0 ? `🔥 ${descNum}% OFF` : '📢 PROMO'}</span>
             <div class="promo-titulo">${p.nombre}</div>
-            <div style="font-size:11px;color:#64748b;">${p.codigo || 'S/C'}</div>
-            ${esPromoBanner ? `<div style="background:#fef3c7;padding:4px 10px;border-radius:8px;margin:4px 0;font-size:12px;color:#92400e;">📢 ${p.textoPromo}</div>` : ''}
+            <div style="font-size:10px;color:#64748b;">${p.codigo || 'S/C'}</div>
+            ${esPromoBanner ? `<div style="background:#fef3c7;padding:4px 10px;border-radius:8px;margin:4px 0;font-size:11px;color:#92400e;">📢 ${p.textoPromo}</div>` : ''}
             <div>${descNum > 0 ? `<span class="promo-antes">$${parseFloat(p.precioLista).toFixed(2)}</span>` : ''}<span class="promo-precio">$${pFinal.toFixed(2)}</span></div>
         </div>`;
     }).join('');
 }
 
+// ============================================================
+// COMPARTIR LISTAS
+// ============================================================
 function compartirListaVenta() {
     const filas = document.querySelectorAll('#listaVentaBody tr');
     if (filas.length === 0 || filas[0].textContent.includes('No hay')) { mostrarNotificacion('❌ No hay productos'); return; }
@@ -1572,7 +1860,7 @@ function compartirListaCompraVenta() {
     filas.forEach(f => {
         const celdas = f.querySelectorAll('td');
         if (celdas.length >= 4) {
-            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}\n   Compra: ${celdas[2].textContent} | Venta: ${celdas[3].textContent}\n`;
+            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}\n   Compra: ${celdas[2].textContent} | Venta: ${celdas[3].textContent} | Utilidad: ${celdas[5].textContent}\n`;
         }
     });
     window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
@@ -1609,85 +1897,122 @@ function compartirInventarioWhatsApp() {
     let mensaje = "📦 *INVENTARIO - GAETO COMERCIOS*\n\n";
     filas.forEach(f => {
         const celdas = f.querySelectorAll('td');
-        if (celdas.length >= 6) {
+        if (celdas.length >= 4) {
             mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}\n   ${celdas[3].textContent} - Stock: ${celdas[4].textContent}\n`;
         }
     });
     window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
-function imprimirInventario() {
+// ============================================================
+// RENDERIZAR HISTORICO DE VENTAS
+// ============================================================
+function renderizarHistoricoVentas(fechaDesde, fechaHasta) {
+    const tbody = document.getElementById('historicoVentasTabla');
+    let filtradas = [...cotizaciones];
+    if (fechaDesde && fechaHasta) {
+        filtradas = filtradas.filter(c => c.fecha && c.fecha >= fechaDesde && c.fecha <= fechaHasta);
+    } else if (fechaDesde) {
+        filtradas = filtradas.filter(c => c.fecha && c.fecha >= fechaDesde);
+    } else if (fechaHasta) {
+        filtradas = filtradas.filter(c => c.fecha && c.fecha <= fechaHasta);
+    }
+    filtradas.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+    if (filtradas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">No hay ventas en el período</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filtradas.map(c => {
+        const productosLista = (c.productos || []).map(item => `${item.cantidad}x ${item.nombre}`).join(', ');
+        const estado = c.estado || 'PENDIENTE';
+        const estadoColors = {
+            'PENDIENTE': '#f59e0b',
+            'CONFIRMADO': '#22c55e',
+            'SURTIDO': '#8b5cf6',
+            'EN_RUTA': '#06b6d4',
+            'ENTREGADO': '#3b82f6',
+            'CANCELADO': '#ef4444'
+        };
+        return `<tr>
+            <td>${c.fecha || 'S/F'}</td>
+            <td>${c.cliente?.nombre || 'Anónimo'}</td>
+            <td style="font-size:9px;max-width:120px;">${productosLista || 'Sin productos'}</td>
+            <td><strong>$${parseFloat(c.total || 0).toFixed(2)}</strong></td>
+            <td><span style="background:${estadoColors[estado]||'#999'};color:white;padding:2px 8px;border-radius:10px;font-size:8px;">${estado}</span></td>
+        </tr>`;
+    }).join('');
+}
+
+document.getElementById('btnFiltrarVentas').onclick = function() {
+    renderizarHistoricoVentas(document.getElementById('fechaDesde').value, document.getElementById('fechaHasta').value);
+};
+document.getElementById('btnLimpiarFiltros').onclick = function() {
+    document.getElementById('fechaDesde').value = '';
+    document.getElementById('fechaHasta').value = '';
+    renderizarHistoricoVentas();
+};
+
+// ============================================================
+// FUNCIONES DE ADMIN
+// ============================================================
+function actualizarPanelAdmin() {
+    if (!modoAdmin) return;
+    const totalVentas = cotizaciones.reduce((s, c) => s + parseFloat(c.total || 0), 0);
+    document.getElementById('statVentasHoy').textContent = '$' + totalVentas.toFixed(2);
+    document.getElementById('statProductos').textContent = productos.length;
+    document.getElementById('statPedidos').textContent = cotizaciones.length;
+    document.getElementById('statClientes').textContent = clientes.length;
+    const stockBajo = productos.filter(p => p.stock !== undefined && p.stock <= 5).length;
+    document.getElementById('statStockBajo').textContent = stockBajo;
+    const utilidad = cotizaciones.reduce((s, c) => {
+        const prodUtilidad = (c.productos || []).reduce((sum, p) => {
+            const prod = productos.find(pr => pr.nombre === p.nombre);
+            const costo = prod ? parseFloat(prod.precioCompra || 0) : 0;
+            return sum + (parseFloat(p.subtotal || 0) - (costo * p.cantidad));
+        }, 0);
+        return s + prodUtilidad;
+    }, 0);
+    document.getElementById('statUtilidad').textContent = '$' + utilidad.toFixed(2);
+    document.getElementById('reportTotalVentas').textContent = '$' + totalVentas.toFixed(2);
+    const prodVendidos = cotizaciones.reduce((s, c) => {
+        return s + (c.productos || []).reduce((sum, item) => sum + (parseInt(item.cantidad) || 0), 0);
+    }, 0);
+    document.getElementById('reportProductosVendidos').textContent = prodVendidos;
+    document.getElementById('reportUtilidad').textContent = '$' + utilidad.toFixed(2);
+    document.getElementById('reportTicketPromedio').textContent = cotizaciones.length > 0 ? '$' + (totalVentas / cotizaciones.length).toFixed(2) : '$0';
+    renderizarInventario();
+    renderizarPedidos();
+    renderizarClientes();
+    renderizarCompras();
+    renderizarHistoricoVentas();
+    renderizarGraficas();
+}
+
+function renderizarInventario() {
     const tbody = document.getElementById('inventarioTabla');
-    if (!tbody || tbody.children.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
-    let tablaHTML = `<table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th></tr></thead><tbody>`;
-    tbody.querySelectorAll('tr').forEach(f => {
-        const c = f.querySelectorAll('td');
-        if (c.length >= 6) {
-            tablaHTML += `<tr><td>${c[0].textContent}</td><td>${c[1].textContent}</td><td>${c[2].textContent}</td><td>${c[3].textContent}</td><td>${c[4].textContent}</td><td>${c[5].textContent}</td></tr>`;
-        }
-    });
-    tablaHTML += `</tbody></table>`;
-    mostrarVistaPrevia(generarHTMLImpresion('📦 INVENTARIO - GAETO COMERCIOS', tablaHTML));
+    if (productos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">No hay productos</td></tr>';
+        return;
+    }
+    const productosOrdenados = ordenarProductos([...productos]);
+    tbody.innerHTML = productosOrdenados.map(p => {
+        const stock = p.stock !== undefined ? p.stock : '-';
+        const stockClass = getStockClass(stock);
+        const stockText = getStockText(stock);
+        const esPromo = (p.promoFuera === "SI" && p.textoPromo) || parseFloat(p.descuento) > 0;
+        const estaOculto = obtenerCampoActivo(p) === 'NO';
+        const precio = parseFloat(p.precioLista || 0).toFixed(2);
+        return `<tr style="${estaOculto ? 'opacity:0.6;background:#fef2f2;' : ''}">
+            <td>${p.codigo || 'S/C'} ${esPromo ? '🔥' : ''}</td>
+            <td>${p.nombre} ${estaOculto ? '<span style="color:#b91c1c;font-size:8px;">(OCULTO)</span>' : ''}</td>
+            <td>${p.categoria || 'General'}</td>
+            <td>$${precio}</td>
+            <td>${stock}</td>
+            <td><span class="stock-badge ${stockClass}">${stockText}</span></td>
+            <td><button class="btn-editar-stock" onclick="abrirModalStock('${p.id}')">📦</button></td>
+        </tr>`;
+    }).join('');
 }
-
-function generarPDFInventario() { imprimirInventario(); }
-
-function imprimirListaVenta() {
-    const tbody = document.getElementById('listaVentaBody');
-    if (!tbody || tbody.children.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
-    let tablaHTML = `<table><thead><tr><th>Código</th><th>Producto</th><th>Precio</th><th>Stock</th></tr></thead><tbody>`;
-    tbody.querySelectorAll('tr').forEach(f => {
-        const c = f.querySelectorAll('td');
-        if (c.length >= 4) {
-            tablaHTML += `<tr><td>${c[0].textContent}</td><td>${c[1].textContent}</td><td>${c[2].textContent}</td><td>${c[3].textContent}</td></tr>`;
-        }
-    });
-    tablaHTML += `</tbody></table>`;
-    mostrarVistaPrevia(generarHTMLImpresion('💰 LISTA DE PRECIOS DE VENTA', tablaHTML));
-}
-
-function generarPDFListaVenta() { imprimirListaVenta(); }
-
-function imprimirListaCompraVenta() {
-    const tbody = document.getElementById('listaCompraBody');
-    if (!tbody || tbody.children.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
-    let tablaHTML = `<table><thead><tr><th>Código</th><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Margen</th></tr></thead><tbody>`;
-    tbody.querySelectorAll('tr').forEach(f => {
-        const c = f.querySelectorAll('td');
-        if (c.length >= 5) {
-            tablaHTML += `<tr><td>${c[0].textContent}</td><td>${c[1].textContent}</td><td>${c[2].textContent}</td><td>${c[3].textContent}</td><td>${c[4].textContent}</td></tr>`;
-        }
-    });
-    tablaHTML += `</tbody></table>`;
-    mostrarVistaPrevia(generarHTMLImpresion('📊 PRECIOS COMPRA Y VENTA', tablaHTML));
-}
-
-function generarPDFListaCompraVenta() { imprimirListaCompraVenta(); }
-
-function imprimirListaCliente() {
-    const tbody = document.getElementById('listaClienteBody');
-    if (!tbody || tbody.children.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
-    let tablaHTML = `<table><thead><tr><th>Código</th><th>Producto</th><th>Precio</th></tr></thead><tbody>`;
-    tbody.querySelectorAll('tr').forEach(f => {
-        const c = f.querySelectorAll('td');
-        if (c.length >= 3) {
-            tablaHTML += `<tr><td>${c[0].textContent}</td><td>${c[1].textContent}</td><td>${c[2].textContent}</td></tr>`;
-        }
-    });
-    tablaHTML += `</tbody></table>`;
-    mostrarVistaPrevia(generarHTMLImpresion('🧾 LISTA PARA CLIENTE', tablaHTML));
-}
-
-function generarPDFListaCliente() { imprimirListaCliente(); }
-
-function imprimirPromociones() {
-    const container = document.getElementById('listaPromocionesContainer');
-    if (!container || container.innerHTML.includes('No hay promociones')) { mostrarNotificacion('❌ No hay promociones'); return; }
-    const cards = container.innerHTML;
-    mostrarVistaPrevia(generarHTMLImpresion('🔥 PROMOCIONES ACTIVAS', cards, true));
-}
-
-function generarPDFPromociones() { imprimirPromociones(); }
 
 // ============================================================
 // GRÁFICAS
@@ -1705,7 +2030,7 @@ function renderizarGraficas() {
     if (chartVentas) chartVentas.destroy();
     chartVentas = new Chart(document.getElementById('ventasChart'), {
         type: 'bar',
-        data: { labels: dias, datasets: [{ label: 'Ventas', data: ventasPorDia, backgroundColor: '#2563eb', borderRadius: 6 }] },
+        data: { labels: dias, datasets: [{ label: 'Ventas', data: ventasPorDia, backgroundColor: '#2563eb', borderRadius: 4 }] },
         options: { responsive: true, plugins: { legend: { display: false } } }
     });
     const categorias = obtenerCategorias();
@@ -1714,7 +2039,7 @@ function renderizarGraficas() {
     chartCategorias = new Chart(document.getElementById('categoriasChart'), {
         type: 'doughnut',
         data: { labels: categorias.length > 0 ? categorias : ['Sin categoría'], datasets: [{ data: categorias.length > 0 ? cantidades : [productos.length], backgroundColor: ['#2563eb', '#f59e0b', '#22c55e', '#8b5cf6', '#ef4444', '#ec4899'] }] },
-        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
+        options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 8 } } } } }
     });
     const ventasProductos = {};
     cotizaciones.forEach(c => {
@@ -1728,8 +2053,22 @@ function renderizarGraficas() {
     if (chartTopProductos) chartTopProductos.destroy();
     chartTopProductos = new Chart(document.getElementById('topProductosChart'), {
         type: 'bar',
-        data: { labels: topProductos.map(item => item[0]), datasets: [{ label: 'Vendidos', data: topProductos.map(item => item[1]), backgroundColor: '#f59e0b', borderRadius: 6 }] },
+        data: { labels: topProductos.map(item => item[0]), datasets: [{ label: 'Vendidos', data: topProductos.map(item => item[1]), backgroundColor: '#f59e0b', borderRadius: 4 }] },
         options: { responsive: true, plugins: { legend: { display: false } }, indexAxis: 'y' }
+    });
+    const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const ventasPorMes = new Array(12).fill(0);
+    cotizaciones.forEach(c => {
+        if (c.fecha) {
+            const mes = new Date(c.fecha).getMonth();
+            ventasPorMes[mes] += parseFloat(c.total) || 0;
+        }
+    });
+    if (chartVentasMes) chartVentasMes.destroy();
+    chartVentasMes = new Chart(document.getElementById('ventasMesChart'), {
+        type: 'line',
+        data: { labels: meses, datasets: [{ label: 'Ventas ($)', data: ventasPorMes, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', fill: true, tension: 0.4 }] },
+        options: { responsive: true, plugins: { legend: { display: false } } }
     });
 }
 
@@ -1820,6 +2159,10 @@ document.querySelectorAll('.tabs-admin button').forEach(btn => {
             else if (document.getElementById('tabPromociones').classList.contains('visible')) renderizarPromociones();
             else mostrarTabPrecios('venta');
         }
+        if (this.dataset.tab === 'tabReportes') {
+            renderizarHistoricoVentas();
+            renderizarGraficas();
+        }
     };
 });
 
@@ -1893,14 +2236,8 @@ window.onload = function() {
             mostrarNotificacion("🔐 Activa modo Admin (3 clics en el logo)");
         }
     };
-    console.log('✅ GAETO COMERCIOS cargado');
+    console.log('✅ GAETO COMERCIOS - Sistema cargado correctamente');
 };
-
-function abrirVisorImagenes(id) {
-    const prod = productos.find(p => p.id === id);
-    if (!prod || !prod.imagenUrl) { mostrarNotificacion('📷 Sin imagen'); return; }
-    window.open(prod.imagenUrl, '_blank');
-}
 </script>
 </body>
 </html>
