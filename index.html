@@ -110,6 +110,8 @@
         .modal-stock-content .btn-actions .btn-cancelar{background:#e2e8f0;color:#64748b}
         .modal-registro{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:3002;padding:20px}
         .modal-registro-content{background:white;padding:20px;border-radius:20px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto}
+        .modal-registro-content .logo-modal{text-align:center;margin-bottom:12px}
+        .modal-registro-content .logo-modal img{max-width:150px;height:auto}
         .modal-registro-content h2{color:#002b5c;text-align:center;font-size:17px}
         .modal-registro-content .subtitulo{font-size:11px;color:#64748b;text-align:center;margin-bottom:12px}
         .btn-buscar-cliente{background:#2563eb;color:white;border:none;padding:8px 12px;border-radius:30px;cursor:pointer;font-weight:bold;font-size:11px;white-space:nowrap}
@@ -172,6 +174,8 @@
         .btn-whatsapp-reporte{background:#25d366;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;cursor:pointer}
         .btn-imprimir-reporte{background:#2563eb;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;cursor:pointer}
         .btn-buscar-tabla{background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
+        .btn-filtrar{background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
+        .btn-limpiar{background:#e2e8f0;color:#334155;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
         @media print{.vista-previa-impresion .cerrar-preview{display:none!important}}
     </style>
 </head>
@@ -201,7 +205,31 @@
 <!-- MODALES -->
 <div class="modal-stock" id="modalStock"><div class="modal-stock-content"><h3>📦 Ajustar Inventario</h3><p style="text-align:center;color:#64748b;font-size:12px;margin:5px 0 10px" id="modalStockProducto">Producto</p><div class="btn-group"><button class="btn-sumar active" id="btnStockSumar">➕ Agregar</button><button class="btn-poner" id="btnStockPoner">📝 Poner Total</button></div><p style="font-size:11px;color:#64748b;text-align:center" id="modalStockInstruccion">Ingresa la cantidad a AGREGAR</p><input type="number" id="modalStockInput" placeholder="Cantidad" min="0"><div class="btn-actions"><button class="btn-guardar" id="btnStockGuardar">💾 Guardar</button><button class="btn-cancelar" id="btnStockCancelar">❌ Cancelar</button></div></div></div>
 
-<div class="modal-registro" id="modalRegistro"><div class="modal-registro-content"><h2>📝 Registro de Pedido</h2><p class="subtitulo">Ingresa tu teléfono para cargar tus datos</p><div style="display:flex;gap:6px;align-items:center;margin-bottom:8px"><div style="flex:1"><label style="font-weight:bold;font-size:11px;display:block;margin-bottom:2px">📱 Teléfono *</label><input type="tel" id="regTelefono" placeholder="Ej: 2281234567" style="width:100%;padding:8px 12px;border-radius:30px;border:2px solid #e2e8f0;font-size:13px;outline:none"></div><button id="btnBuscarCliente" class="btn-buscar-cliente" style="margin-top:18px">🔍 Buscar</button></div><div id="clienteEncontrado" class="mensaje-cliente-encontrado">✅ Cliente encontrado</div><div id="clienteNoEncontrado" class="mensaje-cliente-no-encontrado">❌ Cliente no encontrado</div><div class="campo-row"><label>👤 Nombre completo *</label><input type="text" id="regNombre" placeholder="Ej: Juan Pérez"></div><div class="campo-row"><label>🏢 Negocio (opcional)</label><input type="text" id="regNegocio" placeholder="Ej: Tienda El Sol"></div><div class="campo-row"><label>📍 Dirección *</label><input type="text" id="regDireccion" placeholder="Calle #123, Colonia, Ciudad"></div><div class="campo-row"><label>🏷️ Referencia</label><input type="text" id="regReferencia" placeholder="Esquina con Av. Reforma"></div><button class="btn-registro-confirmar" id="btnRegistroConfirmar">📲 GENERAR PEDIDO</button><button class="btn-registro-cancelar" id="btnRegistroCancelar">❌ Cancelar</button></div></div>
+<!-- MODAL REGISTRO CON LOGO -->
+<div class="modal-registro" id="modalRegistro">
+    <div class="modal-registro-content">
+        <div class="logo-modal" style="text-align:center;margin-bottom:12px;">
+            <img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png" alt="GAETO COMERCIOS" style="max-width:150px;height:auto;display:block;margin:0 auto;">
+        </div>
+        <h2 style="color:#002b5c;text-align:center;font-size:18px;">📝 Registro de Pedido</h2>
+        <p class="subtitulo" style="font-size:12px;color:#64748b;text-align:center;margin-bottom:12px;">Ingresa tu teléfono para cargar tus datos</p>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
+            <div style="flex:1">
+                <label style="font-weight:bold;font-size:11px;display:block;margin-bottom:2px">📱 Teléfono *</label>
+                <input type="tel" id="regTelefono" placeholder="Ej: 2281234567" style="width:100%;padding:8px 12px;border-radius:30px;border:2px solid #e2e8f0;font-size:13px;outline:none">
+            </div>
+            <button id="btnBuscarCliente" class="btn-buscar-cliente" style="margin-top:18px;background:#2563eb;color:white;border:none;padding:8px 14px;border-radius:30px;cursor:pointer;font-weight:bold;font-size:11px;white-space:nowrap;">🔍 Buscar</button>
+        </div>
+        <div id="clienteEncontrado" class="mensaje-cliente-encontrado" style="display:none;background:#bbf7d0;color:#166534;padding:6px;border-radius:12px;text-align:center;font-size:11px;margin-bottom:8px;">✅ Cliente encontrado - Datos cargados automáticamente</div>
+        <div id="clienteNoEncontrado" class="mensaje-cliente-no-encontrado" style="display:none;background:#fecaca;color:#b91c1c;padding:6px;border-radius:12px;text-align:center;font-size:11px;margin-bottom:8px;">❌ Cliente no encontrado - Completa los datos</div>
+        <div class="campo-row"><label>👤 Nombre completo *</label><input type="text" id="regNombre" placeholder="Ej: Juan Pérez"></div>
+        <div class="campo-row"><label>🏢 Negocio (opcional)</label><input type="text" id="regNegocio" placeholder="Ej: Tienda El Sol"></div>
+        <div class="campo-row"><label>📍 Dirección *</label><input type="text" id="regDireccion" placeholder="Calle #123, Colonia, Ciudad"></div>
+        <div class="campo-row"><label>🏷️ Referencia</label><input type="text" id="regReferencia" placeholder="Esquina con Av. Reforma"></div>
+        <button class="btn-registro-confirmar" id="btnRegistroConfirmar" style="background:#25d366;color:white;border:none;padding:10px;border-radius:30px;width:100%;font-weight:bold;font-size:14px;cursor:pointer;margin-top:6px;">📲 GENERAR PEDIDO</button>
+        <button class="btn-registro-cancelar" id="btnRegistroCancelar" style="background:#e2e8f0;color:#64748b;border:none;padding:8px;border-radius:30px;width:100%;font-weight:bold;cursor:pointer;margin-top:5px;font-size:13px;">❌ Cancelar</button>
+    </div>
+</div>
 
 <div class="modal-pwd" id="modalPwd"><div class="modal-pwd-content"><h3>🔐 Acceso Administrador</h3><p style="font-size:12px;color:#666;margin:5px 0 10px">Introduce tu clave de acceso</p><input type="password" id="pwdInput" placeholder="••••••"><div><button id="btnEntrarAdmin">Entrar</button><button id="btnCancelarAdmin" style="background:#e2e8f0;color:#334155;margin-left:8px">Cancelar</button></div><p style="font-size:10px;color:#999;margin-top:6px" id="intentosMsg">Intentos disponibles: 3</p></div></div>
 
@@ -366,8 +394,8 @@
                 <input type="date" id="fechaDesde" style="padding:4px 10px;border-radius:20px;border:1px solid #ddd;font-size:10px">
                 <label style="font-size:10px;font-weight:bold;">Hasta:</label>
                 <input type="date" id="fechaHasta" style="padding:4px 10px;border-radius:20px;border:1px solid #ddd;font-size:10px">
-                <button id="btnFiltrarVentas" class="btn-filtrar" style="background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">🔍 Filtrar</button>
-                <button id="btnLimpiarFiltros" class="btn-limpiar" style="background:#e2e8f0;color:#334155;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">Limpiar</button>
+                <button id="btnFiltrarVentas" class="btn-filtrar">🔍 Filtrar</button>
+                <button id="btnLimpiarFiltros" class="btn-limpiar">Limpiar</button>
                 <button onclick="imprimirReporteVentas()" style="background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">🖨️</button>
                 <button onclick="compartirReporteVentas()" style="background:#25d366;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">📲</button>
             </div>
@@ -445,10 +473,44 @@ function cerrarVisor() {
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') cerrarVisor(); });
 
 // ============================================================
-// FUNCIONES DE IMPRESIÓN REESCRITAS - USAN VENTANA EMERGENTE
+// FUNCIONES DE VISTA PREVIA E IMPRESIÓN
 // ============================================================
+function mostrarVistaPrevia(contenidoHTML) {
+    document.getElementById('contenidoVistaPrevia').innerHTML = contenidoHTML;
+    document.getElementById('vistaPreviaImpresion').classList.add('visible');
+    document.body.style.overflow = 'hidden';
+    mostrarNotificacion('📄 Vista previa lista', 1500);
+}
 
-// Función para generar HTML completo de impresión
+function cerrarVistaPrevia() {
+    document.getElementById('vistaPreviaImpresion').classList.remove('visible');
+    document.body.style.overflow = 'auto';
+}
+
+function imprimirVistaPrevia() {
+    window.print();
+}
+
+function generarHTMLImpresion(titulo, contenido) {
+    const fecha = new Date().toLocaleDateString('es-MX');
+    const logoUrl = "https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png";
+    return `
+        <div class="header-preview">
+            <img src="${logoUrl}" alt="GAETO COMERCIOS" style="max-width:140px;display:block;margin:0 auto 8px">
+            <h2 style="font-size:16px;color:#002b5c;">${titulo}</h2>
+            <p style="color:#64748b;font-size:11px;">📅 ${fecha}</p>
+            <hr style="border:1px solid #e2e8f0;margin:8px 0;">
+        </div>
+        ${contenido}
+        <div style="text-align:center;margin-top:15px;padding-top:10px;border-top:2px solid #002b5c;font-size:9px;color:#64748b;">
+            📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán
+        </div>
+    `;
+}
+
+// ============================================================
+// FUNCIONES DE IMPRESIÓN - VENTANA EMERGENTE
+// ============================================================
 function generarHTMLCompletoImpresion(titulo, contenido) {
     const fecha = new Date().toLocaleDateString('es-MX');
     const logoUrl = "https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png";
@@ -461,76 +523,22 @@ function generarHTMLCompletoImpresion(titulo, contenido) {
     <title>${titulo} - GAETO COMERCIOS</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            padding: 20px; 
-            background: white; 
-            font-size: 11px;
-        }
-        .header-preview {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            border-bottom: 2px solid #002b5c;
-        }
-        .header-preview img {
-            max-width: 150px;
-            height: auto;
-            display: block;
-            margin: 0 auto 10px auto;
-        }
-        .header-preview h2 {
-            color: #002b5c;
-            margin: 10px 0 5px 0;
-            font-size: 18px;
-        }
-        .header-preview p {
-            color: #64748b;
-            font-size: 12px;
-            margin: 5px 0;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 10px;
-            margin-top: 10px;
-        }
-        th {
-            background: #002b5c !important;
-            color: white !important;
-            padding: 6px 8px;
-            text-align: left;
-            border: 1px solid #002b5c;
-            font-size: 9px;
-        }
-        td {
-            padding: 4px 8px;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 9px;
-        }
-        tr:nth-child(even) {
-            background: #f8fafc;
-        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background: white; font-size: 11px; }
+        .header-preview { text-align: center; margin-bottom: 20px; padding: 10px; border-bottom: 2px solid #002b5c; }
+        .header-preview img { max-width: 150px; height: auto; display: block; margin: 0 auto 10px auto; }
+        .header-preview h2 { color: #002b5c; margin: 10px 0 5px 0; font-size: 18px; }
+        .header-preview p { color: #64748b; font-size: 12px; margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 10px; }
+        th { background: #002b5c !important; color: white !important; padding: 6px 8px; text-align: left; border: 1px solid #002b5c; font-size: 9px; }
+        td { padding: 4px 8px; border-bottom: 1px solid #e2e8f0; font-size: 9px; }
+        tr:nth-child(even) { background: #f8fafc; }
         .precio-venta { color: #002b5c; font-weight: bold; }
         .precio-compra { color: #64748b; }
         .margen-positivo { color: #16a34a; font-weight: bold; }
         .margen-negativo { color: #dc2626; font-weight: bold; }
-        .pie {
-            text-align: center;
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 2px solid #002b5c;
-            font-size: 9px;
-            color: #64748b;
-        }
-        @page {
-            size: A4 portrait;
-            margin: 10mm 15mm;
-        }
-        @media print {
-            body { padding: 10px; }
-            .no-print { display: none !important; }
-        }
+        .pie { text-align: center; margin-top: 25px; padding-top: 15px; border-top: 2px solid #002b5c; font-size: 9px; color: #64748b; }
+        @page { size: A4 portrait; margin: 10mm 15mm; }
+        @media print { body { padding: 10px; } .no-print { display: none !important; } }
     </style>
 </head>
 <body>
@@ -554,93 +562,54 @@ function generarHTMLCompletoImpresion(titulo, contenido) {
 }
 
 // ============================================================
-// FUNCIONES DE IMPRESIÓN CON VENTANA EMERGENTE
-// ============================================================
-
 // IMPRIMIR INVENTARIO
+// ============================================================
 function imprimirInventario() {
-    if (productos.length === 0) {
-        mostrarNotificacion('❌ No hay productos');
-        return;
-    }
-    
+    if (productos.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
     const datos = ordenarProductos([...productos]);
-    let tablaHTML = '<table><thead><tr>';
-    tablaHTML += '<th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th>';
-    tablaHTML += '</tr></thead><tbody>';
-    
+    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th></tr></thead><tbody>';
     datos.forEach(p => {
         const stock = p.stock !== undefined ? p.stock : '-';
         const stockText = getStockText(stock);
         const precio = parseFloat(p.precioLista || 0).toFixed(2);
         const estaOculto = obtenerCampoActivo(p) === 'NO';
-        const nombre = p.nombre + (estaOculto ? ' (OCULTO)' : '');
-        tablaHTML += `<tr>
-            <td>${p.codigo || 'S/C'}</td>
-            <td>${nombre}</td>
-            <td>${p.categoria || 'General'}</td>
-            <td>$${precio}</td>
-            <td>${stock}</td>
-            <td>${stockText}</td>
-        </tr>`;
+        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}${estaOculto ? ' (OCULTO)' : ''}</td><td>${p.categoria || 'General'}</td><td>$${precio}</td><td>${stock}</td><td>${stockText}</td></tr>`;
     });
     tablaHTML += '</tbody></table>';
-    
-    const htmlCompleto = generarHTMLCompletoImpresion('📦 INVENTARIO - GAETO COMERCIOS', tablaHTML);
     const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
     if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    ventana.document.write(htmlCompleto);
+    ventana.document.write(generarHTMLCompletoImpresion('📦 INVENTARIO - GAETO COMERCIOS', tablaHTML));
     ventana.document.close();
 }
-
 function generarPDFInventario() { imprimirInventario(); }
 
+// ============================================================
 // IMPRIMIR LISTA DE VENTA
+// ============================================================
 function imprimirListaVenta() {
-    if (productos.length === 0) {
-        mostrarNotificacion('❌ No hay productos');
-        return;
-    }
-    
+    if (productos.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
     const datos = ordenarProductos([...productos]);
-    let tablaHTML = '<table><thead><tr>';
-    tablaHTML += '<th>Código</th><th>Producto</th><th>Precio</th><th>Stock</th>';
-    tablaHTML += '</tr></thead><tbody>';
-    
+    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>Precio</th><th>Stock</th></tr></thead><tbody>';
     datos.forEach(p => {
         const pFinal = precioFinal(p);
-        const stock = p.stock !== undefined ? p.stock : '-';
-        const stockText = getStockText(stock);
-        tablaHTML += `<tr>
-            <td>${p.codigo || 'S/C'}</td>
-            <td>${p.nombre}</td>
-            <td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td>
-            <td>${stockText}</td>
-        </tr>`;
+        const stockText = getStockText(p.stock !== undefined ? p.stock : '-');
+        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td><td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td><td>${stockText}</td></tr>`;
     });
     tablaHTML += '</tbody></table>';
-    
-    const htmlCompleto = generarHTMLCompletoImpresion('💰 LISTA DE PRECIOS DE VENTA', tablaHTML);
     const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
     if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    ventana.document.write(htmlCompleto);
+    ventana.document.write(generarHTMLCompletoImpresion('💰 LISTA DE PRECIOS DE VENTA', tablaHTML));
     ventana.document.close();
 }
-
 function generarPDFListaVenta() { imprimirListaVenta(); }
 
+// ============================================================
 // IMPRIMIR LISTA COMPRA/VENTA
+// ============================================================
 function imprimirListaCompraVenta() {
-    if (productos.length === 0) {
-        mostrarNotificacion('❌ No hay productos');
-        return;
-    }
-    
+    if (productos.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
     const datos = ordenarProductos([...productos]);
-    let tablaHTML = '<table><thead><tr>';
-    tablaHTML += '<th>Código</th><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Margen</th><th>Utilidad</th>';
-    tablaHTML += '</tr></thead><tbody>';
-    
+    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Margen</th><th>Utilidad</th></tr></thead><tbody>';
     datos.forEach(p => {
         const pFinal = precioFinal(p);
         const precioCompra = parseFloat(p.precioCompra || 0);
@@ -648,58 +617,38 @@ function imprimirListaCompraVenta() {
         const margen = pFinal > 0 ? ((pFinal - precioCompra) / pFinal * 100) : 0;
         const margenClass = margen >= 0 ? 'margen-positivo' : 'margen-negativo';
         const utilidadClass = utilidad >= 0 ? 'margen-positivo' : 'margen-negativo';
-        tablaHTML += `<tr>
-            <td>${p.codigo || 'S/C'}</td>
-            <td>${p.nombre}</td>
-            <td class="precio-compra">$${precioCompra.toFixed(2)}</td>
-            <td class="precio-venta">$${pFinal.toFixed(2)}</td>
-            <td class="${margenClass}">${margen.toFixed(1)}%</td>
-            <td class="${utilidadClass}">$${utilidad.toFixed(2)}</td>
-        </tr>`;
+        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td><td class="precio-compra">$${precioCompra.toFixed(2)}</td><td class="precio-venta">$${pFinal.toFixed(2)}</td><td class="${margenClass}">${margen.toFixed(1)}%</td><td class="${utilidadClass}">$${utilidad.toFixed(2)}</td></tr>`;
     });
     tablaHTML += '</tbody></table>';
-    
-    const htmlCompleto = generarHTMLCompletoImpresion('📊 PRECIOS COMPRA Y VENTA', tablaHTML);
     const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
     if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    ventana.document.write(htmlCompleto);
+    ventana.document.write(generarHTMLCompletoImpresion('📊 PRECIOS COMPRA Y VENTA', tablaHTML));
     ventana.document.close();
 }
-
 function generarPDFListaCompraVenta() { imprimirListaCompraVenta(); }
 
+// ============================================================
 // IMPRIMIR LISTA PARA CLIENTE
+// ============================================================
 function imprimirListaCliente() {
-    if (productos.length === 0) {
-        mostrarNotificacion('❌ No hay productos');
-        return;
-    }
-    
+    if (productos.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
     const datos = ordenarProductos([...productos]);
-    let tablaHTML = '<table><thead><tr>';
-    tablaHTML += '<th>Código</th><th>Producto</th><th>Precio</th>';
-    tablaHTML += '</tr></thead><tbody>';
-    
+    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>Precio</th></tr></thead><tbody>';
     datos.forEach(p => {
         const pFinal = precioFinal(p);
-        tablaHTML += `<tr>
-            <td>${p.codigo || 'S/C'}</td>
-            <td>${p.nombre}</td>
-            <td style="font-weight:bold;color:#002b5c;font-size:14px;">$${pFinal.toFixed(2)}</td>
-        </tr>`;
+        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td><td style="font-weight:bold;color:#002b5c;font-size:14px;">$${pFinal.toFixed(2)}</td></tr>`;
     });
     tablaHTML += '</tbody></table>';
-    
-    const htmlCompleto = generarHTMLCompletoImpresion('🧾 LISTA PARA CLIENTE', tablaHTML);
     const ventana = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
     if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    ventana.document.write(htmlCompleto);
+    ventana.document.write(generarHTMLCompletoImpresion('🧾 LISTA PARA CLIENTE', tablaHTML));
     ventana.document.close();
 }
-
 function generarPDFListaCliente() { imprimirListaCliente(); }
 
+// ============================================================
 // IMPRIMIR PROMOCIONES
+// ============================================================
 function imprimirPromociones() {
     const promociones = productos.filter(p => {
         const tienePromo = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
@@ -707,15 +656,9 @@ function imprimirPromociones() {
         if (obtenerCampoActivo(p) === 'NO') return false;
         return tienePromo || tieneDescuento;
     });
-    
-    if (promociones.length === 0) {
-        mostrarNotificacion('❌ No hay promociones');
-        return;
-    }
-    
-    const promosOrdenadas = ordenarProductos([...promociones]);
+    if (promociones.length === 0) { mostrarNotificacion('❌ No hay promociones'); return; }
     let cardsHTML = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:15px;">';
-    promosOrdenadas.forEach(p => {
+    ordenarProductos([...promociones]).forEach(p => {
         const pFinal = precioFinal(p);
         const descNum = parseFloat(p.descuento) || 0;
         const esPromoBanner = p.promoFuera === "SI" && p.textoPromo;
@@ -726,57 +669,108 @@ function imprimirPromociones() {
                 <div style="font-weight:bold;font-size:16px;color:#002b5c;margin-top:4px;">${p.nombre}</div>
                 <div style="font-size:10px;color:#64748b;">${p.codigo || 'S/C'}</div>
                 ${esPromoBanner ? `<div style="background:#fef3c7;padding:6px 12px;border-radius:8px;margin:6px 0;font-size:12px;color:#92400e;">📢 ${p.textoPromo}</div>` : ''}
-                <div style="margin-top:6px;">
-                    ${descNum > 0 ? `<span style="text-decoration:line-through;color:#999;font-size:14px;margin-right:8px;">$${precioLista}</span>` : ''}
-                    <span style="font-size:22px;font-weight:bold;color:#e11d48;">$${pFinal.toFixed(2)}</span>
-                </div>
+                <div style="margin-top:6px;">${descNum > 0 ? `<span style="text-decoration:line-through;color:#999;font-size:14px;margin-right:8px;">$${precioLista}</span>` : ''}<span style="font-size:22px;font-weight:bold;color:#e11d48;">$${pFinal.toFixed(2)}</span></div>
             </div>
         `;
     });
     cardsHTML += '</div>';
-    
-    const htmlCompleto = generarHTMLCompletoImpresion('🔥 PROMOCIONES ACTIVAS', cardsHTML);
     const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
     if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    ventana.document.write(htmlCompleto);
+    ventana.document.write(generarHTMLCompletoImpresion('🔥 PROMOCIONES ACTIVAS', cardsHTML));
     ventana.document.close();
 }
-
 function generarPDFPromociones() { imprimirPromociones(); }
 
+// ============================================================
 // IMPRIMIR REPORTE DE VENTAS
+// ============================================================
 function imprimirReporteVentas() {
     const filas = document.querySelectorAll('#historicoVentasTabla tr');
-    if (filas.length === 0 || filas[0].textContent.includes('No hay')) {
-        mostrarNotificacion('❌ No hay ventas');
-        return;
-    }
-    
-    let tablaHTML = '<table><thead><tr>';
-    tablaHTML += '<th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th>';
-    tablaHTML += '</tr></thead><tbody>';
-    
+    if (filas.length === 0 || filas[0].textContent.includes('No hay')) { mostrarNotificacion('❌ No hay ventas'); return; }
+    let tablaHTML = '<table><thead><tr><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th></tr></thead><tbody>';
     filas.forEach(fila => {
         const celdas = fila.querySelectorAll('td');
         if (celdas.length >= 5) {
-            tablaHTML += `<tr>
-                <td>${celdas[0].textContent.trim()}</td>
-                <td>${celdas[1].textContent.trim()}</td>
-                <td>${celdas[2].textContent.trim()}</td>
-                <td>${celdas[3].textContent.trim()}</td>
-                <td>${celdas[4].textContent.trim()}</td>
-            </tr>`;
+            tablaHTML += `<tr><td>${celdas[0].textContent.trim()}</td><td>${celdas[1].textContent.trim()}</td><td>${celdas[2].textContent.trim()}</td><td>${celdas[3].textContent.trim()}</td><td>${celdas[4].textContent.trim()}</td></tr>`;
         }
     });
     tablaHTML += '</tbody></table>';
-    
-    const htmlCompleto = generarHTMLCompletoImpresion('📊 HISTÓRICO DE VENTAS', tablaHTML);
     const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
     if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    ventana.document.write(htmlCompleto);
+    ventana.document.write(generarHTMLCompletoImpresion('📊 HISTÓRICO DE VENTAS', tablaHTML));
     ventana.document.close();
 }
 
+// ============================================================
+// IMPRIMIR REPORTE DE CLIENTE
+// ============================================================
+function imprimirReporteCliente(clienteId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (!cliente) return;
+    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
+    if (pedidos.length === 0) { mostrarNotificacion('ℹ️ Sin pedidos'); return; }
+    let html = `<div style="font-size:12px;"><h3 style="color:#002b5c;font-size:16px;margin-bottom:8px;">📋 HISTORIAL - ${cliente.nombre}</h3><p style="color:#64748b;margin-bottom:10px;">📱 ${cliente.telefono} | 📦 ${pedidos.length} pedidos</p><hr style="border:1px solid #e2e8f0;margin:10px 0;">`;
+    pedidos.forEach((p, i) => {
+        const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A';
+        const estado = p.estado || 'PENDIENTE';
+        const estadoColor = {PENDIENTE:'#f59e0b',CONFIRMADO:'#22c55e',SURTIDO:'#8b5cf6',EN_RUTA:'#06b6d4',ENTREGADO:'#3b82f6',CANCELADO:'#ef4444'};
+        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;"><span>#${i+1} GAETO-${folio}</span><span>${p.fecha || 'S/F'} <span style="background:${estadoColor[estado]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:8px;">${estado}</span></span></div><div style="font-size:10px;color:#475569;margin:4px 0;">${(p.productos || []).map(prod => `${prod.cantidad}x ${prod.nombre}`).join(', ')}</div><div style="text-align:right;font-weight:bold;color:#002b5c;font-size:14px;">$${parseFloat(p.total||0).toFixed(2)}</div></div>`;
+    });
+    html += '</div>';
+    const ventana = window.open('', '_blank', 'width=700,height=600,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(generarHTMLCompletoImpresion('📋 HISTORIAL DE PEDIDOS', html));
+    ventana.document.close();
+}
+
+// ============================================================
+// COMPARTIR REPORTE DE CLIENTE
+// ============================================================
+function compartirReporteCliente(clienteId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (!cliente) return;
+    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
+    let mensaje = `📋 *HISTORIAL - ${cliente.nombre}*\n📱 ${cliente.telefono}\n📦 ${pedidos.length} pedidos\n────────────────────\n`;
+    pedidos.forEach((p, i) => {
+        mensaje += `#${i+1} ${p.fecha || 'S/F'} - $${parseFloat(p.total||0).toFixed(2)} - ${p.estado||'PENDIENTE'}\n`;
+    });
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+// ============================================================
+// IMPRIMIR DETALLE DE COMPRA
+// ============================================================
+function imprimirDetalleCompra(id) {
+    const compra = compras.find(c => c.id === id);
+    if (!compra) { mostrarNotificacion('❌ Compra no encontrada'); return; }
+    let html = `<div style="font-size:12px;"><h3 style="color:#002b5c;font-size:16px;margin-bottom:8px;">📦 DETALLE DE COMPRA</h3><p style="color:#64748b;">🏢 ${compra.proveedor} | 📅 ${compra.fecha}</p><p style="color:#64748b;margin-bottom:10px;">🧾 ${compra.factura || 'S/F'}</p><hr style="border:1px solid #e2e8f0;margin:10px 0;">`;
+    (compra.productos || []).forEach(p => {
+        html += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted #e2e8f0;font-size:11px;"><span>${p.cantidad}x ${p.nombre}</span><span>$${parseFloat(p.subtotal||0).toFixed(2)}</span></div>`;
+    });
+    html += `<div style="text-align:right;font-weight:bold;font-size:16px;color:#002b5c;margin-top:8px;border-top:2px solid #002b5c;padding-top:8px;">TOTAL: $${parseFloat(compra.total||0).toFixed(2)}</div></div>`;
+    const ventana = window.open('', '_blank', 'width=700,height=600,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(generarHTMLCompletoImpresion('📦 DETALLE DE COMPRA', html));
+    ventana.document.close();
+}
+
+// ============================================================
+// COMPARTIR DETALLE DE COMPRA POR WHATSAPP
+// ============================================================
+function compartirDetalleCompra(id) {
+    const compra = compras.find(c => c.id === id);
+    if (!compra) { mostrarNotificacion('❌ Compra no encontrada'); return; }
+    let mensaje = `📦 *DETALLE DE COMPRA - GAETO COMERCIOS*\n\n🏢 *Proveedor:* ${compra.proveedor}\n📅 *Fecha:* ${compra.fecha}\n🧾 *Factura:* ${compra.factura || 'S/F'}\n\n*🛒 PRODUCTOS:*\n───────────────────────────\n`;
+    (compra.productos || []).forEach(p => {
+        mensaje += `${p.cantidad}x ${p.nombre} - $${parseFloat(p.subtotal||0).toFixed(2)}\n`;
+    });
+    mensaje += `───────────────────────────\n*💰 TOTAL: $${parseFloat(compra.total||0).toFixed(2)}*`;
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+// ============================================================
+// COMPARTIR REPORTE DE VENTAS
+// ============================================================
 function compartirReporteVentas() {
     const filas = document.querySelectorAll('#historicoVentasTabla tr');
     if (filas.length === 0 || filas[0].textContent.includes('No hay')) { mostrarNotificacion('❌ No hay ventas'); return; }
@@ -787,68 +781,7 @@ function compartirReporteVentas() {
             mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}\n   ${celdas[2].textContent} - ${celdas[3].textContent}\n`;
         }
     });
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
-}
-
-// IMPRIMIR REPORTE DE CLIENTE
-function imprimirReporteCliente(clienteId) {
-    const cliente = clientes.find(c => c.id === clienteId);
-    if (!cliente) return;
-    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
-    if (pedidos.length === 0) { mostrarNotificacion('ℹ️ Sin pedidos'); return; }
-    
-    let html = `<div style="font-size:12px;">
-        <h3 style="color:#002b5c;font-size:16px;margin-bottom:8px;">📋 HISTORIAL - ${cliente.nombre}</h3>
-        <p style="color:#64748b;margin-bottom:10px;">📱 ${cliente.telefono} | 📦 ${pedidos.length} pedidos</p>
-        <hr style="border:1px solid #e2e8f0;margin:10px 0;">
-    `;
-    pedidos.forEach((p, i) => {
-        const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A';
-        const estado = p.estado || 'PENDIENTE';
-        const estadoColor = {PENDIENTE:'#f59e0b',CONFIRMADO:'#22c55e',SURTIDO:'#8b5cf6',EN_RUTA:'#06b6d4',ENTREGADO:'#3b82f6',CANCELADO:'#ef4444'};
-        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px;">
-            <div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;">
-                <span>#${i+1} GAETO-${folio}</span>
-                <span>${p.fecha || 'S/F'} <span style="background:${estadoColor[estado]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:8px;">${estado}</span></span>
-            </div>
-            <div style="font-size:10px;color:#475569;margin:4px 0;">${(p.productos || []).map(prod => `${prod.cantidad}x ${prod.nombre}`).join(', ')}</div>
-            <div style="text-align:right;font-weight:bold;color:#002b5c;font-size:14px;">$${parseFloat(p.total||0).toFixed(2)}</div>
-        </div>`;
-    });
-    html += '</div>';
-    
-    const htmlCompleto = generarHTMLCompletoImpresion('📋 HISTORIAL DE PEDIDOS', html);
-    const ventana = window.open('', '_blank', 'width=700,height=600,scrollbars=yes');
-    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    ventana.document.write(htmlCompleto);
-    ventana.document.close();
-}
-
-// IMPRIMIR DETALLE DE COMPRA
-function imprimirDetalleCompra(id) {
-    const compra = compras.find(c => c.id === id);
-    if (!compra) return;
-    
-    let html = `<div style="font-size:12px;">
-        <h3 style="color:#002b5c;font-size:16px;margin-bottom:8px;">📦 DETALLE DE COMPRA</h3>
-        <p style="color:#64748b;">🏢 ${compra.proveedor} | 📅 ${compra.fecha}</p>
-        <p style="color:#64748b;margin-bottom:10px;">🧾 ${compra.factura || 'S/F'}</p>
-        <hr style="border:1px solid #e2e8f0;margin:10px 0;">
-    `;
-    (compra.productos || []).forEach(p => {
-        html += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted #e2e8f0;font-size:11px;">
-            <span>${p.cantidad}x ${p.nombre}</span>
-            <span>$${parseFloat(p.subtotal||0).toFixed(2)}</span>
-        </div>`;
-    });
-    html += `<div style="text-align:right;font-weight:bold;font-size:16px;color:#002b5c;margin-top:8px;border-top:2px solid #002b5c;padding-top:8px;">TOTAL: $${parseFloat(compra.total||0).toFixed(2)}</div>`;
-    html += '</div>';
-    
-    const htmlCompleto = generarHTMLCompletoImpresion('📦 DETALLE DE COMPRA', html);
-    const ventana = window.open('', '_blank', 'width=700,height=600,scrollbars=yes');
-    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    ventana.document.write(htmlCompleto);
-    ventana.document.close();
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
 // ============================================================
@@ -1220,17 +1153,13 @@ function renderizarCarrito() {
         return;
     }
     let total = 0;
-    let mensaje = "*📦 NUEVO PEDIDO - GAETO COMERCIOS*\n\n";
     lista.innerHTML = carrito.map((item, index) => {
         let pFinal = precioFinal(item.producto);
         let subtotal = pFinal * item.cantidad;
         total += subtotal;
-        mensaje += `${index+1}. ${item.producto.nombre} - ${item.cantidad}x $${pFinal.toFixed(2)} = $${subtotal.toFixed(2)}\n`;
         return `<div class="carrito-item"><span>${item.cantidad}x ${item.producto.nombre}</span><span>$${subtotal.toFixed(2)} <button onclick="eliminarDelCarrito('${item.id}')" style="background:none;border:none;color:#f43f5e;cursor:pointer;font-size:13px;">✕</button></span></div>`;
     }).join('');
-    mensaje += `\n*💰 TOTAL: $${total.toFixed(2)}*`;
     totalCont.innerText = `Total: $${total.toFixed(2)}`;
-    btnEnviar.href = `https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`;
 }
 
 // ============================================================
@@ -1278,6 +1207,9 @@ document.getElementById('enviarPedidoBtn').onclick = function(e) {
     setTimeout(() => document.getElementById('regTelefono').focus(), 300);
 };
 
+// ============================================================
+// REGISTRO CONFIRMAR - ENVÍA PEDIDO COMPLETO POR WHATSAPP
+// ============================================================
 document.getElementById('btnRegistroConfirmar').onclick = function() {
     const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
     const nombre = document.getElementById('regNombre').value.trim();
@@ -1286,20 +1218,36 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
     if (!nombre) { mostrarNotificacion("❌ Ingresa tu nombre"); return; }
     if (!direccion) { mostrarNotificacion("❌ Ingresa tu dirección"); return; }
     document.getElementById('modalRegistro').style.display = 'none';
+    
     let total = 0;
     let productosPedido = [];
+    let mensajeWA = "*📦 NUEVO PEDIDO - GAETO COMERCIOS*\n\n";
+    mensajeWA += `👤 *Cliente:* ${nombre}\n📱 *Teléfono:* ${telefono}\n📍 *Dirección:* ${direccion}`;
+    if (document.getElementById('regNegocio').value) {
+        mensajeWA += `\n🏢 *Negocio:* ${document.getElementById('regNegocio').value}`;
+    }
+    if (document.getElementById('regReferencia').value) {
+        mensajeWA += `\n🏷️ *Referencia:* ${document.getElementById('regReferencia').value}`;
+    }
+    mensajeWA += `\n\n*🛒 PRODUCTOS:*\n───────────────────────────\n`;
+    
     carrito.forEach(item => {
         let pFinal = precioFinal(item.producto);
         let subtotal = pFinal * item.cantidad;
         total += subtotal;
+        const codigo = item.producto.codigo || 'S/C';
+        mensajeWA += `${item.cantidad}x [${codigo}] ${item.producto.nombre} - $${pFinal.toFixed(2)} c/u = $${subtotal.toFixed(2)}\n`;
         productosPedido.push({
-            codigo: item.producto.codigo || 'S/C',
+            codigo: codigo,
             nombre: item.producto.nombre,
             cantidad: item.cantidad,
             precioUnitario: pFinal,
             subtotal: subtotal
         });
     });
+    
+    mensajeWA += `───────────────────────────\n*💰 TOTAL: $${total.toFixed(2)}*\n\n📅 PEDIDOS: LUNES, MARTES, MIÉRCOLES\n🚚 ENTREGAS: VIERNES Y SÁBADOS\n🙏 ¡GRACIAS POR TU PEDIDO!`;
+    
     const nuevoPedido = {
         cliente: { 
             nombre: nombre, 
@@ -1314,12 +1262,15 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
         estado: 'PENDIENTE',
         clienteId: clienteIdEncontrado || null
     };
+    
     database.ref('cotizaciones').push(nuevoPedido)
         .then(() => {
             mostrarNotificacion('✅ ¡Pedido registrado!');
             carrito = [];
             renderizarCarrito();
             if (modoAdmin) actualizarPanelAdmin();
+            // ENVIAR PEDIDO POR WHATSAPP AL NEGOCIO
+            window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensajeWA)}`, '_blank');
         })
         .catch(err => mostrarNotificacion("❌ Error: " + err.message));
 };
@@ -1396,17 +1347,6 @@ function verHistorialCliente(clienteId) {
     document.getElementById('reporteClienteContainer').innerHTML = html;
     document.getElementById('reporteClienteContainer').style.display = 'block';
     document.getElementById('reporteClienteContainer').scrollIntoView({ behavior: 'smooth' });
-}
-
-function compartirReporteCliente(clienteId) {
-    const cliente = clientes.find(c => c.id === clienteId);
-    if (!cliente) return;
-    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
-    let mensaje = `📋 *HISTORIAL - ${cliente.nombre}*\n📱 ${cliente.telefono}\n📦 ${pedidos.length} pedidos\n────────────────────\n`;
-    pedidos.forEach((p, i) => {
-        mensaje += `#${i+1} ${p.fecha || 'S/F'} - $${parseFloat(p.total||0).toFixed(2)} - ${p.estado||'PENDIENTE'}\n`;
-    });
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
 // ============================================================
@@ -1511,7 +1451,7 @@ function generarPDFPedido(id) {
 }
 
 // ============================================================
-// RENDERIZAR COMPRAS CON DETALLE
+// RENDERIZAR COMPRAS CON BOTONES
 // ============================================================
 function renderizarCompras() {
     const tbody = document.getElementById('comprasTabla');
@@ -1526,8 +1466,10 @@ function renderizarCompras() {
             <td>${c.fecha || 'S/F'}</td>
             <td>${c.proveedor || 'Sin proveedor'}</td>
             <td>$${parseFloat(c.total||0).toFixed(2)}</td>
-            <td>
+            <td style="display:flex;gap:3px;flex-wrap:wrap;">
                 <button onclick="verDetalleCompra('${c.id}')" style="background:#8b5cf6;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">📋</button>
+                <button onclick="imprimirDetalleCompra('${c.id}')" style="background:#2563eb;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">🖨️</button>
+                <button onclick="compartirDetalleCompra('${c.id}')" style="background:#25d366;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">📲</button>
                 <button onclick="eliminarCompra('${c.id}')" style="background:#ef4444;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">🗑️</button>
             </td>
         </tr>`;
@@ -1560,17 +1502,6 @@ function verDetalleCompra(id) {
     document.getElementById('detalleCompraContainer').innerHTML = html;
     document.getElementById('detalleCompraContainer').style.display = 'block';
     document.getElementById('detalleCompraContainer').scrollIntoView({ behavior: 'smooth' });
-}
-
-function compartirDetalleCompra(id) {
-    const compra = compras.find(c => c.id === id);
-    if (!compra) return;
-    let mensaje = `📦 *DETALLE DE COMPRA*\n🏢 ${compra.proveedor}\n📅 ${compra.fecha}\n🧾 ${compra.factura || 'S/F'}\n────────────────────\n`;
-    (compra.productos || []).forEach(p => {
-        mensaje += `${p.cantidad}x ${p.nombre} - $${parseFloat(p.subtotal||0).toFixed(2)}\n`;
-    });
-    mensaje += `\n💰 TOTAL: $${parseFloat(compra.total||0).toFixed(2)}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
 function eliminarCompra(id) {
@@ -1850,7 +1781,7 @@ function compartirListaVenta() {
             mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent} - ${celdas[2].textContent}\n`;
         }
     });
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
 function compartirListaCompraVenta() {
@@ -1863,7 +1794,7 @@ function compartirListaCompraVenta() {
             mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}\n   Compra: ${celdas[2].textContent} | Venta: ${celdas[3].textContent} | Utilidad: ${celdas[5].textContent}\n`;
         }
     });
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
 function compartirListaCliente() {
@@ -1876,7 +1807,7 @@ function compartirListaCliente() {
             mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent} - ${celdas[2].textContent}\n`;
         }
     });
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
 function compartirPromociones() {
@@ -1888,7 +1819,7 @@ function compartirPromociones() {
         const precio = c.querySelector('.promo-precio')?.textContent || '';
         if (titulo && precio) mensaje += `📌 ${titulo} - ${precio}\n`;
     });
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
 function compartirInventarioWhatsApp() {
@@ -1901,7 +1832,7 @@ function compartirInventarioWhatsApp() {
             mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}\n   ${celdas[3].textContent} - Stock: ${celdas[4].textContent}\n`;
         }
     });
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
 // ============================================================
@@ -2167,6 +2098,21 @@ document.querySelectorAll('.tabs-admin button').forEach(btn => {
 });
 
 // ============================================================
+// COMPARTIR CATÁLOGO - CON EL ENLACE CORRECTO
+// ============================================================
+document.getElementById('compartirBtn').onclick = function() {
+    const url = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
+    const mensaje = `📦 *GAETO COMERCIOS* 🛒\nCatálogo: ${url}\n📅 PEDIDOS: LUNES, MARTES, MIÉRCOLES\n🚚 ENTREGAS: VIERNES Y SÁBADOS\n\n🔗 Haz tu pedido desde el catálogo. ¡Regístrate y te contactamos!`;
+    if (navigator.share) {
+        navigator.share({ title: 'GAETO COMERCIOS', text: mensaje })
+            .then(() => mostrarNotificacion("✅ Compartido"))
+            .catch(() => {});
+    } else {
+        window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
+    }
+};
+
+// ============================================================
 // WINDOW ONLOAD
 // ============================================================
 window.onload = function() {
@@ -2213,17 +2159,7 @@ window.onload = function() {
             }, 500);
         }).catch(err => mostrarNotificacion("❌ Error: " + err.message));
     };
-    document.getElementById('compartirBtn').onclick = () => {
-        const url = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
-        const mensaje = `📦 *GAETO COMERCIOS* 🛒\nCatálogo: ${url}\n📅 PEDIDOS: LUNES, MARTES, MIÉRCOLES\n🚚 ENTREGAS: VIERNES Y SÁBADOS`;
-        if (navigator.share) {
-            navigator.share({ title: 'GAETO COMERCIOS', text: mensaje })
-                .then(() => mostrarNotificacion("✅ Compartido"))
-                .catch(() => {});
-        } else {
-            window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
-        }
-    };
+    
     document.getElementById('promocionesBtn').onclick = () => {
         if (modoAdmin) {
             document.getElementById('adminPanel').classList.add('visible');
