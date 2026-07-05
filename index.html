@@ -194,7 +194,6 @@
         .toast-notificacion{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#065f46;color:white;padding:14px 24px;border-radius:60px;font-weight:bold;font-size:14px;box-shadow:0 8px 25px rgba(0,0,0,0.3);z-index:9999;display:none;animation:slideDown 0.4s ease;text-align:center;max-width:90%}
         @keyframes slideDown{0%{transform:translateX(-50%) translateY(-80px);opacity:0}100%{transform:translateX(-50%) translateY(0);opacity:1}}
         
-        /* ESTILOS PARA VISTA PREVIA */
         .vista-previa-impresion {
             display: none;
             position: fixed;
@@ -243,6 +242,72 @@
         .vista-previa-impresion .cerrar-preview .btn-imprimir-preview:hover {
             background: #1d4ed8;
         }
+        .vista-previa-impresion .header-preview {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+        .vista-previa-impresion .header-preview img {
+            max-width: 180px;
+            height: auto;
+            display: block;
+            margin: 0 auto 10px auto;
+        }
+        .vista-previa-impresion .header-preview h2 {
+            color: #002b5c;
+            margin: 10px 0 5px 0;
+        }
+        .vista-previa-impresion .header-preview p {
+            color: #64748b;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+        .vista-previa-impresion table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        .vista-previa-impresion th {
+            background: #002b5c;
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+            border: 1px solid #002b5c;
+        }
+        .vista-previa-impresion td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .vista-previa-impresion .precio-venta {
+            color: #002b5c;
+            font-weight: bold;
+        }
+        .vista-previa-impresion .precio-compra {
+            color: #64748b;
+        }
+        .vista-previa-impresion .margen-positivo {
+            color: #16a34a;
+            font-weight: bold;
+        }
+        .vista-previa-impresion .margen-negativo {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        .vista-previa-impresion .promo-card-print {
+            border: 2px solid #e11d48;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+        .vista-previa-impresion .pie {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 2px solid #002b5c;
+            font-size: 11px;
+            color: #64748b;
+        }
         
         @media(max-width:600px){.imagen-area{height:150px}.banner{font-size:11px}.btn-enviar-wa{font-size:14px}.banner-promo-fuera{font-size:12px;padding:10px}.stats-grid{grid-template-columns:1fr 1fr}.modal-registro-content{padding:20px}.modal-stock-content{padding:20px}.btn-buscar-cliente{font-size:12px;padding:10px 14px}#contenedorProductos{gap:10px}.info{padding:10px}.titulo{font-size:0.85rem}.precio{font-size:1rem}.acciones input{width:50px;font-size:11px}.btn-agregar,.btn-wa{font-size:11px;padding:4px 8px}.codigo{font-size:10px}}
     </style>
@@ -265,7 +330,6 @@
     <div id="contenidoVistaPrevia"></div>
 </div>
 
-<!-- ====== RESTO DEL HTML (encabezado, toolbar, productos, carrito, etc.) ====== -->
 <!-- MODAL STOCK -->
 <div class="modal-stock" id="modalStock">
     <div class="modal-stock-content">
@@ -374,7 +438,8 @@
         <button data-tab="tabReportes">📊 Reportes</button>
         <button data-tab="tabListasPrecios">📊 Listas Precios</button>
     </div>
-    <!-- Resto del panel admin... (igual que antes) -->
+
+    <!-- TAB DASHBOARD -->
     <div class="tab-content visible" id="tabDashboard">
         <div class="stats-grid" id="statsGrid">
             <div class="stat-card"><h4>💰 Ventas Hoy</h4><div class="numero" id="statVentasHoy">$0</div><div class="sub">Actualizado hoy</div></div>
@@ -401,6 +466,7 @@
         </div>
     </div>
 
+    <!-- TAB INVENTARIO -->
     <div class="tab-content" id="tabInventario">
         <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
             <input type="text" id="buscarInventario" placeholder="🔍 Buscar por nombre o código..." style="flex:1; padding:10px 16px; border-radius:30px; border:1px solid #ccc; font-size:14px;">
@@ -417,6 +483,7 @@
         </div>
     </div>
 
+    <!-- TAB PEDIDOS -->
     <div class="tab-content" id="tabPedidos">
         <div class="tabla-container">
             <table>
@@ -426,6 +493,7 @@
         </div>
     </div>
 
+    <!-- TAB CLIENTES -->
     <div class="tab-content" id="tabClientes">
         <div style="display:flex; gap:10px; margin-bottom:15px;">
             <input type="text" id="buscarClientes" placeholder="🔍 Buscar por nombre, teléfono o negocio..." style="flex:1; padding:10px 16px; border-radius:30px; border:1px solid #ccc; font-size:14px;">
@@ -443,6 +511,7 @@
         </div>
     </div>
 
+    <!-- TAB COMPRAS -->
     <div class="tab-content" id="tabCompras">
         <div style="display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap;">
             <button id="btnNuevaCompra" style="background:#2563eb; color:white; border:none; padding:12px 25px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:14px;">➕ NUEVA COMPRA</button>
@@ -494,6 +563,7 @@
         </div>
     </div>
 
+    <!-- TAB REPORTES -->
     <div class="tab-content" id="tabReportes">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
             <div class="stat-card"><h4>📊 Total Ventas</h4><div class="numero" id="reportTotalVentas">$0</div></div>
@@ -524,6 +594,7 @@
         </div>
     </div>
 
+    <!-- TAB LISTAS PRECIOS -->
     <div class="tab-content" id="tabListasPrecios">
         <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
             <button onclick="mostrarTabPrecios('venta')" id="btnTabVenta" style="background:#002b5c; color:white; border:none; padding:10px 20px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:13px;">💰 LISTA DE VENTA</button>
@@ -712,7 +783,6 @@ function imprimirVistaPrevia() {
         return;
     }
     
-    // Crear un iframe oculto para imprimir
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
     iframe.style.top = '-9999px';
@@ -723,7 +793,6 @@ function imprimirVistaPrevia() {
     iframe.style.zIndex = '-9999';
     document.body.appendChild(iframe);
     
-    // Escribir el contenido en el iframe
     const doc = iframe.contentWindow.document;
     doc.open();
     doc.write(`
@@ -812,7 +881,6 @@ function imprimirVistaPrevia() {
     `);
     doc.close();
     
-    // Esperar a que cargue y luego imprimir
     setTimeout(() => {
         try {
             iframe.contentWindow.focus();
@@ -820,7 +888,6 @@ function imprimirVistaPrevia() {
         } catch(e) {
             mostrarNotificacion('❌ Error al imprimir: ' + e.message);
         }
-        // Eliminar el iframe después de imprimir
         setTimeout(() => {
             if (document.body.contains(iframe)) {
                 document.body.removeChild(iframe);
@@ -830,7 +897,7 @@ function imprimirVistaPrevia() {
 }
 
 // ============================================================
-// FUNCIONES DE IMPRESIÓN - Generan el HTML para la vista previa
+// FUNCIONES DE IMPRESIÓN
 // ============================================================
 
 function generarHTMLImpresion(titulo, contenidoTabla, esPromociones = false) {
