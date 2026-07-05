@@ -193,7 +193,57 @@
         .promo-card .promo-codigo{font-family:monospace;font-size:11px;color:#64748b}
         .toast-notificacion{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#065f46;color:white;padding:14px 24px;border-radius:60px;font-weight:bold;font-size:14px;box-shadow:0 8px 25px rgba(0,0,0,0.3);z-index:9999;display:none;animation:slideDown 0.4s ease;text-align:center;max-width:90%}
         @keyframes slideDown{0%{transform:translateX(-50%) translateY(-80px);opacity:0}100%{transform:translateX(-50%) translateY(0);opacity:1}}
-        @media print{.lista-precios-container{border:none;padding:10px}.lista-precios-header .acciones-lista{display:none!important}.lista-precios-filtros{display:none!important}.lista-precios-tabla th{background:#002b5c!important;color:white!important}.no-print{display:none!important}.promo-card{border:2px solid #e11d48!important;page-break-inside:avoid}}
+        
+        /* ESTILOS PARA VISTA PREVIA */
+        .vista-previa-impresion {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 999999;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+        .vista-previa-impresion.visible {
+            display: block;
+        }
+        .vista-previa-impresion .cerrar-preview {
+            position: sticky;
+            top: 0;
+            background: #1e293b;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .vista-previa-impresion .cerrar-preview button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .vista-previa-impresion .cerrar-preview .btn-imprimir-preview {
+            background: #2563eb;
+        }
+        .vista-previa-impresion .cerrar-preview .btn-imprimir-preview:hover {
+            background: #1d4ed8;
+        }
+        
         @media(max-width:600px){.imagen-area{height:150px}.banner{font-size:11px}.btn-enviar-wa{font-size:14px}.banner-promo-fuera{font-size:12px;padding:10px}.stats-grid{grid-template-columns:1fr 1fr}.modal-registro-content{padding:20px}.modal-stock-content{padding:20px}.btn-buscar-cliente{font-size:12px;padding:10px 14px}#contenedorProductos{gap:10px}.info{padding:10px}.titulo{font-size:0.85rem}.precio{font-size:1rem}.acciones input{width:50px;font-size:11px}.btn-agregar,.btn-wa{font-size:11px;padding:4px 8px}.codigo{font-size:10px}}
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -203,6 +253,19 @@
 
 <div id="toastNotificacion" class="toast-notificacion">✅ Mensaje enviado</div>
 
+<!-- VISTA PREVIA DE IMPRESIÓN -->
+<div class="vista-previa-impresion" id="vistaPreviaImpresion">
+    <div class="cerrar-preview">
+        <span>📄 Vista previa</span>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn-imprimir-preview" onclick="imprimirVistaPrevia()">🖨️ Imprimir / PDF</button>
+            <button onclick="cerrarVistaPrevia()">❌ Cerrar</button>
+        </div>
+    </div>
+    <div id="contenidoVistaPrevia"></div>
+</div>
+
+<!-- ====== RESTO DEL HTML (encabezado, toolbar, productos, carrito, etc.) ====== -->
 <!-- MODAL STOCK -->
 <div class="modal-stock" id="modalStock">
     <div class="modal-stock-content">
@@ -311,7 +374,7 @@
         <button data-tab="tabReportes">📊 Reportes</button>
         <button data-tab="tabListasPrecios">📊 Listas Precios</button>
     </div>
-
+    <!-- Resto del panel admin... (igual que antes) -->
     <div class="tab-content visible" id="tabDashboard">
         <div class="stats-grid" id="statsGrid">
             <div class="stat-card"><h4>💰 Ventas Hoy</h4><div class="numero" id="statVentasHoy">$0</div><div class="sub">Actualizado hoy</div></div>
@@ -626,6 +689,507 @@ function mostrarNotificacion(mensaje, duracion = 4000) {
 }
 
 // ============================================================
+// FUNCIONES DE VISTA PREVIA E IMPRESIÓN CON IFRAME
+// ============================================================
+
+function mostrarVistaPrevia(contenidoHTML) {
+    const contenedor = document.getElementById('contenidoVistaPrevia');
+    contenedor.innerHTML = contenidoHTML;
+    document.getElementById('vistaPreviaImpresion').classList.add('visible');
+    document.body.style.overflow = 'hidden';
+    mostrarNotificacion('📄 Vista previa lista. Toca "Imprimir / PDF" o "Cerrar"', 2000);
+}
+
+function cerrarVistaPrevia() {
+    document.getElementById('vistaPreviaImpresion').classList.remove('visible');
+    document.body.style.overflow = 'auto';
+}
+
+function imprimirVistaPrevia() {
+    const contenido = document.getElementById('contenidoVistaPrevia');
+    if (!contenido) {
+        mostrarNotificacion('❌ No hay contenido para imprimir');
+        return;
+    }
+    
+    // Crear un iframe oculto para imprimir
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.top = '-9999px';
+    iframe.style.left = '-9999px';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    iframe.style.zIndex = '-9999';
+    document.body.appendChild(iframe);
+    
+    // Escribir el contenido en el iframe
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Impresión - GAETO COMERCIOS</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { 
+                    font-family: 'Segoe UI', Arial, sans-serif; 
+                    padding: 20px; 
+                    background: white; 
+                }
+                .header-preview {
+                    text-align: center;
+                    margin-bottom: 20px;
+                    padding: 10px;
+                    border-bottom: 2px solid #002b5c;
+                }
+                .header-preview img {
+                    max-width: 180px;
+                    height: auto;
+                    display: block;
+                    margin: 0 auto 10px auto;
+                }
+                .header-preview h2 {
+                    color: #002b5c;
+                    margin: 10px 0 5px 0;
+                }
+                .header-preview p {
+                    color: #64748b;
+                    font-size: 13px;
+                    margin: 5px 0;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 11px;
+                }
+                th {
+                    background: #002b5c !important;
+                    color: white !important;
+                    padding: 8px 10px;
+                    text-align: left;
+                    border: 1px solid #002b5c;
+                }
+                td {
+                    padding: 6px 10px;
+                    border-bottom: 1px solid #e2e8f0;
+                }
+                .precio-venta { color: #002b5c; font-weight: bold; }
+                .precio-compra { color: #64748b; }
+                .margen-positivo { color: #16a34a; font-weight: bold; }
+                .margen-negativo { color: #dc2626; font-weight: bold; }
+                .promo-card-print {
+                    border: 2px solid #e11d48;
+                    border-radius: 12px;
+                    padding: 15px;
+                    margin-bottom: 15px;
+                    page-break-inside: avoid;
+                }
+                .pie {
+                    text-align: center;
+                    margin-top: 25px;
+                    padding-top: 15px;
+                    border-top: 2px solid #002b5c;
+                    font-size: 11px;
+                    color: #64748b;
+                }
+                @page {
+                    size: A4;
+                    margin: 15mm;
+                }
+                @media print {
+                    body { padding: 10px; }
+                }
+            </style>
+        </head>
+        <body>
+            ${contenido.innerHTML}
+        </body>
+        </html>
+    `);
+    doc.close();
+    
+    // Esperar a que cargue y luego imprimir
+    setTimeout(() => {
+        try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        } catch(e) {
+            mostrarNotificacion('❌ Error al imprimir: ' + e.message);
+        }
+        // Eliminar el iframe después de imprimir
+        setTimeout(() => {
+            if (document.body.contains(iframe)) {
+                document.body.removeChild(iframe);
+            }
+        }, 2000);
+    }, 500);
+}
+
+// ============================================================
+// FUNCIONES DE IMPRESIÓN - Generan el HTML para la vista previa
+// ============================================================
+
+function generarHTMLImpresion(titulo, contenidoTabla, esPromociones = false) {
+    const fecha = new Date().toLocaleDateString('es-MX');
+    const logoUrl = "https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png";
+    
+    return `
+        <div class="header-preview">
+            <div style="display:flex; justify-content:center; align-items:center; margin-bottom:10px;">
+                <img src="${logoUrl}" alt="GAETO COMERCIOS" 
+                     style="max-width:180px; height:auto; display:block;"
+                     onerror="this.style.display='none'; this.parentElement.innerHTML='<h2 style=\\'color:#002b5c;\\'>GAETO COMERCIOS</h2>';">
+            </div>
+            <h2>${titulo}</h2>
+            <p>📅 Fecha: ${fecha}</p>
+            ${!esPromociones ? '<hr style="border:1px solid #e2e8f0; margin:10px 0;">' : ''}
+        </div>
+        ${contenidoTabla}
+        <div class="pie">
+            📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán, Veracruz, Ver.<br>
+            GAETO COMERCIOS - Todos los derechos reservados
+        </div>
+    `;
+}
+
+// IMPRIMIR INVENTARIO
+function imprimirInventario() {
+    const tbody = document.getElementById('inventarioTabla');
+    if (!tbody || tbody.children.length === 0) { 
+        mostrarNotificacion('❌ No hay productos para imprimir'); 
+        return; 
+    }
+    
+    const filas = tbody.querySelectorAll('tr');
+    let tablaHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th style="text-align:center;">Stock</th>
+                    <th style="text-align:center;">Estado</th>
+                    <th style="text-align:center;">Visibilidad</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        if (celdas.length >= 7) {
+            const codigo = celdas[0].textContent.trim().replace(/[🔥🔒]/g, '').trim();
+            const nombre = celdas[1].textContent.trim().replace(/\(OCULTO\)/g, '').trim();
+            const categoria = celdas[2].textContent.trim();
+            const precio = celdas[3].textContent.trim();
+            const stock = celdas[4].textContent.trim();
+            const estado = celdas[5].textContent.trim();
+            const visibilidad = celdas[6].textContent.trim();
+            const esOculto = visibilidad.includes('Oculto');
+            
+            tablaHTML += `
+                <tr style="${esOculto ? 'opacity:0.6; background:#fef2f2;' : ''}">
+                    <td style="font-family:monospace;">${codigo}</td>
+                    <td><strong>${nombre}</strong></td>
+                    <td>${categoria}</td>
+                    <td style="font-weight:bold; color:#002b5c;">${precio}</td>
+                    <td style="text-align:center;">${stock}</td>
+                    <td style="text-align:center;">${estado}</td>
+                    <td style="text-align:center;">${visibilidad}</td>
+                </tr>
+            `;
+        }
+    });
+    
+    tablaHTML += `</tbody></table>`;
+    const htmlCompleto = generarHTMLImpresion('📦 INVENTARIO - GAETO COMERCIOS', tablaHTML);
+    mostrarVistaPrevia(htmlCompleto);
+}
+
+function generarPDFInventario() { imprimirInventario(); }
+
+// LISTA DE PRECIOS DE VENTA
+function imprimirListaVenta() {
+    const tbody = document.getElementById('listaVentaBody');
+    if (!tbody || tbody.innerHTML.includes('No se encontraron')) { 
+        mostrarNotificacion('❌ No hay datos para imprimir'); 
+        return; 
+    }
+    
+    const filas = tbody.querySelectorAll('tr');
+    let tablaHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio Lista</th>
+                    <th style="text-align:center;">Dto.%</th>
+                    <th>Precio Venta</th>
+                    <th style="text-align:center;">Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        if (celdas.length >= 7) {
+            tablaHTML += `
+                <tr>
+                    <td style="font-family:monospace;">${celdas[0].textContent}</td>
+                    <td><strong>${celdas[1].textContent}</strong></td>
+                    <td>${celdas[2].textContent}</td>
+                    <td>${celdas[3].textContent}</td>
+                    <td style="text-align:center;">${celdas[4].textContent}</td>
+                    <td style="font-weight:bold; color:#002b5c;">${celdas[5].textContent}</td>
+                    <td style="text-align:center;">${celdas[6].textContent}</td>
+                </tr>
+            `;
+        }
+    });
+    
+    tablaHTML += `</tbody></table>`;
+    const htmlCompleto = generarHTMLImpresion('💰 LISTA DE PRECIOS DE VENTA', tablaHTML);
+    mostrarVistaPrevia(htmlCompleto);
+}
+
+function generarPDFListaVenta() { imprimirListaVenta(); }
+
+// LISTA COMPRA / VENTA
+function imprimirListaCompraVenta() {
+    const tbody = document.getElementById('listaCompraBody');
+    if (!tbody || tbody.innerHTML.includes('No se encontraron')) { 
+        mostrarNotificacion('❌ No hay datos para imprimir'); 
+        return; 
+    }
+    
+    const filas = tbody.querySelectorAll('tr');
+    let tablaHTML = `
+        <div style="background:#f1f5f9; padding:8px 12px; border-radius:8px; margin-bottom:12px; font-size:12px; color:#334155;">
+            💡 <strong>Margen =</strong> (Precio Venta - Precio Compra) / Precio Venta × 100
+        </div>
+        <table style="font-size:10px;">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>P. Compra</th>
+                    <th>P. Venta</th>
+                    <th style="text-align:center;">Margen</th>
+                    <th>Ganancia</th>
+                    <th style="text-align:center;">Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        if (celdas.length >= 8) {
+            const margenClase = celdas[5].className.includes('margen-positivo') ? 'color:#16a34a;' : 'color:#dc2626;';
+            tablaHTML += `
+                <tr>
+                    <td style="font-family:monospace;">${celdas[0].textContent}</td>
+                    <td><strong>${celdas[1].textContent}</strong></td>
+                    <td>${celdas[2].textContent}</td>
+                    <td style="color:#64748b;">${celdas[3].textContent}</td>
+                    <td style="font-weight:bold; color:#002b5c;">${celdas[4].textContent}</td>
+                    <td style="text-align:center; font-weight:bold; ${margenClase}">${celdas[5].textContent}</td>
+                    <td>${celdas[6].textContent}</td>
+                    <td style="text-align:center;">${celdas[7].textContent}</td>
+                </tr>
+            `;
+        }
+    });
+    
+    tablaHTML += `</tbody></table>`;
+    const htmlCompleto = generarHTMLImpresion('📊 PRECIOS DE COMPRA Y VENTA', tablaHTML);
+    mostrarVistaPrevia(htmlCompleto);
+}
+
+function generarPDFListaCompraVenta() { imprimirListaCompraVenta(); }
+
+// LISTA PARA CLIENTE
+function imprimirListaCliente() {
+    const tbody = document.getElementById('listaClienteBody');
+    if (!tbody || tbody.innerHTML.includes('No se encontraron')) { 
+        mostrarNotificacion('❌ No hay datos para imprimir'); 
+        return; 
+    }
+    
+    const filas = tbody.querySelectorAll('tr');
+    let tablaHTML = `
+        <div style="background:#f1f5f9; padding:8px 12px; border-radius:8px; margin-bottom:12px; font-size:12px; color:#334155;">
+            📋 Formato amigable para compartir con clientes.
+        </div>
+        <table style="font-size:12px;">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio Venta</th>
+                    <th style="text-align:center;">Descuento</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        if (celdas.length >= 5) {
+            tablaHTML += `
+                <tr>
+                    <td style="font-family:monospace;">${celdas[0].textContent}</td>
+                    <td><strong>${celdas[1].textContent}</strong></td>
+                    <td>${celdas[2].textContent}</td>
+                    <td style="font-weight:bold; color:#002b5c; font-size:15px;">${celdas[3].textContent}</td>
+                    <td style="text-align:center;">${celdas[4].textContent}</td>
+                </tr>
+            `;
+        }
+    });
+    
+    tablaHTML += `</tbody></table>`;
+    const htmlCompleto = generarHTMLImpresion('🧾 LISTA DE PRECIOS PARA CLIENTE', tablaHTML);
+    mostrarVistaPrevia(htmlCompleto);
+}
+
+function generarPDFListaCliente() { imprimirListaCliente(); }
+
+// PROMOCIONES
+function imprimirPromociones() {
+    const container = document.getElementById('listaPromocionesContainer');
+    if (!container || container.innerHTML.includes('No hay promociones')) { 
+        mostrarNotificacion('❌ No hay promociones para imprimir'); 
+        return; 
+    }
+    
+    const cards = container.querySelectorAll('.promo-card');
+    let cardsHTML = '';
+    
+    cards.forEach((card) => {
+        const badge = card.querySelector('.promo-badge')?.textContent || 'PROMO';
+        const codigo = card.querySelector('.promo-codigo')?.textContent || '';
+        const titulo = card.querySelector('.promo-titulo')?.textContent || '';
+        const desc = card.querySelector('.promo-desc')?.textContent || '';
+        const precio = card.querySelector('.promo-precio')?.textContent || '';
+        const antes = card.querySelector('.promo-antes')?.textContent || '';
+        const banner = card.querySelector('[style*="background:#fef3c7"]')?.textContent || '';
+        const vigencia = card.querySelector('[style*="color:#64748b; margin-top:4px;"]')?.textContent || '';
+        
+        cardsHTML += `
+            <div class="promo-card-print">
+                <div style="background:#e11d48; color:white; display:inline-block; padding:2px 14px; border-radius:12px; font-size:10px; font-weight:bold;">${badge}</div>
+                <div style="font-weight:bold; font-size:16px; color:#002b5c; margin-top:5px;">${titulo}</div>
+                ${codigo ? `<div style="font-size:10px; color:#64748b;">${codigo}</div>` : ''}
+                ${desc ? `<div style="font-size:12px; color:#334155; margin:4px 0;">${desc}</div>` : ''}
+                ${banner ? `<div style="background:#fef3c7; padding:6px 12px; border-radius:8px; margin:6px 0; font-size:13px; color:#92400e;">📢 ${banner}</div>` : ''}
+                ${vigencia ? `<div style="font-size:11px; color:#64748b; margin:4px 0;">⏰ ${vigencia}</div>` : ''}
+                <div style="margin-top:8px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    ${antes ? `<span style="text-decoration:line-through; color:#999; font-size:16px;">${antes}</span>` : ''}
+                    <span style="font-size:22px; font-weight:bold; color:#e11d48;">${precio}</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    const htmlCompleto = generarHTMLImpresion('🔥 PROMOCIONES ACTIVAS', cardsHTML, true);
+    mostrarVistaPrevia(htmlCompleto);
+}
+
+function generarPDFPromociones() { imprimirPromociones(); }
+
+// ============================================================
+// COMPARTIR LISTAS POR WHATSAPP
+// ============================================================
+function compartirListaVenta() {
+    const filas = document.querySelectorAll('#listaVentaBody tr');
+    if (filas.length === 0 || filas[0].textContent.includes('No se encontraron')) { mostrarNotificacion('❌ No hay productos para compartir'); return; }
+    let mensaje = "💰 *LISTA DE PRECIOS - GAETO COMERCIOS*\n\n📅 " + new Date().toLocaleDateString('es-MX') + "\n───────────────────────────\n\n";
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        if (celdas.length >= 6) {
+            mensaje += `📌 ${celdas[1].textContent.trim()} - ${celdas[5].textContent.trim()}\n`;
+        }
+    });
+    mensaje += "\n📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán";
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+function compartirListaCompraVenta() {
+    const filas = document.querySelectorAll('#listaCompraBody tr');
+    if (filas.length === 0 || filas[0].textContent.includes('No se encontraron')) { mostrarNotificacion('❌ No hay productos para compartir'); return; }
+    let mensaje = "📊 *LISTA COMPRA/VENTA - GAETO COMERCIOS*\n\n📅 " + new Date().toLocaleDateString('es-MX') + "\n───────────────────────────\n\n";
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        if (celdas.length >= 8) {
+            mensaje += `📌 ${celdas[1].textContent.trim()} - Compra: ${celdas[3].textContent.trim()} | Venta: ${celdas[4].textContent.trim()}\n`;
+        }
+    });
+    mensaje += "\n📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán";
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+function compartirListaCliente() {
+    const filas = document.querySelectorAll('#listaClienteBody tr');
+    if (filas.length === 0 || filas[0].textContent.includes('No se encontraron')) { mostrarNotificacion('❌ No hay productos para compartir'); return; }
+    let mensaje = "🧾 *LISTA PARA CLIENTE - GAETO COMERCIOS*\n\n📅 " + new Date().toLocaleDateString('es-MX') + "\n───────────────────────────\n\n";
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        if (celdas.length >= 4) {
+            mensaje += `📌 ${celdas[1].textContent.trim()} - ${celdas[3].textContent.trim()}\n`;
+        }
+    });
+    mensaje += "\n📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán";
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+function compartirPromociones() {
+    const cards = document.querySelectorAll('#listaPromocionesContainer .promo-card');
+    if (cards.length === 0) { mostrarNotificacion('❌ No hay promociones para compartir'); return; }
+    let mensaje = "🔥 *PROMOCIONES - GAETO COMERCIOS*\n\n📅 " + new Date().toLocaleDateString('es-MX') + "\n───────────────────────────\n\n";
+    cards.forEach(card => {
+        const titulo = card.querySelector('.promo-titulo');
+        const precio = card.querySelector('.promo-precio');
+        if (titulo && precio) {
+            mensaje += `📌 ${titulo.textContent.trim()} - ${precio.textContent.trim()}\n`;
+        }
+    });
+    mensaje += "\n📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán";
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+function compartirInventarioWhatsApp() {
+    const filas = document.querySelectorAll('#inventarioTabla tr');
+    if (filas.length === 0) { mostrarNotificacion('❌ No hay productos para compartir'); return; }
+    let mensaje = "📦 *INVENTARIO - GAETO COMERCIOS*\n\n📅 " + new Date().toLocaleDateString('es-MX') + "\n───────────────────────────\n\n";
+    filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        if (celdas.length >= 7) {
+            const codigo = celdas[0].textContent.trim().replace(/[🔥🔒]/g, '').trim();
+            const nombre = celdas[1].textContent.trim().replace(/\(OCULTO\)/g, '').trim();
+            const categoria = celdas[2].textContent.trim();
+            const precio = celdas[3].textContent.trim();
+            const stock = celdas[4].textContent.trim();
+            const estado = celdas[5].textContent.trim();
+            mensaje += `📌 [${codigo}] ${nombre} - ${categoria}\n   ${precio} - Stock: ${stock} - ${estado}\n`;
+        }
+    });
+    mensaje += "\n📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán";
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+// ============================================================
 // VARIABLES GLOBALES
 // ============================================================
 let productos = [];
@@ -694,13 +1258,6 @@ function getStockText(stock) {
     if (stock === undefined || stock === null || stock <= 0) return 'Agotado';
     if (stock <= 5) return '¡Stock Bajo!';
     return 'Disponible';
-}
-
-function cerrarTodosLosEditores() {
-    document.querySelectorAll('.editor-area').forEach(editor => {
-        editor.classList.remove('visible');
-        editor.style.display = 'none';
-    });
 }
 
 // ============================================================
@@ -838,7 +1395,7 @@ function renderizarFiltros() {
 }
 
 // ============================================================
-// RENDERIZAR PRODUCTOS - CON EDITOR FUNCIONAL
+// RENDERIZAR PRODUCTOS
 // ============================================================
 function renderizarProductos() {
     const contenedor = document.getElementById('contenedorProductos');
@@ -859,7 +1416,6 @@ function renderizarProductos() {
         return;
     }
     
-    // Aplicar clase modo-admin al body para mostrar botones de edición
     if (modoAdmin) {
         document.body.classList.add('modo-admin');
     } else {
@@ -948,9 +1504,6 @@ window.procesarFotoLocal = function(input, id) {
     lector.readAsDataURL(archivo);
 };
 
-// ============================================================
-// TOGGLE EDITOR - CORREGIDO
-// ============================================================
 function toggleEditor(id) {
     const editor = document.getElementById(`edit-area-${id}`);
     if (editor) {
@@ -1178,7 +1731,7 @@ function renderizarClientes() {
 }
 
 // ============================================================
-// RENDERIZAR PEDIDOS CON EN RUTA Y ENTREGADO
+// RENDERIZAR PEDIDOS
 // ============================================================
 function renderizarPedidos() {
     const tbody = document.getElementById('pedidosTabla');
@@ -1948,187 +2501,6 @@ function limpiarFiltrosPromo() {
 }
 
 // ============================================================
-// FUNCIONES DE IMPRESIÓN DE LISTAS
-// ============================================================
-function imprimirListaVenta() {
-    const tbody = document.getElementById('listaVentaBody');
-    if (!tbody || tbody.innerHTML.includes('No se encontraron')) { mostrarNotificacion('❌ No hay datos para imprimir'); return; }
-    const ventana = window.open('', '_blank', 'width=900,height=700');
-    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    const fecha = new Date().toLocaleDateString('es-MX');
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Lista de Precios</title>
-    <style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse}th{background:#002b5c;color:white;padding:8px;text-align:left}td{padding:6px;border-bottom:1px solid #ddd}.header{text-align:center;margin-bottom:20px}.header img{max-width:150px}.precio-venta{font-weight:bold;color:#002b5c}.categoria-tag{background:#e2e8f0;padding:2px 10px;border-radius:12px}
-    @media print{body{padding:10px}th{background:#002b5c!important;color:white!important}}</style></head><body>
-    <div class="header"><img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png"><h2>💰 LISTA DE PRECIOS DE VENTA</h2><p>Fecha: ${fecha}</p></div>
-    <table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio Lista</th><th>Dto.%</th><th>Precio Venta</th><th>Stock</th></tr></thead><tbody>${tbody.innerHTML}</tbody></table>
-    <p style="text-align:center;margin-top:20px;">📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán</p>
-    <script>window.onload=function(){window.print();setTimeout(function(){window.close();},1500);};<\/script></body></html>`;
-    ventana.document.write(html);
-    ventana.document.close();
-}
-
-function imprimirListaCompraVenta() {
-    const tbody = document.getElementById('listaCompraBody');
-    if (!tbody || tbody.innerHTML.includes('No se encontraron')) { mostrarNotificacion('❌ No hay datos para imprimir'); return; }
-    const ventana = window.open('', '_blank', 'width=900,height=700');
-    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    const fecha = new Date().toLocaleDateString('es-MX');
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Lista Compra/Venta</title>
-    <style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse}th{background:#002b5c;color:white;padding:8px;text-align:left}td{padding:6px;border-bottom:1px solid #ddd}.header{text-align:center;margin-bottom:20px}.header img{max-width:150px}.precio-venta{font-weight:bold;color:#002b5c}.precio-compra{color:#64748b}.margen-positivo{color:#16a34a;font-weight:bold}.margen-negativo{color:#dc2626;font-weight:bold}
-    @media print{body{padding:10px}th{background:#002b5c!important;color:white!important}}</style></head><body>
-    <div class="header"><img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png"><h2>📊 PRECIOS COMPRA Y VENTA</h2><p>Fecha: ${fecha}</p></div>
-    <table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio Compra</th><th>Precio Venta</th><th>Margen</th><th>Ganancia</th><th>Stock</th></tr></thead><tbody>${tbody.innerHTML}</tbody></table>
-    <p style="text-align:center;margin-top:20px;">📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán</p>
-    <script>window.onload=function(){window.print();setTimeout(function(){window.close();},1500);};<\/script></body></html>`;
-    ventana.document.write(html);
-    ventana.document.close();
-}
-
-function imprimirListaCliente() {
-    const tbody = document.getElementById('listaClienteBody');
-    if (!tbody || tbody.innerHTML.includes('No se encontraron')) { mostrarNotificacion('❌ No hay datos para imprimir'); return; }
-    const ventana = window.open('', '_blank', 'width=800,height=600');
-    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    const fecha = new Date().toLocaleDateString('es-MX');
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Lista para Cliente</title>
-    <style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse}th{background:#002b5c;color:white;padding:8px;text-align:left}td{padding:6px;border-bottom:1px solid #ddd}.header{text-align:center;margin-bottom:20px}.header img{max-width:150px}.precio-cliente{font-weight:bold;color:#002b5c;font-size:16px}
-    @media print{body{padding:10px}th{background:#002b5c!important;color:white!important}}</style></head><body>
-    <div class="header"><img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png"><h2>🧾 LISTA PARA CLIENTE</h2><p>Fecha: ${fecha}</p></div>
-    <table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio Venta</th><th>Descuento</th></tr></thead><tbody>${tbody.innerHTML}</tbody></table>
-    <p style="text-align:center;margin-top:20px;">📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán</p>
-    <script>window.onload=function(){window.print();setTimeout(function(){window.close();},1500);};<\/script></body></html>`;
-    ventana.document.write(html);
-    ventana.document.close();
-}
-
-function imprimirPromociones() {
-    const container = document.getElementById('listaPromocionesContainer');
-    if (!container || container.innerHTML.includes('No hay promociones')) { mostrarNotificacion('❌ No hay promociones para imprimir'); return; }
-    const ventana = window.open('', '_blank', 'width=800,height=600');
-    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    const fecha = new Date().toLocaleDateString('es-MX');
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Promociones</title>
-    <style>body{font-family:Arial;padding:20px}.promo-card{border:2px solid #e11d48;border-radius:12px;padding:15px;margin-bottom:15px;page-break-inside:avoid}
-    .promo-card .promo-titulo{font-size:18px;font-weight:bold;color:#002b5c}.promo-card .promo-precio{font-size:24px;font-weight:bold;color:#e11d48}
-    .promo-card .promo-antes{text-decoration:line-through;color:#999;font-size:16px;margin-right:10px}.header{text-align:center;margin-bottom:20px}.header img{max-width:150px}
-    @media print{.promo-card{page-break-inside:avoid}}</style></head><body>
-    <div class="header"><img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png"><h2>🔥 PROMOCIONES ACTIVAS</h2><p>Fecha: ${fecha}</p></div>
-    ${container.innerHTML}
-    <p style="text-align:center;margin-top:20px;">📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán</p>
-    <script>window.onload=function(){window.print();setTimeout(function(){window.close();},1500);};<\/script></body></html>`;
-    ventana.document.write(html);
-    ventana.document.close();
-}
-
-function generarPDFListaVenta() { imprimirListaVenta(); }
-function generarPDFListaCompraVenta() { imprimirListaCompraVenta(); }
-function generarPDFListaCliente() { imprimirListaCliente(); }
-function generarPDFPromociones() { imprimirPromociones(); }
-
-// ============================================================
-// COMPARTIR LISTAS POR WHATSAPP
-// ============================================================
-function compartirListaVenta() {
-    const filas = document.querySelectorAll('#listaVentaBody tr');
-    if (filas.length === 0 || filas[0].textContent.includes('No se encontraron')) { mostrarNotificacion('❌ No hay productos para compartir'); return; }
-    let mensaje = "💰 *LISTA DE PRECIOS - GAETO COMERCIOS*\n\n📅 " + new Date().toLocaleDateString('es-MX') + "\n───────────────────────────\n\n";
-    filas.forEach(fila => {
-        const celdas = fila.querySelectorAll('td');
-        if (celdas.length >= 6) {
-            mensaje += `📌 ${celdas[1].textContent.trim()} - ${celdas[5].textContent.trim()}\n`;
-        }
-    });
-    mensaje += "\n📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán";
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
-}
-
-function compartirListaCompraVenta() {
-    const filas = document.querySelectorAll('#listaCompraBody tr');
-    if (filas.length === 0 || filas[0].textContent.includes('No se encontraron')) { mostrarNotificacion('❌ No hay productos para compartir'); return; }
-    let mensaje = "📊 *LISTA COMPRA/VENTA - GAETO COMERCIOS*\n\n📅 " + new Date().toLocaleDateString('es-MX') + "\n───────────────────────────\n\n";
-    filas.forEach(fila => {
-        const celdas = fila.querySelectorAll('td');
-        if (celdas.length >= 8) {
-            mensaje += `📌 ${celdas[1].textContent.trim()} - Compra: ${celdas[3].textContent.trim()} | Venta: ${celdas[4].textContent.trim()}\n`;
-        }
-    });
-    mensaje += "\n📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán";
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
-}
-
-function compartirListaCliente() {
-    const filas = document.querySelectorAll('#listaClienteBody tr');
-    if (filas.length === 0 || filas[0].textContent.includes('No se encontraron')) { mostrarNotificacion('❌ No hay productos para compartir'); return; }
-    let mensaje = "🧾 *LISTA PARA CLIENTE - GAETO COMERCIOS*\n\n📅 " + new Date().toLocaleDateString('es-MX') + "\n───────────────────────────\n\n";
-    filas.forEach(fila => {
-        const celdas = fila.querySelectorAll('td');
-        if (celdas.length >= 4) {
-            mensaje += `📌 ${celdas[1].textContent.trim()} - ${celdas[3].textContent.trim()}\n`;
-        }
-    });
-    mensaje += "\n📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán";
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
-}
-
-function compartirPromociones() {
-    const cards = document.querySelectorAll('#listaPromocionesContainer .promo-card');
-    if (cards.length === 0) { mostrarNotificacion('❌ No hay promociones para compartir'); return; }
-    let mensaje = "🔥 *PROMOCIONES - GAETO COMERCIOS*\n\n📅 " + new Date().toLocaleDateString('es-MX') + "\n───────────────────────────\n\n";
-    cards.forEach(card => {
-        const titulo = card.querySelector('.promo-titulo');
-        const precio = card.querySelector('.promo-precio');
-        if (titulo && precio) {
-            mensaje += `📌 ${titulo.textContent.trim()} - ${precio.textContent.trim()}\n`;
-        }
-    });
-    mensaje += "\n📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán";
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
-}
-
-// ============================================================
-// INVENTARIO - IMPRIMIR, PDF Y WHATSAPP
-// ============================================================
-function imprimirInventario() {
-    const tbody = document.getElementById('inventarioTabla');
-    if (!tbody || tbody.children.length === 0) { mostrarNotificacion('❌ No hay productos para imprimir'); return; }
-    const ventana = window.open('', '_blank', 'width=900,height=700');
-    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    const fecha = new Date().toLocaleDateString('es-MX');
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Inventario - GAETO COMERCIOS</title>
-    <style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse}th{background:#002b5c;color:white;padding:8px;text-align:left}td{padding:6px;border-bottom:1px solid #ddd}.header{text-align:center;margin-bottom:20px}.header img{max-width:150px}.stock-badge{padding:2px 10px;border-radius:20px;font-size:10px}
-    .stock-bajo{background:#fecaca;color:#b91c1c}.stock-normal{background:#bbf7d0;color:#166534}.stock-agotado{background:#e5e7eb;color:#4b5563}
-    @media print{body{padding:10px}th{background:#002b5c!important;color:white!important}}</style></head><body>
-    <div class="header"><img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png"><h2>📦 INVENTARIO - GAETO COMERCIOS</h2><p>Fecha: ${fecha}</p></div>
-    <table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Visibilidad</th></tr></thead><tbody>${tbody.innerHTML}</tbody></table>
-    <p style="text-align:center;margin-top:20px;">📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán</p>
-    <script>window.onload=function(){window.print();setTimeout(function(){window.close();},1500);};<\/script></body></html>`;
-    ventana.document.write(html);
-    ventana.document.close();
-}
-
-function generarPDFInventario() { imprimirInventario(); }
-
-function compartirInventarioWhatsApp() {
-    const filas = document.querySelectorAll('#inventarioTabla tr');
-    if (filas.length === 0) { mostrarNotificacion('❌ No hay productos para compartir'); return; }
-    let mensaje = "📦 *INVENTARIO - GAETO COMERCIOS*\n\n📅 " + new Date().toLocaleDateString('es-MX') + "\n───────────────────────────\n\n";
-    filas.forEach(fila => {
-        const celdas = fila.querySelectorAll('td');
-        if (celdas.length >= 7) {
-            const codigo = celdas[0].textContent.trim();
-            const nombre = celdas[1].textContent.trim();
-            const categoria = celdas[2].textContent.trim();
-            const precio = celdas[3].textContent.trim();
-            const stock = celdas[4].textContent.trim();
-            const estado = celdas[5].textContent.trim();
-            mensaje += `📌 [${codigo}] ${nombre} - ${categoria}\n   ${precio} - Stock: ${stock} - ${estado}\n`;
-        }
-    });
-    mensaje += "\n📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán";
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, '_blank');
-}
-
-// ============================================================
 // GRÁFICAS
 // ============================================================
 function renderizarGraficas() {
@@ -2296,7 +2668,6 @@ document.querySelectorAll('.tabs-admin button').forEach(btn => {
 // WINDOW ONLOAD
 // ============================================================
 window.onload = function() {
-    // Iniciar en modo cliente por defecto
     desactivarModoAdmin();
     
     document.getElementById('busquedaInput').oninput = (e) => { textoBusqueda = e.target.value; renderizarProductos(); };
@@ -2345,11 +2716,7 @@ window.onload = function() {
         }).catch(err => alert(err.message));
     };
     
-    // ============================================================
-    // COMPARTIR CATÁLOGO - Enlace CORREGIDO
-    // ============================================================
     document.getElementById('compartirBtn').onclick = () => {
-        // URL CORRECTA del catálogo
         const urlCatalogo = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
         let mensaje = `📦 *GAETO COMERCIOS* 🛒\nCatálogo: ${urlCatalogo}\n📅 PEDIDOS: LUNES, MARTES, MIÉRCOLES\n🚚 ENTREGAS: VIERNES Y SÁBADOS\n\n🔗 Haz tu pedido desde el catálogo. ¡Regístrate y te contactamos!`;
         
@@ -2362,7 +2729,6 @@ window.onload = function() {
             .then(() => mostrarNotificacion("✅ Compartido"))
             .catch(() => {});
         } else {
-            // Abre WhatsApp con el mensaje que contiene el enlace del catálogo
             window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
         }
     };
@@ -2387,7 +2753,6 @@ window.onload = function() {
     console.log('✅ GAETO COMERCIOS - Sistema cargado correctamente');
 };
 
-// Función auxiliar para visor de imágenes (placeholder)
 function abrirVisorImagenes(id) {
     const prod = productos.find(p => p.id === id);
     if (!prod || !prod.imagenUrl) { mostrarNotificacion('📷 Sin imagen disponible'); return; }
