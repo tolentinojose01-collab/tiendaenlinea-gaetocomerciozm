@@ -190,10 +190,10 @@
         .btn-limpiar-cot{background:#e2e8f0;color:#334155}
         .btn-cerrar-panel{background:#ef4444;color:white}
 
-        /* ESTILOS PARA PDF DE COTIZACIÓN */
-        .cotizacion-pdf{font-family:'Segoe UI',Arial,sans-serif;padding:20px;max-width:800px;margin:0 auto;background:white;}
+        /* ESTILOS PARA PDF DE COTIZACIÓN - OPTIMIZADO PARA MÓVIL */
+        .cotizacion-pdf{font-family:'Segoe UI',Arial,sans-serif;padding:15px;max-width:800px;margin:0 auto;background:white;}
         .cotizacion-pdf .header{text-align:center;border-bottom:3px solid #002b5c;padding-bottom:15px;margin-bottom:15px;}
-        .cotizacion-pdf .header img{max-width:180px;height:auto;display:block;margin:0 auto 10px;}
+        .cotizacion-pdf .header img{width:120px;height:auto;display:block;margin:0 auto 10px;max-width:100%;image-rendering:auto;-webkit-user-select:none;user-select:none;pointer-events:none;}
         .cotizacion-pdf .header h1{color:#002b5c;font-size:22px;margin:5px 0;}
         .cotizacion-pdf .header .folio{font-size:14px;color:#64748b;font-weight:bold;}
         .cotizacion-pdf .datos-cliente{background:#f8fafc;padding:12px 15px;border-radius:8px;margin-bottom:15px;border-left:4px solid #002b5c;font-size:13px;}
@@ -231,6 +231,9 @@
 
         @media(max-width:500px){.panel-cotizacion{width:90%;right:5%;bottom:190px;}.btn-flotante-cot{bottom:150px;right:10px;padding:8px 14px;font-size:12px;}}
         @media print{.panel-cotizacion{display:none!important}.btn-flotante-cot{display:none!important}}
+        
+        /* Evitar selección de imagen en PDF */
+        .cotizacion-pdf img{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;pointer-events:none;}
     </style>
 </head>
 <body>
@@ -954,7 +957,7 @@ document.getElementById('btnCancelarCotizacion').onclick = function() {
 };
 
 // ============================================================
-// GENERAR COTIZACIÓN - PDF FORMAL
+// GENERAR COTIZACIÓN - PDF FORMAL OPTIMIZADO PARA MÓVIL
 // ============================================================
 document.getElementById('btnGenerarCotizacion').onclick = function() {
     const telefono = document.getElementById('cotTelefono').value.replace(/\D/g, '');
@@ -1023,7 +1026,7 @@ document.getElementById('btnGenerarCotizacion').onclick = function() {
 };
 
 // ============================================================
-// GENERAR HTML COTIZACIÓN - PDF FORMAL
+// GENERAR HTML COTIZACIÓN - OPTIMIZADO PARA MÓVIL (SIN TEMBLOR)
 // ============================================================
 function generarHTMLCotizacion(data) {
     const estadoClass = 'estado-' + data.estado;
@@ -1042,7 +1045,10 @@ function generarHTMLCotizacion(data) {
     return `
         <div class="cotizacion-pdf">
             <div class="header">
-                <img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png" alt="GAETO COMERCIOS">
+                <!-- LOGO OPTIMIZADO - SIN TEMBLOR EN MÓVIL -->
+                <img src="https://i.postimg.cc/4xfs3Drw/GAETO-COMERCIOS-LOGO.png" 
+                     alt="GAETO COMERCIOS" 
+                     style="width:120px;height:auto;display:block;margin:0 auto 10px;max-width:100%;image-rendering:auto;-webkit-user-select:none;user-select:none;pointer-events:none;-webkit-touch-callout:none;transform:translateZ(0);-webkit-transform:translateZ(0);">
                 <h1>📄 COTIZACIÓN</h1>
                 <div class="folio">Folio: <strong>${data.folio}</strong></div>
                 <div style="font-size:13px;color:#64748b;">Fecha: ${data.fecha}</div>
@@ -1105,7 +1111,7 @@ function generarHTMLCotizacion(data) {
 }
 
 // ============================================================
-// GENERAR PDF DIRECTO
+// GENERAR PDF DIRECTO - CON OPCIONES PARA MÓVIL
 // ============================================================
 function generarPDFDirecto(data) {
     const htmlPDF = generarHTMLCotizacion(data);
@@ -1117,16 +1123,39 @@ function generarPDFDirecto(data) {
         <html>
         <head>
             <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
             <title>Cotización ${data.folio} - GAETO COMERCIOS</title>
             <style>
                 ${document.querySelector('style').innerHTML}
-                body { background: white; padding: 20px; margin: 0; }
+                /* Reset adicional para móvil */
+                body { background: white; padding: 10px; margin: 0; -webkit-text-size-adjust: 100%; }
                 .cotizacion-pdf { max-width: 800px; margin: 0 auto; }
+                /* Evitar selección y temblor de imagen en móvil */
+                .cotizacion-pdf img {
+                    -webkit-touch-callout: none !important;
+                    -webkit-user-select: none !important;
+                    user-select: none !important;
+                    pointer-events: none !important;
+                    -webkit-transform: translateZ(0) !important;
+                    transform: translateZ(0) !important;
+                    backface-visibility: hidden !important;
+                    -webkit-backface-visibility: hidden !important;
+                }
                 .no-print { display: block !important; }
                 @media print { 
-                    body { padding: 10px; } 
+                    body { padding: 5px; } 
                     .no-print { display: none !important; }
                     .cotizacion-pdf { page-break-after: avoid; page-break-inside: avoid; }
+                }
+                /* Para evitar que la imagen se mueva al hacer zoom */
+                .cotizacion-pdf .header {
+                    -webkit-transform: translateZ(0);
+                    transform: translateZ(0);
+                }
+                .cotizacion-pdf .header img {
+                    width: 120px;
+                    max-width: 100%;
+                    height: auto;
                 }
             </style>
         </head>
@@ -1213,7 +1242,6 @@ function generarTicket80(id) {
         </div>
     `;
     
-    // Abrir en ventana nueva para imprimir
     const ventana = window.open('', '_blank', 'width=380,height=600');
     if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
     
@@ -1550,7 +1578,6 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
     database.ref('cotizaciones').push(nuevoPedido)
         .then((ref) => {
             mostrarNotificacion('✅ ¡Pedido registrado!');
-            // Generar ticket 80mm automáticamente
             const id = ref.key;
             setTimeout(() => generarTicket80(id), 500);
             carrito = [];
