@@ -198,7 +198,6 @@
         .modal-cotizacion-header h2{color:#002b5c;font-size:18px;}
         .modal-cotizacion-header .sub{font-size:11px;color:#64748b;}
 
-        /* TICKET 80mm */
         .ticket-80{font-family:'Courier New',monospace;width:80mm;margin:0 auto;padding:5px;font-size:11px;background:white;}
         .ticket-80 .header{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;}
         .ticket-80 .header img{max-width:120px;}
@@ -211,7 +210,6 @@
         .ticket-80 .cliente-info{font-size:10px;margin:5px 0;}
         .ticket-80 .cliente-info div{font-size:9px;color:#666;}
 
-        /* MODAL TICKET */
         .modal-ticket{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;z-index:99999;padding:15px;overflow-y:auto;}
         .modal-ticket.visible{display:flex;}
         .modal-ticket-content{background:white;border-radius:16px;padding:15px;max-width:450px;width:100%;max-height:95vh;overflow-y:auto;position:relative;box-shadow:0 10px 40px rgba(0,0,0,0.5);}
@@ -539,6 +537,25 @@ function mostrarNotificacion(mensaje, duracion = 3000) {
 }
 
 // ============================================================
+// VISOR DE IMÁGENES
+// ============================================================
+function abrirVisor(imagenUrl, nombre) {
+    if (!imagenUrl || imagenUrl === "") {
+        mostrarNotificacion('📷 Este producto no tiene imagen');
+        return;
+    }
+    document.getElementById('visorImagenSrc').src = imagenUrl;
+    document.getElementById('visorImagenInfo').textContent = nombre || 'Producto';
+    document.getElementById('visorImagen').classList.add('visible');
+    document.body.style.overflow = 'hidden';
+}
+function cerrarVisor() {
+    document.getElementById('visorImagen').classList.remove('visible');
+    document.body.style.overflow = 'auto';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') cerrarVisor(); });
+
+// ============================================================
 // VARIABLES GLOBALES
 // ============================================================
 let productos = [];
@@ -580,6 +597,9 @@ function formatearFecha(f) {
     return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : f; 
 }
 
+// ============================================================
+// CATEGORÍAS
+// ============================================================
 function obtenerCategorias() { 
     let cats = [];
     productos.forEach(p => {
@@ -709,7 +729,7 @@ function abrirModalStock(id) {
 }
 
 // ============================================================
-// FUNCIONES TICKET
+// MODAL TICKET
 // ============================================================
 function abrirModalTicket(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -1313,8 +1333,11 @@ function renderizarPedidos() {
             <td style="display:flex;gap:3px;flex-wrap:wrap;">
                 ${botonesAccion}
                 <button class="btn-eliminar-pedido" onclick="eliminarPedido('${c.id}')">🗑️ ELIMINAR</button>
-                ${tipo === 'COTIZACION' ? `<button class="btn-pdf-cotizacion" onclick="generarPDFCotizacion('${c.id}')">📄 PDF</button>` : `<button class="btn-ticket" onclick="abrirModalTicket('${c.id}')">🧾 TICKET</button>`}
-                <button class="btn-pdf" onclick="generarPDFPedido('${c.id}')">📄</button>
+                <button class="btn-ticket" onclick="abrirModalTicket('${c.id}')" style="background:#f59e0b;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">🧾 TICKET</button>
+                ${tipo === 'COTIZACION' 
+                    ? `<button class="btn-pdf-cotizacion" onclick="generarPDFCotizacion('${c.id}')" style="background:#2563eb;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">📄 PDF</button>`
+                    : `<button class="btn-pdf" onclick="generarPDFPedido('${c.id}')" style="background:#dc2626;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">📄</button>`
+                }
             </td>
         </tr>`;
     }).join('');
@@ -1708,9 +1731,7 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
         .then((ref) => {
             mostrarNotificacion('✅ ¡Cotización registrada!');
             const id = ref.key;
-            // Abrir el ticket automáticamente
             setTimeout(() => abrirModalTicket(id), 500);
-            // Enviar el mensaje por WhatsApp
             setTimeout(() => {
                 window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensajeWA)}`, '_blank');
             }, 1000);
