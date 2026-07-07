@@ -138,6 +138,7 @@
         .btn-whatsapp-lista{background:#25d366;color:white;border:none;padding:4px 10px;border-radius:20px;font-weight:bold;font-size:9px;cursor:pointer}
         .btn-pdf-cliente{background:#2563eb;color:white;border:none;padding:4px 10px;border-radius:20px;font-weight:bold;font-size:9px;cursor:pointer}
         .btn-promociones-lista{background:#e11d48;color:white;border:none;padding:4px 10px;border-radius:20px;font-weight:bold;font-size:9px;cursor:pointer}
+        .btn-eliminar-pedido{background:#ef4444;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer}
         .lista-precios-container{background:white;border-radius:12px;padding:12px;border:1px solid #e2e8f0;margin-bottom:12px}
         .lista-precios-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px}
         .lista-precios-header h3{color:#002b5c;font-size:14px}
@@ -197,12 +198,18 @@
         .modal-cotizacion-header h2{color:#002b5c;font-size:18px;}
         .modal-cotizacion-header .sub{font-size:11px;color:#64748b;}
 
+        /* TICKET 80mm - CON ESPACIO SUFICIENTE PARA PRECIOS */
         .ticket-80{font-family:'Courier New',monospace;width:80mm;margin:0 auto;padding:5px;font-size:11px;background:white;}
         .ticket-80 .header{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;}
         .ticket-80 .header img{max-width:120px;}
-        .ticket-80 .producto{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px dotted #ccc;}
+        .ticket-80 .producto{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted #ccc;font-size:11px;}
+        .ticket-80 .producto .producto-nombre{flex:1;padding-right:6px;word-break:break-word;}
+        .ticket-80 .producto .producto-precio{white-space:nowrap;font-weight:bold;min-width:65px;text-align:right;}
         .ticket-80 .total{font-size:14px;font-weight:bold;text-align:right;border-top:2px solid #000;padding-top:5px;margin-top:5px;}
+        .ticket-80 .total .total-label{float:left;}
         .ticket-80 .footer{text-align:center;font-size:9px;margin-top:8px;border-top:1px dashed #000;padding-top:5px;}
+        .ticket-80 .cliente-info{font-size:10px;margin:5px 0;}
+        .ticket-80 .cliente-info div{font-size:9px;color:#666;}
 
         /* ESTILOS PARA EL MODAL DE TICKET */
         .modal-ticket {
@@ -253,7 +260,11 @@
         }
         .modal-ticket-content .ticket-wrapper .ticket-80 .producto {
             font-size:13px;
-            padding:3px 0;
+            padding:4px 0;
+        }
+        .modal-ticket-content .ticket-wrapper .ticket-80 .producto .producto-precio {
+            min-width:75px;
+            font-size:13px;
         }
         .modal-ticket-content .ticket-wrapper .ticket-80 .total {
             font-size:16px;
@@ -820,7 +831,7 @@ function abrirModalStock(id) {
 }
 
 // ============================================================
-// MODAL TICKET
+// MODAL TICKET - CON PRECIOS COMPLETOS
 // ============================================================
 function abrirModalTicket(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -839,7 +850,7 @@ function abrirModalTicket(id) {
     content.style.display = 'none';
     wrapper.innerHTML = '';
     
-    // Generar el ticket HTML
+    // Generar el ticket HTML con mejor formato de precios
     const total = parseFloat(c.total || 0).toFixed(2);
     const folio = id.slice(-6).toUpperCase();
     const tipo = c.tipo || 'PEDIDO';
@@ -853,7 +864,7 @@ function abrirModalTicket(id) {
                 <div style="font-size:10px;">GAETO-${folio}</div>
                 <div style="font-size:9px;color:#666;">${c.fecha || 'S/F'} | ${c.hora || ''}</div>
             </div>
-            <div style="margin:5px 0;font-size:10px;">
+            <div class="cliente-info" style="margin:5px 0;font-size:10px;">
                 <div><strong>👤 ${c.cliente?.nombre || 'Cliente'}</strong></div>
                 <div style="font-size:9px;color:#666;">📱 ${c.cliente?.telefono || 'Sin teléfono'}</div>
                 <div style="font-size:9px;color:#666;">📍 ${c.cliente?.direccion || 'Sin dirección'}</div>
@@ -862,13 +873,21 @@ function abrirModalTicket(id) {
             <div style="border-top:1px dashed #000;margin:4px 0;"></div>
     `;
     
+    // Productos con mejor formato - nombre a la izquierda, precio a la derecha con suficiente espacio
     (c.productos || []).forEach(p => {
-        html += `<div class="producto"><span>${p.cantidad}x ${p.nombre}</span><span>$${parseFloat(p.subtotal||0).toFixed(2)}</span></div>`;
+        const precioFormateado = parseFloat(p.subtotal || 0).toFixed(2);
+        html += `<div class="producto">
+            <span class="producto-nombre">${p.cantidad}x ${p.nombre}</span>
+            <span class="producto-precio">$${precioFormateado}</span>
+        </div>`;
     });
     
     html += `
-            <div class="total">TOTAL: $${total}</div>
-            <div style="text-align:center;font-size:10px;margin:4px 0;">
+            <div class="total">
+                <span class="total-label">TOTAL:</span>
+                $${total}
+            </div>
+            <div style="text-align:center;font-size:10px;margin:4px 0;clear:both;">
                 Estado: <strong>${estado}</strong>
                 ${tipo === 'COTIZACION' ? ' | 📄 Cotización' : ''}
             </div>
@@ -914,9 +933,14 @@ function imprimirTicketDesdeModal() {
                 .ticket-80 { width:80mm; margin:0 auto; font-family:'Courier New',monospace; font-size:11px; background:white; }
                 .ticket-80 .header{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;}
                 .ticket-80 .header img{max-width:120px;}
-                .ticket-80 .producto{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px dotted #ccc;}
+                .ticket-80 .producto{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted #ccc;font-size:11px;}
+                .ticket-80 .producto .producto-nombre{flex:1;padding-right:6px;word-break:break-word;}
+                .ticket-80 .producto .producto-precio{white-space:nowrap;font-weight:bold;min-width:65px;text-align:right;}
                 .ticket-80 .total{font-size:14px;font-weight:bold;text-align:right;border-top:2px solid #000;padding-top:5px;margin-top:5px;}
+                .ticket-80 .total .total-label{float:left;}
                 .ticket-80 .footer{text-align:center;font-size:9px;margin-top:8px;border-top:1px dashed #000;padding-top:5px;}
+                .ticket-80 .cliente-info{font-size:10px;margin:5px 0;}
+                .ticket-80 .cliente-info div{font-size:9px;color:#666;}
                 @media print { body { padding:0; } }
                 .btn-print { display:block; text-align:center; margin-top:15px; }
                 .btn-print button { padding:10px 25px; border-radius:30px; border:none; background:#f59e0b; color:white; font-weight:bold; font-size:14px; cursor:pointer; }
@@ -986,7 +1010,6 @@ function descargarTicketImagen() {
     ticket.style.borderRadius = '8px';
     ticket.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
     
-    // Esperar un momento para que la imagen se cargue
     setTimeout(() => {
         html2canvas(ticket, {
             scale: 3,
@@ -1000,25 +1023,19 @@ function descargarTicketImagen() {
                 const imgs = doc.querySelectorAll('img');
                 imgs.forEach(img => {
                     img.crossOrigin = 'anonymous';
-                    // Asegurar que la imagen se cargue
                     img.setAttribute('crossorigin', 'anonymous');
                 });
             }
         }).then(canvas => {
-            // Restaurar estilo original
             ticket.style.cssText = estiloOriginal;
-            
-            // Crear enlace de descarga
             const link = document.createElement('a');
             link.download = `ticket-GAETO-${folio}.png`;
             link.href = canvas.toDataURL('image/png');
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
             mostrarNotificacion(`✅ Ticket GAETO-${folio} guardado como imagen`);
         }).catch(err => {
-            // Restaurar estilo original en caso de error
             ticket.style.cssText = estiloOriginal;
             mostrarNotificacion('❌ Error al generar imagen: ' + err.message);
             console.error(err);
@@ -1036,10 +1053,7 @@ function compartirTicketImagenWhatsApp() {
     const folio = ticketActualId ? ticketActualId.slice(-6).toUpperCase() : 'pedido';
     mostrarNotificacion('⏳ Preparando imagen para WhatsApp...');
     
-    // Guardar estilo original
     const estiloOriginal = ticket.style.cssText;
-    
-    // Forzar tamaño para captura
     ticket.style.width = '80mm';
     ticket.style.padding = '8px 10px';
     ticket.style.fontSize = '13px';
@@ -1064,13 +1078,9 @@ function compartirTicketImagenWhatsApp() {
                 });
             }
         }).then(canvas => {
-            // Restaurar estilo original
             ticket.style.cssText = estiloOriginal;
-            
-            // Convertir canvas a data URL
             const dataUrl = canvas.toDataURL('image/png');
             
-            // Crear un enlace de descarga automática
             const link = document.createElement('a');
             link.download = `ticket-GAETO-${folio}.png`;
             link.href = dataUrl;
@@ -1078,10 +1088,8 @@ function compartirTicketImagenWhatsApp() {
             link.click();
             document.body.removeChild(link);
             
-            // Crear mensaje para WhatsApp
             const mensaje = `🧾 *TICKET DE PEDIDO - GAETO COMERCIOS*\n\n📌 *Folio:* GAETO-${folio}\n📅 *Fecha:* ${ticketActualData?.fecha || 'S/F'}\n👤 *Cliente:* ${ticketActualData?.cliente?.nombre || 'Cliente'}\n📱 *Teléfono:* ${ticketActualData?.cliente?.telefono || 'Sin teléfono'}\n\n✅ Adjunto la imagen del ticket.`;
             
-            // Esperar un momento para que se descargue la imagen y luego abrir WhatsApp
             setTimeout(() => {
                 window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
                 mostrarNotificacion('✅ Imagen descargada. Envía el archivo por WhatsApp.');
@@ -1249,7 +1257,7 @@ function desactivarModoAdmin() {
 }
 
 // ============================================================
-// GENERAR PDF DE COTIZACIÓN (SOLO PARA PEDIDOS CON TIPO COTIZACION)
+// GENERAR PDF DE COTIZACIÓN
 // ============================================================
 function generarPDFCotizacion(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -1392,7 +1400,7 @@ function generarHTMLCotizacion(data) {
 }
 
 // ============================================================
-// RENDERIZAR PEDIDOS
+// RENDERIZAR PEDIDOS - CON CANCELAR Y ELIMINAR
 // ============================================================
 function renderizarPedidos() {
     const tbody = document.getElementById('pedidosTabla');
@@ -1415,7 +1423,9 @@ function renderizarPedidos() {
         const folio = c.id ? c.id.slice(-6).toUpperCase() : 'N/A';
         const productosLista = (c.productos || []).map(p => `${p.cantidad}x ${p.nombre}`).join(', ');
         const tipoIcon = tipo === 'COTIZACION' ? '📄' : '📦';
-        return `<tr>
+        const estaCancelado = estado === 'CANCELADO';
+        const estaEntregado = estado === 'ENTREGADO';
+        return `<tr style="${estaCancelado ? 'opacity:0.5;background:#fef2f2;' : ''}">
             <td><strong>${tipoIcon} GAETO-${folio}</strong></td>
             <td>${c.fecha || 'S/F'}</td>
             <td>${c.cliente?.nombre || 'Anónimo'}</td>
@@ -1424,11 +1434,15 @@ function renderizarPedidos() {
             <td>$${parseFloat(c.total||0).toFixed(2)}</td>
             <td><span style="background:${estadoColors[estado] || '#999'};color:white;padding:2px 8px;border-radius:10px;font-size:8px;">${estado}</span></td>
             <td style="display:flex;gap:3px;flex-wrap:wrap;">
-                ${estado === 'COTIZACION' ? `<button class="btn-accion btn-confirmar" onclick="cambiarEstadoCotizacion('${c.id}','CONFIRMADO')">✅ CONFIRMAR</button>` : ''}
-                ${estado === 'CONFIRMADO' ? `<button class="btn-accion btn-surtido" onclick="cambiarEstado('${c.id}','SURTIDO')">📦 SURTIR</button>` : ''}
-                ${estado === 'SURTIDO' ? `<button class="btn-accion btn-en-ruta" onclick="cambiarEstado('${c.id}','EN_RUTA')">🚚 EN RUTA</button>` : ''}
-                ${estado === 'EN_RUTA' ? `<button class="btn-accion btn-entregar" onclick="cambiarEstado('${c.id}','ENTREGADO')">📍 ENTREGAR</button>` : ''}
-                ${estado !== 'CANCELADO' && estado !== 'ENTREGADO' && estado !== 'COTIZACION' ? `<button class="btn-accion btn-cancelar" onclick="cambiarEstado('${c.id}','CANCELADO')">❌</button>` : ''}
+                ${!estaCancelado && !estaEntregado ? `
+                    ${estado === 'COTIZACION' ? `<button class="btn-accion btn-confirmar" onclick="cambiarEstadoCotizacion('${c.id}','CONFIRMADO')">✅ CONFIRMAR</button>` : ''}
+                    ${estado === 'CONFIRMADO' ? `<button class="btn-accion btn-surtido" onclick="cambiarEstado('${c.id}','SURTIDO')">📦 SURTIR</button>` : ''}
+                    ${estado === 'SURTIDO' ? `<button class="btn-accion btn-en-ruta" onclick="cambiarEstado('${c.id}','EN_RUTA')">🚚 EN RUTA</button>` : ''}
+                    ${estado === 'EN_RUTA' ? `<button class="btn-accion btn-entregar" onclick="cambiarEstado('${c.id}','ENTREGADO')">📍 ENTREGAR</button>` : ''}
+                    ${estado !== 'CANCELADO' && estado !== 'ENTREGADO' && estado !== 'COTIZACION' ? `<button class="btn-accion btn-cancelar" onclick="cambiarEstado('${c.id}','CANCELADO')">❌ CANCELAR</button>` : ''}
+                ` : ''}
+                ${!estaCancelado ? `<button class="btn-accion btn-cancelar" onclick="cambiarEstado('${c.id}','CANCELADO')" style="background:#ef4444;color:white;">❌ CANCELAR</button>` : ''}
+                <button class="btn-eliminar-pedido" onclick="eliminarPedido('${c.id}')">🗑️ ELIMINAR</button>
                 ${tipo === 'COTIZACION' ? `<button class="btn-pdf-cotizacion" onclick="generarPDFCotizacion('${c.id}')">📄 PDF</button>` : `<button class="btn-ticket" onclick="abrirModalTicket('${c.id}')">🧾 TICKET</button>`}
                 <button class="btn-pdf" onclick="generarPDFPedido('${c.id}')">📄</button>
             </td>
@@ -1451,6 +1465,16 @@ function cambiarEstadoCotizacion(id, estado) {
         .catch(err => mostrarNotificacion('❌ Error: ' + err.message));
 }
 
+function eliminarPedido(id) {
+    if (!confirm('⚠️ ¿Estás seguro de eliminar este pedido? Esta acción no se puede deshacer.')) return;
+    database.ref('cotizaciones/' + id).remove()
+        .then(() => {
+            mostrarNotificacion('🗑️ Pedido eliminado correctamente');
+            if (modoAdmin) actualizarPanelAdmin();
+        })
+        .catch(err => mostrarNotificacion('❌ Error: ' + err.message));
+}
+
 function generarPDFPedido(id) {
     const c = cotizaciones.find(p => p.id === id);
     if (!c) return;
@@ -1465,8 +1489,11 @@ function generarPDFPedido(id) {
             body{font-family:'Courier New',monospace;width:80mm;margin:0 auto;padding:5px;font-size:11px;}
             .header{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;}
             .header img{max-width:120px;}
-            .producto{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px dotted #ccc;}
+            .producto{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted #ccc;font-size:11px;}
+            .producto .producto-nombre{flex:1;padding-right:6px;word-break:break-word;}
+            .producto .producto-precio{white-space:nowrap;font-weight:bold;min-width:65px;text-align:right;}
             .total{font-size:14px;font-weight:bold;text-align:right;border-top:2px solid #000;padding-top:5px;margin-top:5px;}
+            .total .total-label{float:left;}
             .footer{text-align:center;font-size:9px;margin-top:8px;border-top:1px dashed #000;padding-top:5px;}
             .btn{display:flex;gap:10px;justify-content:center;margin-top:10px;}
             .btn button{padding:8px 20px;border-radius:20px;border:none;cursor:pointer;font-weight:bold;}
@@ -1490,11 +1517,11 @@ function generarPDFPedido(id) {
             <div style="border-top:1px dashed #000;margin:4px 0;"></div>
     `;
     (c.productos || []).forEach(p => {
-        html += `<div class="producto"><span>${p.cantidad}x ${p.nombre}</span><span>$${parseFloat(p.subtotal||0).toFixed(2)}</span></div>`;
+        html += `<div class="producto"><span class="producto-nombre">${p.cantidad}x ${p.nombre}</span><span class="producto-precio">$${parseFloat(p.subtotal||0).toFixed(2)}</span></div>`;
     });
     html += `
-            <div class="total">TOTAL: $${total}</div>
-            <div style="text-align:center;font-size:10px;margin:4px 0;">Estado: ${c.estado || 'PENDIENTE'}</div>
+            <div class="total"><span class="total-label">TOTAL:</span> $${total}</div>
+            <div style="text-align:center;font-size:10px;margin:4px 0;clear:both;">Estado: ${c.estado || 'PENDIENTE'}</div>
             <div class="footer">📞 228 287 7441<br>📍 Jiménez 408, Col. Miguel Alemán</div>
             <div class="btn">
                 <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir</button>
