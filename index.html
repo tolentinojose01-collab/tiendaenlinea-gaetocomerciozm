@@ -985,7 +985,7 @@ function generarHTMLCotizacion(data) {
 }
 
 // ============================================================
-// GENERAR TICKET 80mm - PARA PEDIDOS
+// GENERAR TICKET 80mm - PARA PEDIDOS (CON VISTA PREVIA MÁS GRANDE EN CELULAR)
 // ============================================================
 function generarTicket80(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -1032,7 +1032,7 @@ function generarTicket80(id) {
         </div>
     `;
     
-    const ventana = window.open('', '_blank', 'width=380,height=600');
+    const ventana = window.open('', '_blank', 'width=420,height=650');
     if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
     
     ventana.document.write(`
@@ -1040,20 +1040,168 @@ function generarTicket80(id) {
         <html>
         <head>
             <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
             <title>Ticket - GAETO COMERCIOS</title>
             <style>
                 ${document.querySelector('style').innerHTML}
-                body { background: white; padding: 10px; margin: 0; display: flex; justify-content: center; }
-                .ticket-80 { width: 80mm; margin: 0; }
-                .no-print { display: none !important; }
-                @media print { body { padding: 0; } }
+                /* ESTILOS PARA VISTA PREVIA EN CELULAR - MÁS GRANDE */
+                body { 
+                    background: #f0f2f5; 
+                    padding: 0; 
+                    margin: 0; 
+                    display: flex; 
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: flex-start;
+                    min-height: 100vh;
+                }
+                .ticket-80 { 
+                    width: 80mm; 
+                    margin: 15px auto;
+                    padding: 12px 10px;
+                    font-size: 15px;
+                    background: white;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                    border-radius: 12px;
+                }
+                /* Ajustes para vista previa más grande */
+                .ticket-80 .header img {
+                    max-width: 150px !important;
+                    height: auto;
+                }
+                .ticket-80 .header h3 {
+                    font-size: 22px !important;
+                    margin: 8px 0 !important;
+                }
+                .ticket-80 .producto {
+                    font-size: 16px !important;
+                    padding: 6px 0 !important;
+                }
+                .ticket-80 .total {
+                    font-size: 22px !important;
+                    padding-top: 8px !important;
+                    margin-top: 8px !important;
+                }
+                .ticket-80 .footer {
+                    font-size: 14px !important;
+                    padding-top: 8px !important;
+                    margin-top: 10px !important;
+                }
+                .ticket-80 .header div,
+                .ticket-80 .header .folio {
+                    font-size: 15px !important;
+                }
+                .ticket-80 .cliente-info {
+                    font-size: 15px !important;
+                }
+                .ticket-80 .cliente-info div {
+                    font-size: 14px !important;
+                }
+                .ticket-80 .producto span {
+                    font-size: 15px !important;
+                }
+                /* ESTILOS DE IMPRESIÓN - TAMAÑO ORIGINAL 80mm */
+                @media print {
+                    body { 
+                        padding: 0; 
+                        margin: 0; 
+                        background: white;
+                    }
+                    .ticket-80 {
+                        width: 80mm !important;
+                        padding: 5px !important;
+                        margin: 0 !important;
+                        box-shadow: none !important;
+                        border-radius: 0 !important;
+                        font-size: 11px !important;
+                    }
+                    .ticket-80 .header img {
+                        max-width: 120px !important;
+                    }
+                    .ticket-80 .header h3 {
+                        font-size: 14px !important;
+                        margin: 5px 0 !important;
+                    }
+                    .ticket-80 .producto {
+                        font-size: 11px !important;
+                        padding: 2px 0 !important;
+                    }
+                    .ticket-80 .producto span {
+                        font-size: 11px !important;
+                    }
+                    .ticket-80 .total {
+                        font-size: 14px !important;
+                        padding-top: 5px !important;
+                        margin-top: 5px !important;
+                    }
+                    .ticket-80 .footer {
+                        font-size: 9px !important;
+                        padding-top: 5px !important;
+                        margin-top: 8px !important;
+                    }
+                    .ticket-80 .header div,
+                    .ticket-80 .header .folio {
+                        font-size: 10px !important;
+                    }
+                    .ticket-80 .cliente-info {
+                        font-size: 10px !important;
+                    }
+                    .ticket-80 .cliente-info div {
+                        font-size: 9px !important;
+                    }
+                    .acciones-ticket {
+                        display: none !important;
+                    }
+                    .no-print { display: none !important; }
+                }
+                /* Para pantallas muy pequeñas */
+                @media (max-width: 420px) {
+                    .ticket-80 {
+                        width: 92% !important;
+                        max-width: 80mm;
+                        padding: 10px 8px;
+                    }
+                }
+                .acciones-ticket {
+                    display: flex;
+                    gap: 12px;
+                    justify-content: center;
+                    padding: 15px 10px 25px 10px;
+                    width: 100%;
+                    max-width: 80mm;
+                    flex-wrap: wrap;
+                }
+                .acciones-ticket button {
+                    padding: 14px 28px;
+                    border-radius: 30px;
+                    border: none;
+                    font-weight: bold;
+                    cursor: pointer;
+                    font-size: 17px;
+                    flex: 1;
+                    min-width: 130px;
+                }
+                .btn-imprimir-ticket {
+                    background: #f59e0b;
+                    color: white;
+                }
+                .btn-cerrar-ticket {
+                    background: #e2e8f0;
+                    color: #334155;
+                }
+                .btn-imprimir-ticket:active {
+                    transform: scale(0.95);
+                }
+                .btn-cerrar-ticket:active {
+                    transform: scale(0.95);
+                }
             </style>
         </head>
         <body>
             ${html}
-            <div style="text-align:center;padding:10px 0;border-top:1px solid #ccc;width:80mm;">
-                <button onclick="window.print()" style="background:#f59e0b;color:white;border:none;padding:8px 20px;border-radius:20px;font-weight:bold;cursor:pointer;font-size:12px;">🖨️ IMPRIMIR TICKET</button>
-                <button onclick="window.close()" style="background:#e2e8f0;color:#334155;border:none;padding:8px 20px;border-radius:20px;font-weight:bold;cursor:pointer;font-size:12px;margin-left:5px;">❌ Cerrar</button>
+            <div class="acciones-ticket">
+                <button class="btn-imprimir-ticket" onclick="window.print()">🖨️ IMPRIMIR</button>
+                <button class="btn-cerrar-ticket" onclick="window.close()">❌ CERRAR</button>
             </div>
         </body>
         </html>
