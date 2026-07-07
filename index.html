@@ -263,20 +263,20 @@
         }
         .modal-ticket-buttons {
             display:flex;
-            gap:10px;
+            gap:8px;
             margin-top:12px;
             flex-wrap:wrap;
             justify-content:center;
         }
         .modal-ticket-buttons button {
-            padding:10px 20px;
+            padding:10px 16px;
             border:none;
             border-radius:30px;
             font-weight:bold;
-            font-size:13px;
+            font-size:12px;
             cursor:pointer;
             flex:1;
-            min-width:100px;
+            min-width:80px;
         }
         .btn-ticket-cerrar {
             background:#e2e8f0;
@@ -286,8 +286,12 @@
             background:#f59e0b;
             color:white;
         }
-        .btn-ticket-whatsapp {
+        .btn-ticket-whatsapp-texto {
             background:#25d366;
+            color:white;
+        }
+        .btn-ticket-whatsapp-imagen {
+            background:#075e54;
             color:white;
         }
         .btn-ticket-pdf {
@@ -356,8 +360,9 @@
             </div>
             <div class="modal-ticket-buttons">
                 <button class="btn-ticket-imprimir" onclick="imprimirTicketDesdeModal()">🖨️ Imprimir</button>
-                <button class="btn-ticket-whatsapp" onclick="compartirTicketWhatsApp()">📲 WhatsApp</button>
-                <button class="btn-ticket-imagen" onclick="descargarTicketImagen()">🖼️ Imagen</button>
+                <button class="btn-ticket-whatsapp-texto" onclick="compartirTicketWhatsApp()">📲 WhatsApp</button>
+                <button class="btn-ticket-whatsapp-imagen" onclick="compartirTicketImagenWhatsApp()">📷 WhatsApp</button>
+                <button class="btn-ticket-imagen" onclick="descargarTicketImagen()">🖼️ Guardar</button>
                 <button class="btn-ticket-cerrar" onclick="cerrarModalTicket()">❌ Cerrar</button>
             </div>
         </div>
@@ -951,11 +956,30 @@ function compartirTicketWhatsApp() {
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
+// ============================================================
+// FUNCIONES PARA GUARDAR IMAGEN Y COMPARTIR POR WHATSAPP
+// ============================================================
+
 function descargarTicketImagen() {
     const ticket = document.getElementById('ticketParaImprimir');
-    if (!ticket) { mostrarNotificacion('❌ No hay ticket'); return; }
+    if (!ticket) { 
+        mostrarNotificacion('❌ No hay ticket'); 
+        return; 
+    }
     
+    const folio = ticketActualId ? ticketActualId.slice(-6).toUpperCase() : 'pedido';
     mostrarNotificacion('⏳ Generando imagen...');
+    
+    // Guardar estilo original
+    const estiloOriginal = ticket.style.cssText;
+    
+    // Forzar tamaño para captura
+    ticket.style.width = '80mm';
+    ticket.style.padding = '8px 10px';
+    ticket.style.fontSize = '13px';
+    ticket.style.background = 'white';
+    ticket.style.borderRadius = '8px';
+    ticket.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
     
     html2canvas(ticket, {
         scale: 3,
@@ -963,25 +987,98 @@ function descargarTicketImagen() {
         backgroundColor: '#ffffff',
         logging: false,
         width: ticket.scrollWidth,
-        height: ticket.scrollHeight
+        height: ticket.scrollHeight,
+        onclone: function(doc) {
+            const imgs = doc.querySelectorAll('img');
+            imgs.forEach(img => {
+                img.crossOrigin = 'anonymous';
+            });
+        }
     }).then(canvas => {
+        // Restaurar estilo original
+        ticket.style.cssText = estiloOriginal;
+        
+        // Crear enlace de descarga
         const link = document.createElement('a');
-        link.download = `ticket-${ticketActualId?.slice(-6) || 'pedido'}.png`;
+        link.download = `ticket-GAETO-${folio}.png`;
         link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
         link.click();
-        mostrarNotificacion('✅ Imagen descargada');
+        document.body.removeChild(link);
+        
+        mostrarNotificacion(`✅ Ticket GAETO-${folio} guardado como imagen`);
     }).catch(err => {
+        // Restaurar estilo original en caso de error
+        ticket.style.cssText = estiloOriginal;
         mostrarNotificacion('❌ Error al generar imagen');
         console.error(err);
     });
 }
 
-// Cerrar modal con tecla ESC
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        cerrarModalTicket();
+function compartirTicketImagenWhatsApp() {
+    const ticket = document.getElementById('ticketParaImprimir');
+    if (!ticket) { 
+        mostrarNotificacion('❌ No hay ticket'); 
+        return; 
     }
-});
+    
+    const folio = ticketActualId ? ticketActualId.slice(-6).toUpperCase() : 'pedido';
+    mostrarNotificacion('⏳ Preparando imagen para WhatsApp...');
+    
+    // Guardar estilo original
+    const estiloOriginal = ticket.style.cssText;
+    
+    // Forzar tamaño para captura
+    ticket.style.width = '80mm';
+    ticket.style.padding = '8px 10px';
+    ticket.style.fontSize = '13px';
+    ticket.style.background = 'white';
+    ticket.style.borderRadius = '8px';
+    ticket.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+    
+    html2canvas(ticket, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: ticket.scrollWidth,
+        height: ticket.scrollHeight,
+        onclone: function(doc) {
+            const imgs = doc.querySelectorAll('img');
+            imgs.forEach(img => {
+                img.crossOrigin = 'anonymous';
+            });
+        }
+    }).then(canvas => {
+        // Restaurar estilo original
+        ticket.style.cssText = estiloOriginal;
+        
+        // Convertir canvas a data URL
+        const dataUrl = canvas.toDataURL('image/png');
+        
+        // Crear un enlace de descarga automática
+        const link = document.createElement('a');
+        link.download = `ticket-GAETO-${folio}.png`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Crear mensaje para WhatsApp
+        const mensaje = `🧾 *TICKET DE PEDIDO - GAETO COMERCIOS*\n\n📌 *Folio:* GAETO-${folio}\n📅 *Fecha:* ${ticketActualData?.fecha || 'S/F'}\n👤 *Cliente:* ${ticketActualData?.cliente?.nombre || 'Cliente'}\n📱 *Teléfono:* ${ticketActualData?.cliente?.telefono || 'Sin teléfono'}\n\n✅ Adjunto la imagen del ticket.`;
+        
+        // Esperar un momento para que se descargue la imagen y luego abrir WhatsApp
+        setTimeout(() => {
+            window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
+            mostrarNotificacion('✅ Imagen descargada. Envía el archivo por WhatsApp.');
+        }, 1000);
+        
+    }).catch(err => {
+        ticket.style.cssText = estiloOriginal;
+        mostrarNotificacion('❌ Error al generar imagen');
+        console.error(err);
+    });
+}
 
 // ============================================================
 // RENDERIZAR FILTROS
