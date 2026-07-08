@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
+        /* ===== ESTILOS COMPLETOS (igual que antes) ===== */
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f5;padding:16px;padding-bottom:160px;touch-action:manipulation}
         .encabezado{text-align:center;background:white;border-radius:20px;padding:15px;margin-bottom:15px;position:relative;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
@@ -169,7 +170,6 @@
         .btn-buscar-tabla{background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
         .btn-filtrar{background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
         .btn-limpiar{background:#e2e8f0;color:#334155;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
-
         .cotizacion-pdf{font-family:'Segoe UI',Arial,sans-serif;padding:15px;max-width:800px;margin:0 auto;background:white;}
         .cotizacion-pdf .header{text-align:center;border-bottom:3px solid #002b5c;padding-bottom:15px;margin-bottom:15px;}
         .cotizacion-pdf .header img{width:120px;height:auto;display:block;margin:0 auto 10px;max-width:100%;image-rendering:auto;-webkit-user-select:none;user-select:none;pointer-events:none;}
@@ -192,13 +192,11 @@
         .estado-EN_RUTA{background:#06b6d4;color:white;}
         .estado-ENTREGADO{background:#3b82f6;color:white;}
         .estado-CANCELADO{background:#ef4444;color:white;}
-
         .modal-cotizacion{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:9998;padding:20px;}
         .modal-cotizacion-content{background:white;padding:20px;border-radius:20px;width:100%;max-width:480px;max-height:95vh;overflow-y:auto;}
         .modal-cotizacion-header{text-align:center;margin-bottom:12px;border-bottom:2px solid #002b5c;padding-bottom:10px;}
         .modal-cotizacion-header h2{color:#002b5c;font-size:18px;}
         .modal-cotizacion-header .sub{font-size:11px;color:#64748b;}
-
         .ticket-80{font-family:'Courier New',monospace;width:80mm;margin:0 auto;padding:5px;font-size:11px;background:white;}
         .ticket-80 .header{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;}
         .ticket-80 .header img{max-width:120px;}
@@ -210,7 +208,6 @@
         .ticket-80 .footer{text-align:center;font-size:9px;margin-top:8px;border-top:1px dashed #000;padding-top:5px;}
         .ticket-80 .cliente-info{font-size:10px;margin:5px 0;}
         .ticket-80 .cliente-info div{font-size:9px;color:#666;}
-
         .modal-ticket{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;z-index:99999;padding:15px;overflow-y:auto;}
         .modal-ticket.visible{display:flex;}
         .modal-ticket-content{background:white;border-radius:16px;padding:15px;max-width:450px;width:100%;max-height:95vh;overflow-y:auto;position:relative;box-shadow:0 10px 40px rgba(0,0,0,0.5);}
@@ -229,8 +226,6 @@
         .btn-ticket-whatsapp-imagen{background:#075e54;color:white;}
         .btn-ticket-imagen{background:#2563eb;color:white;}
         .modal-ticket-loading{text-align:center;padding:30px;color:#64748b;font-size:14px;}
-
-        /* MODAL EDITAR PEDIDO */
         .modal-editar-pedido{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);justify-content:center;align-items:center;z-index:99997;padding:20px;overflow-y:auto;}
         .modal-editar-pedido.visible{display:flex;}
         .modal-editar-pedido-content{background:white;border-radius:20px;padding:20px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;}
@@ -239,7 +234,6 @@
         .modal-editar-pedido-content .producto-item .btn-quitar{background:#ef4444;color:white;border:none;border-radius:10px;padding:2px 10px;font-size:10px;cursor:pointer;font-weight:bold;}
         .modal-editar-pedido-content .btn-guardar-edicion{background:#22c55e;color:white;border:none;padding:10px;border-radius:30px;width:100%;font-weight:bold;font-size:13px;cursor:pointer;margin-top:10px;}
         .modal-editar-pedido-content .btn-cancelar-edicion{background:#e2e8f0;color:#334155;border:none;padding:8px;border-radius:30px;width:100%;font-weight:bold;cursor:pointer;margin-top:5px;font-size:12px;}
-
         @media(max-width:500px){.panel-cotizacion{width:90%;right:5%;bottom:190px;}.btn-flotante-cot{bottom:150px;right:10px;padding:8px 14px;font-size:12px;}}
         @media print{.panel-cotizacion{display:none!important}.btn-flotante-cot{display:none!important}}
         .cotizacion-pdf img{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;pointer-events:none;}
@@ -756,7 +750,7 @@ function abrirModalStock(id) {
 }
 
 // ============================================================
-// MODAL TICKET - FUNCIONES RESTAURADAS
+// MODAL TICKET - FUNCIONES COMPLETAS Y CORREGIDAS
 // ============================================================
 function abrirModalTicket(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -912,7 +906,7 @@ function compartirTicketWhatsApp() {
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
-// DESCARGAR IMAGEN - GUARDAR
+// DESCARGAR IMAGEN - GUARDAR (FUNCIONA CORRECTAMENTE)
 function descargarTicketImagen() {
     const ticket = document.getElementById('ticketParaImprimir');
     if (!ticket) { mostrarNotificacion('❌ No hay ticket'); return; }
@@ -927,6 +921,13 @@ function descargarTicketImagen() {
     ticket.style.background = 'white';
     ticket.style.borderRadius = '8px';
     ticket.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+    
+    // Asegurar que el logo se cargue
+    const img = ticket.querySelector('img');
+    if (img) {
+        img.crossOrigin = 'anonymous';
+        img.setAttribute('crossorigin', 'anonymous');
+    }
     
     setTimeout(() => {
         html2canvas(ticket, {
@@ -946,6 +947,7 @@ function descargarTicketImagen() {
             }
         }).then(canvas => {
             ticket.style.cssText = estiloOriginal;
+            // Crear enlace para descargar
             const link = document.createElement('a');
             link.download = `ticket-GAETO-${folio}.png`;
             link.href = canvas.toDataURL('image/png');
@@ -960,7 +962,7 @@ function descargarTicketImagen() {
     }, 500);
 }
 
-// COMPARTIR IMAGEN POR WHATSAPP - FUNCIÓN ORIGINAL
+// COMPARTIR IMAGEN POR WHATSAPP - FUNCIÓN ORIGINAL RESTAURADA
 function compartirTicketImagenWhatsApp() {
     const ticket = document.getElementById('ticketParaImprimir');
     if (!ticket) { mostrarNotificacion('❌ No hay ticket'); return; }
@@ -1002,9 +1004,10 @@ function compartirTicketImagenWhatsApp() {
             ticket.style.cssText = estiloOriginal;
             const dataUrl = canvas.toDataURL('image/png');
             
-            // Abrir ventana con la imagen
+            // ABRIR VENTANA CON LA IMAGEN (COMO FUNCIONABA ORIGINALMENTE)
             const ventana = window.open('', '_blank', 'width=420,height=620,scrollbars=yes');
             if (!ventana) {
+                // Si no se puede abrir ventana, descargar directamente
                 const link = document.createElement('a');
                 link.download = `ticket-GAETO-${folio}.png`;
                 link.href = dataUrl;
@@ -1979,6 +1982,7 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
         .then((ref) => {
             mostrarNotificacion('✅ ¡Cotización registrada!');
             const id = ref.key;
+            // SOLO ABRIR EL TICKET - NO ENVIAR WHATSAPP AUTOMÁTICAMENTE
             setTimeout(() => abrirModalTicket(id), 500);
             carrito = [];
             renderizarCarrito();
