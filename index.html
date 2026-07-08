@@ -756,7 +756,7 @@ function abrirModalStock(id) {
 }
 
 // ============================================================
-// MODAL TICKET
+// MODAL TICKET - FUNCIONES RESTAURADAS
 // ============================================================
 function abrirModalTicket(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -882,6 +882,7 @@ function imprimirTicketDesdeModal() {
     ventana.document.close();
 }
 
+// WHATSAPP SOLO TEXTO
 function compartirTicketWhatsApp() {
     if (!ticketActualData) { mostrarNotificacion('❌ No hay ticket'); return; }
     
@@ -911,6 +912,7 @@ function compartirTicketWhatsApp() {
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
+// DESCARGAR IMAGEN - GUARDAR
 function descargarTicketImagen() {
     const ticket = document.getElementById('ticketParaImprimir');
     if (!ticket) { mostrarNotificacion('❌ No hay ticket'); return; }
@@ -958,6 +960,7 @@ function descargarTicketImagen() {
     }, 500);
 }
 
+// COMPARTIR IMAGEN POR WHATSAPP - FUNCIÓN ORIGINAL
 function compartirTicketImagenWhatsApp() {
     const ticket = document.getElementById('ticketParaImprimir');
     if (!ticket) { mostrarNotificacion('❌ No hay ticket'); return; }
@@ -999,6 +1002,7 @@ function compartirTicketImagenWhatsApp() {
             ticket.style.cssText = estiloOriginal;
             const dataUrl = canvas.toDataURL('image/png');
             
+            // Abrir ventana con la imagen
             const ventana = window.open('', '_blank', 'width=420,height=620,scrollbars=yes');
             if (!ventana) {
                 const link = document.createElement('a');
@@ -1313,7 +1317,7 @@ function desactivarModoAdmin() {
 }
 
 // ============================================================
-// GENERAR PDF DE COTIZACIÓN CON LOGO
+// GENERAR PDF DE COTIZACIÓN
 // ============================================================
 function generarPDFCotizacion(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -1456,7 +1460,7 @@ function generarHTMLCotizacion(data) {
 }
 
 // ============================================================
-// RENDERIZAR PEDIDOS - CON FLUJO COMPLETO Y BOTÓN EDITAR
+// RENDERIZAR PEDIDOS
 // ============================================================
 function renderizarPedidos() {
     const tbody = document.getElementById('pedidosTabla');
@@ -1680,16 +1684,10 @@ function renderizarProductos() {
         return;
     }
     let filtrados = productos.filter(p => {
-        // Solo mostrar productos activos si no estamos en modo admin
         if (!modoAdmin && obtenerCampoActivo(p) === 'NO') return false;
-        
-        // Filtrar por categoría
         let cumpleCat = (categoriaActiva === "TODOS" || p.categoria === categoriaActiva);
-        
-        // Filtrar por búsqueda (nombre, código, descripción, categoría)
         let cad = `${p.nombre || ''} ${p.codigo || ''} ${p.descripcion || ''} ${p.categoria || ''}`.toLowerCase();
         let cumpleBusq = cad.includes(textoBusqueda.toLowerCase());
-        
         return cumpleCat && cumpleBusq;
     });
     filtrados = ordenarProductos(filtrados);
@@ -1765,7 +1763,7 @@ function renderizarProductos() {
 }
 
 // ============================================================
-// RESTO DE FUNCIONES (se mantienen igual que en tu código original)
+// FUNCIONES DE PRODUCTOS
 // ============================================================
 window.procesarFotoLocal = function(input, id) {
     const archivo = input.files[0];
@@ -1981,7 +1979,6 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
         .then((ref) => {
             mostrarNotificacion('✅ ¡Cotización registrada!');
             const id = ref.key;
-            // SOLO ABRIR EL TICKET - NO ENVIAR WHATSAPP AUTOMÁTICAMENTE
             setTimeout(() => abrirModalTicket(id), 500);
             carrito = [];
             renderizarCarrito();
@@ -1989,12 +1986,6 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
         })
         .catch(err => mostrarNotificacion("❌ Error: " + err.message));
 };
-
-// ============================================================
-// RESTO DEL CÓDIGO (CLIENTES, COMPRAS, LISTAS, GRÁFICAS, ETC.)
-// SE MANTIENEN IGUAL QUE EN TU VERSIÓN ORIGINAL
-// ============================================================
-// ... (continuación del código)
 
 document.getElementById('btnRegistroCancelar').onclick = function() {
     document.getElementById('modalRegistro').style.display = 'none';
@@ -2028,7 +2019,167 @@ function renderizarClientes() {
     }).join('');
 }
 
-// ... y el resto de funciones que ya tenías en tu código original
+function eliminarCliente(clienteId) {
+    if (!confirm('⚠️ ¿Eliminar este cliente?')) return;
+    database.ref('clientes/' + clienteId).remove()
+        .then(() => mostrarNotificacion('✅ Cliente eliminado'))
+        .catch(err => mostrarNotificacion('❌ Error: ' + err.message));
+}
+
+function verHistorialCliente(clienteId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (!cliente) return;
+    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
+    if (pedidos.length === 0) { mostrarNotificacion('ℹ️ Sin pedidos'); return; }
+    
+    let html = `<div class="reporte-cliente">
+        <h3 style="color:#002b5c;font-size:15px;">📋 HISTORIAL - ${cliente.nombre}</h3>
+        <p style="font-size:12px;color:#64748b;">📱 ${cliente.telefono} | 📦 ${pedidos.length} pedidos</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;">
+            <button class="btn-imprimir-reporte" onclick="imprimirReporteCliente('${clienteId}')">🖨️ Imprimir</button>
+            <button class="btn-whatsapp-reporte" onclick="compartirReporteCliente('${clienteId}')">📲 WhatsApp</button>
+        </div>
+        <hr style="margin:8px 0;border:0;border-top:1px solid #e2e8f0;">
+    `;
+    pedidos.forEach((p, i) => {
+        const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A';
+        const tipo = p.tipo || 'PEDIDO';
+        const estado = p.estado || 'PENDIENTE';
+        const estadoColor = {COTIZACION:'#8b5cf6',PENDIENTE:'#f59e0b',CONFIRMADO:'#22c55e',SURTIDO:'#8b5cf6',EN_RUTA:'#06b6d4',ENTREGADO:'#3b82f6',CANCELADO:'#ef4444'};
+        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:6px;">
+            <div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;">
+                <span>#${i+1} ${tipo === 'COTIZACION' ? '📄' : '📦'} GAETO-${folio}</span>
+                <span>${p.fecha || 'S/F'} <span style="background:${estadoColor[estado]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:8px;">${estado}</span></span>
+            </div>
+            <div style="font-size:10px;color:#475569;margin:3px 0;">${(p.productos || []).map(prod => `${prod.cantidad}x ${prod.nombre}`).join(', ')}</div>
+            <div style="text-align:right;font-weight:bold;color:#002b5c;font-size:13px;">$${parseFloat(p.total||0).toFixed(2)}</div>
+        </div>`;
+    });
+    html += `<button class="btn-cerrar-reporte" onclick="document.getElementById('reporteClienteContainer').style.display='none'">❌ Cerrar</button>
+    </div>`;
+    document.getElementById('reporteClienteContainer').innerHTML = html;
+    document.getElementById('reporteClienteContainer').style.display = 'block';
+    document.getElementById('reporteClienteContainer').scrollIntoView({ behavior: 'smooth' });
+}
+
+function imprimirReporteCliente(clienteId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (!cliente) return;
+    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
+    if (pedidos.length === 0) { mostrarNotificacion('ℹ️ Sin pedidos'); return; }
+    let html = `<div style="font-size:12px;"><h3 style="color:#002b5c;font-size:16px;margin-bottom:8px;">📋 HISTORIAL - ${cliente.nombre}</h3><p style="color:#64748b;margin-bottom:10px;">📱 ${cliente.telefono} | 📦 ${pedidos.length} pedidos</p><hr style="border:1px solid #e2e8f0;margin:10px 0;">`;
+    pedidos.forEach((p, i) => {
+        const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A';
+        const estado = p.estado || 'PENDIENTE';
+        const estadoColor = {COTIZACION:'#8b5cf6',PENDIENTE:'#f59e0b',CONFIRMADO:'#22c55e',SURTIDO:'#8b5cf6',EN_RUTA:'#06b6d4',ENTREGADO:'#3b82f6',CANCELADO:'#ef4444'};
+        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;"><span>#${i+1} GAETO-${folio}</span><span>${p.fecha || 'S/F'} <span style="background:${estadoColor[estado]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:8px;">${estado}</span></span></div><div style="font-size:10px;color:#475569;margin:4px 0;">${(p.productos || []).map(prod => `${prod.cantidad}x ${prod.nombre}`).join(', ')}</div><div style="text-align:right;font-weight:bold;color:#002b5c;font-size:14px;">$${parseFloat(p.total||0).toFixed(2)}</div></div>`;
+    });
+    html += '</div>';
+    const ventana = window.open('', '_blank', 'width=700,height=600,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(generarHTMLCompletoImpresion('📋 HISTORIAL DE PEDIDOS', html));
+    ventana.document.close();
+}
+
+function compartirReporteCliente(clienteId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (!cliente) return;
+    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
+    let mensaje = `📋 *HISTORIAL - ${cliente.nombre}*\n📱 ${cliente.telefono}\n📦 ${pedidos.length} pedidos\n────────────────────\n`;
+    pedidos.forEach((p, i) => {
+        mensaje += `#${i+1} ${p.fecha || 'S/F'} - $${parseFloat(p.total||0).toFixed(2)} - ${p.estado||'PENDIENTE'}\n`;
+    });
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+// ============================================================
+// RENDERIZAR COMPRAS
+// ============================================================
+function renderizarCompras() {
+    const tbody = document.getElementById('comprasTabla');
+    if (compras.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">No hay compras</td></tr>';
+        return;
+    }
+    tbody.innerHTML = compras.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||'')).map(c => {
+        const folio = c.id ? c.id.slice(-6).toUpperCase() : 'N/A';
+        return `<tr>
+            <td><strong>COMP-${folio}</strong></td>
+            <td>${c.fecha || 'S/F'}</td>
+            <td>${c.proveedor || 'Sin proveedor'}</td>
+            <td>$${parseFloat(c.total||0).toFixed(2)}</td>
+            <td style="display:flex;gap:3px;flex-wrap:wrap;">
+                <button onclick="verDetalleCompra('${c.id}')" style="background:#8b5cf6;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">📋</button>
+                <button onclick="imprimirDetalleCompra('${c.id}')" style="background:#2563eb;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">🖨️</button>
+                <button onclick="compartirDetalleCompra('${c.id}')" style="background:#25d366;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">📲</button>
+                <button onclick="eliminarCompra('${c.id}')" style="background:#ef4444;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">🗑️</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ============================================================
+// FUNCIONES DE IMPRESIÓN Y LISTAS
+// ============================================================
+function generarHTMLCompletoImpresion(titulo, contenido) {
+    const fecha = new Date().toLocaleDateString('es-MX');
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${titulo} - GAETO COMERCIOS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background: white; font-size: 11px; }
+        .header-preview { text-align: center; margin-bottom: 20px; padding: 10px; border-bottom: 2px solid #002b5c; }
+        .header-preview img { max-width: 150px; height: auto; display: block; margin: 0 auto 10px auto; }
+        .header-preview h2 { color: #002b5c; margin: 10px 0 5px 0; font-size: 18px; }
+        .header-preview p { color: #64748b; font-size: 12px; margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 10px; }
+        th { background: #002b5c !important; color: white !important; padding: 6px 8px; text-align: left; border: 1px solid #002b5c; font-size: 9px; }
+        td { padding: 4px 8px; border-bottom: 1px solid #e2e8f0; font-size: 9px; }
+        tr:nth-child(even) { background: #f8fafc; }
+        .pie { text-align: center; margin-top: 25px; padding-top: 15px; border-top: 2px solid #002b5c; font-size: 9px; color: #64748b; }
+        @page { size: A4 portrait; margin: 10mm 15mm; }
+        @media print { body { padding: 10px; } .no-print { display: none !important; } }
+    </style>
+</head>
+<body>
+    <div class="header-preview">
+        <img src="${LOGO_URL}" alt="GAETO COMERCIOS">
+        <h2>${titulo}</h2>
+        <p>📅 ${fecha}</p>
+        <hr style="border:1px solid #e2e8f0; margin:8px 0;">
+    </div>
+    ${contenido}
+    <div class="pie">
+        📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán, Veracruz, Ver.
+    </div>
+    <div class="no-print" style="text-align:center;margin-top:15px;padding:10px;border-top:1px solid #ccc;">
+        <button onclick="window.print()" style="background:#2563eb;color:white;border:none;padding:8px 20px;border-radius:30px;font-weight:bold;cursor:pointer;font-size:12px;">🖨️ Imprimir</button>
+        <button onclick="window.close()" style="background:#e2e8f0;color:#334155;border:none;padding:8px 20px;border-radius:30px;font-weight:bold;cursor:pointer;font-size:12px;margin-left:8px;">❌ Cerrar</button>
+    </div>
+</body>
+</html>
+    `;
+}
+
+// ============================================================
+// COMPARTIR CATÁLOGO
+// ============================================================
+document.getElementById('compartirBtn').onclick = function() {
+    const url = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
+    const mensaje = `📦 *GAETO COMERCIOS* 🛒\nCatálogo: ${url}\n📅 PEDIDOS: LUNES, MARTES, MIÉRCOLES\n🚚 ENTREGAS: VIERNES Y SÁBADOS\n\n🔗 Haz tu pedido desde el catálogo. ¡Regístrate y te contactamos!`;
+    if (navigator.share) {
+        navigator.share({ title: 'GAETO COMERCIOS', text: mensaje })
+            .then(() => mostrarNotificacion("✅ Compartido"))
+            .catch(() => {});
+    } else {
+        window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
+    }
+};
 
 // ============================================================
 // WINDOW ONLOAD
