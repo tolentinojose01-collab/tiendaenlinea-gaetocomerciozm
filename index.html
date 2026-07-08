@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
+        /* ===== ESTILOS COMPLETOS (igual que antes) ===== */
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f5;padding:16px;padding-bottom:160px;touch-action:manipulation}
         .encabezado{text-align:center;background:white;border-radius:20px;padding:15px;margin-bottom:15px;position:relative;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
@@ -662,11 +663,19 @@ function formatearFecha(f) {
 }
 
 // ============================================================
-// CATEGORÍAS - Normalización para evitar duplicados y problemas de mayúsculas
+// CATEGORÍAS - Normalización sin duplicados y sin acentos
 // ============================================================
 function normalizarCategoria(cat) {
     if (!cat) return '';
-    return cat.trim().replace(/\s+/g, ' ').trim().toLowerCase();
+    // Eliminar acentos, convertir a minúsculas y quitar espacios extra
+    return cat.trim().toLowerCase()
+        .replace(/[áäâà]/g, 'a')
+        .replace(/[éëêè]/g, 'e')
+        .replace(/[íïîì]/g, 'i')
+        .replace(/[óöôò]/g, 'o')
+        .replace(/[úüûù]/g, 'u')
+        .replace(/[ñ]/g, 'n')
+        .replace(/\s+/g, ' ');
 }
 
 function obtenerCategorias() { 
@@ -674,10 +683,9 @@ function obtenerCategorias() {
     productos.forEach(p => {
         if (p.categoria && p.categoria.trim() != "") {
             let catNormalizada = normalizarCategoria(p.categoria);
-            // Buscar si ya existe una categoría con el mismo nombre normalizado
             let existe = cats.some(c => normalizarCategoria(c) === catNormalizada);
             if (!existe) {
-                // Guardamos la primera versión con la capitalización original (más bonita)
+                // Guardamos la versión original con capitalización correcta
                 let original = p.categoria.trim().replace(/\s+/g, ' ').trim();
                 cats.push(original);
             }
@@ -741,7 +749,7 @@ database.ref('compras').on('value', (snapshot) => {
 });
 
 // ============================================================
-// MODAL STOCK
+// MODAL STOCK (sin cambios)
 // ============================================================
 document.getElementById('btnStockSumar').onclick = function() {
     modoStock = 'sumar';
@@ -802,7 +810,7 @@ function abrirModalStock(id) {
 }
 
 // ============================================================
-// MODAL TICKET - Corregido: encabezado según estado
+// MODAL TICKET (con encabezado dinámico)
 // ============================================================
 function abrirModalTicket(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -826,7 +834,6 @@ function abrirModalTicket(id) {
     const tipo = c.tipo || 'COTIZACION';
     const estado = c.estado || 'COTIZACION';
     
-    // Decidir título: si es COTIZACION y estado es COTIZACION o PENDIENTE, mostrar COTIZACIÓN, sino TICKET DE VENTA
     let tituloTicket = '';
     if (tipo === 'COTIZACION' && (estado === 'COTIZACION' || estado === 'PENDIENTE')) {
         tituloTicket = 'COTIZACIÓN';
@@ -1015,7 +1022,6 @@ function compartirTicketImagenWhatsApp() {
     const folio = ticketActualId ? ticketActualId.slice(-6).toUpperCase() : 'pedido';
     mostrarNotificacion('⏳ Preparando imagen para WhatsApp...');
     
-    // Generar la imagen y descargarla, luego abrir WhatsApp con mensaje
     const estiloOriginal = ticket.style.cssText;
     ticket.style.width = '80mm';
     ticket.style.padding = '8px 10px';
@@ -1044,7 +1050,6 @@ function compartirTicketImagenWhatsApp() {
             ticket.style.cssText = estiloOriginal;
             const dataUrl = canvas.toDataURL('image/png');
             
-            // Intentar compartir usando navigator.share (móviles)
             if (navigator.share) {
                 const blob = dataURLtoBlob(dataUrl);
                 const file = new File([blob], `ticket-GAETO-${folio}.png`, { type: 'image/png' });
@@ -1054,12 +1059,10 @@ function compartirTicketImagenWhatsApp() {
                 }).then(() => {
                     mostrarNotificacion('✅ Imagen compartida');
                 }).catch(err => {
-                    // Si falla, descargar y notificar
                     descargarDataURL(dataUrl, `ticket-GAETO-${folio}.png`);
                     mostrarNotificacion('📥 Imagen descargada. Envía el archivo por WhatsApp.');
                 });
             } else {
-                // Descargar y abrir WhatsApp con mensaje
                 descargarDataURL(dataUrl, `ticket-GAETO-${folio}.png`);
                 const mensaje = `🧾 *TICKET DE PEDIDO - GAETO COMERCIOS*\n\n📌 *Folio:* GAETO-${folio}\n📅 *Fecha:* ${ticketActualData?.fecha || 'S/F'}\n👤 *Cliente:* ${ticketActualData?.cliente?.nombre || 'Cliente'}\n\n✅ Adjunta la imagen descargada para enviar el ticket.`;
                 setTimeout(() => {
@@ -1074,7 +1077,6 @@ function compartirTicketImagenWhatsApp() {
     }, 500);
 }
 
-// Funciones auxiliares para convertir dataURL a Blob y descargar
 function dataURLtoBlob(dataURL) {
     const arr = dataURL.split(',');
     const mime = arr[0].match(/:(.*?);/)[1];
@@ -1097,7 +1099,7 @@ function descargarDataURL(dataURL, filename) {
 }
 
 // ============================================================
-// RENDERIZAR FILTROS - Con categorías normalizadas
+// RENDERIZAR FILTROS (con categorías normalizadas)
 // ============================================================
 function renderizarFiltros() {
     let categorias = obtenerCategorias();
@@ -1245,7 +1247,7 @@ function desactivarModoAdmin() {
 }
 
 // ============================================================
-// GENERAR PDF DE COTIZACIÓN CON LOGO
+// GENERAR PDF DE COTIZACIÓN
 // ============================================================
 function generarPDFCotizacion(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -1388,7 +1390,7 @@ function generarHTMLCotizacion(data) {
 }
 
 // ============================================================
-// RENDERIZAR PEDIDOS - Con edición y cambio automático de tipo al confirmar
+// RENDERIZAR PEDIDOS
 // ============================================================
 function renderizarPedidos() {
     const tbody = document.getElementById('pedidosTabla');
@@ -1460,7 +1462,6 @@ function renderizarPedidos() {
 
 function cambiarEstado(id, estado) {
     let updates = { estado: estado };
-    // Si se confirma o pasa a estado de venta, cambiar tipo a PEDIDO
     if (estado === 'CONFIRMADO' || estado === 'SURTIDO' || estado === 'EN_RUTA' || estado === 'ENTREGADO') {
         updates.tipo = 'PEDIDO';
     }
@@ -1554,7 +1555,7 @@ function generarPDFPedido(id) {
 }
 
 // ============================================================
-// RENDERIZAR PRODUCTOS - Con mejora de imagen y filtro por categoría normalizado
+// RENDERIZAR PRODUCTOS (con filtro de categoría normalizado)
 // ============================================================
 function renderizarProductos() {
     const contenedor = document.getElementById('contenedorProductos');
@@ -1564,9 +1565,8 @@ function renderizarProductos() {
     }
     let filtrados = productos.filter(p => {
         if (!modoAdmin && obtenerCampoActivo(p) === 'NO') return false;
-        // Filtro por categoría normalizado (insensible a mayúsculas y espacios)
-        let catNormalizada = categoriaActiva === "TODOS" ? "TODOS" : categoriaActiva.trim().toLowerCase();
-        let cumpleCat = catNormalizada === "TODOS" || (p.categoria && p.categoria.trim().toLowerCase() === catNormalizada);
+        let catNormalizada = categoriaActiva === "TODOS" ? "TODOS" : normalizarCategoria(categoriaActiva);
+        let cumpleCat = catNormalizada === "TODOS" || (p.categoria && normalizarCategoria(p.categoria) === catNormalizada);
         let cad = `${p.nombre} ${p.codigo} ${p.descripcion} ${p.categoria}`.toLowerCase();
         let cumpleBusq = cad.includes(textoBusqueda.toLowerCase());
         return cumpleCat && cumpleBusq;
@@ -1600,7 +1600,6 @@ function renderizarProductos() {
         const clickImagen = p.imagenUrl ? `onclick="abrirVisor('${p.imagenUrl}', '${p.nombre}')"` : '';
         const cursorImagen = p.imagenUrl ? 'cursor:pointer;' : '';
         
-        // Manejo de imagen con onerror y placeholder mejorado
         let imagenHTML = '';
         if (p.imagenUrl) {
             imagenHTML = `<img src="${p.imagenUrl}" alt="${p.nombre}" loading="lazy" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div class=\\'sin-imagen\\'>📷 Sin Imagen</div>';">`;
@@ -1760,11 +1759,17 @@ function renderizarCarrito() {
 }
 
 // ============================================================
-// BUSCAR CLIENTE PARA PEDIDO
+// BUSCAR CLIENTE (CORREGIDO)
 // ============================================================
 document.getElementById('btnBuscarCliente').onclick = function() {
     const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
-    if (telefono.length < 10) { mostrarNotificacion("⚠️ Teléfono válido (10 dígitos)"); return; }
+    if (telefono.length < 10) {
+        mostrarNotificacion("⚠️ Teléfono válido (10 dígitos)");
+        return;
+    }
+    document.getElementById('clienteEncontrado').style.display = 'none';
+    document.getElementById('clienteNoEncontrado').style.display = 'none';
+    
     database.ref('clientes').orderByChild('telefono').equalTo(telefono).once('value')
         .then((snapshot) => {
             const data = snapshot.val();
@@ -1783,37 +1788,55 @@ document.getElementById('btnBuscarCliente').onclick = function() {
                 document.getElementById('clienteEncontrado').style.display = 'none';
                 document.getElementById('clienteNoEncontrado').style.display = 'block';
                 clienteIdEncontrado = null;
-                mostrarNotificacion("ℹ️ Cliente no registrado.");
+                mostrarNotificacion("ℹ️ Cliente no registrado. Completa los datos.");
             }
         })
         .catch(err => mostrarNotificacion("❌ Error: " + err.message));
 };
 
+// ============================================================
+// ENVIAR PEDIDO - ABRE MODAL LIMPIO (CORREGIDO)
+// ============================================================
 document.getElementById('enviarPedidoBtn').onclick = function(e) {
     e.preventDefault();
-    if (carrito.length === 0) { mostrarNotificacion("⚠️ No hay productos"); return; }
-    document.getElementById('clienteEncontrado').style.display = 'none';
-    document.getElementById('clienteNoEncontrado').style.display = 'none';
+    if (carrito.length === 0) {
+        mostrarNotificacion("⚠️ No hay productos");
+        return;
+    }
+    // Limpiar todos los campos
     document.getElementById('regTelefono').value = '';
     document.getElementById('regNombre').value = '';
     document.getElementById('regNegocio').value = '';
     document.getElementById('regDireccion').value = '';
     document.getElementById('regReferencia').value = '';
+    document.getElementById('clienteEncontrado').style.display = 'none';
+    document.getElementById('clienteNoEncontrado').style.display = 'none';
     clienteIdEncontrado = null;
+    
     document.getElementById('modalRegistro').style.display = 'flex';
     setTimeout(() => document.getElementById('regTelefono').focus(), 300);
 };
 
 // ============================================================
-// REGISTRO CONFIRMAR - ENVÍA PEDIDO COMPLETO POR WHATSAPP
+// REGISTRO CONFIRMAR
 // ============================================================
 document.getElementById('btnRegistroConfirmar').onclick = function() {
     const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
     const nombre = document.getElementById('regNombre').value.trim();
     const direccion = document.getElementById('regDireccion').value.trim();
-    if (telefono.length < 10) { mostrarNotificacion("❌ Teléfono inválido"); return; }
-    if (!nombre) { mostrarNotificacion("❌ Ingresa tu nombre"); return; }
-    if (!direccion) { mostrarNotificacion("❌ Ingresa tu dirección"); return; }
+    if (telefono.length < 10) {
+        mostrarNotificacion("❌ Teléfono inválido");
+        return;
+    }
+    if (!nombre) {
+        mostrarNotificacion("❌ Ingresa tu nombre");
+        return;
+    }
+    if (!direccion) {
+        mostrarNotificacion("❌ Ingresa tu dirección");
+        return;
+    }
+    
     document.getElementById('modalRegistro').style.display = 'none';
     
     let total = 0;
@@ -2301,7 +2324,7 @@ function compartirInventarioWhatsApp() {
 }
 
 // ============================================================
-// LISTAS DE PRECIOS
+// LISTAS DE PRECIOS (con normalización)
 // ============================================================
 function mostrarTabPrecios(tab) {
     document.querySelectorAll('.tab-precios').forEach(t => t.classList.remove('visible'));
@@ -2328,11 +2351,11 @@ function renderizarListaVenta() {
     select.innerHTML = '<option value="TODOS">Todas</option>';
     categorias.forEach(c => { select.innerHTML += `<option value="${c}" ${c === catActual ? 'selected' : ''}>${c}</option>`; });
     const buscar = document.getElementById('filtroVentaBuscar').value.toLowerCase().trim();
-    const catFiltro = document.getElementById('filtroVentaCategoria').value;
+    const catFiltro = select.value;
     let filtrados = productos.filter(p => {
         if (obtenerCampoActivo(p) === 'NO') return false;
-        const cumpleCat = catFiltro === 'TODOS' || (p.categoria && p.categoria.trim().toLowerCase() === catFiltro.trim().toLowerCase());
-        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        let cumpleCat = catFiltro === 'TODOS' || (p.categoria && normalizarCategoria(p.categoria) === normalizarCategoria(catFiltro));
+        let texto = `${p.nombre} ${p.codigo}`.toLowerCase();
         return cumpleCat && texto.includes(buscar);
     });
     filtrados = ordenarProductos(filtrados);
@@ -2350,7 +2373,6 @@ function renderizarListaVenta() {
         <td><span class="stock-badge ${stockClass}">${getStockText(stock)}</span></td></tr>`;
     }).join('');
 }
-
 function filtrarListaVenta() { renderizarListaVenta(); }
 
 function renderizarListaCompraVenta() {
@@ -2360,10 +2382,10 @@ function renderizarListaCompraVenta() {
     select.innerHTML = '<option value="TODOS">Todas</option>';
     categorias.forEach(c => { select.innerHTML += `<option value="${c}" ${c === catActual ? 'selected' : ''}>${c}</option>`; });
     const buscar = document.getElementById('filtroCompraBuscar').value.toLowerCase().trim();
-    const catFiltro = document.getElementById('filtroCompraCategoria').value;
+    const catFiltro = select.value;
     let filtrados = productos.filter(p => {
-        const cumpleCat = catFiltro === 'TODOS' || (p.categoria && p.categoria.trim().toLowerCase() === catFiltro.trim().toLowerCase());
-        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        let cumpleCat = catFiltro === 'TODOS' || (p.categoria && normalizarCategoria(p.categoria) === normalizarCategoria(catFiltro));
+        let texto = `${p.nombre} ${p.codigo}`.toLowerCase();
         return cumpleCat && texto.includes(buscar);
     });
     filtrados = ordenarProductos(filtrados);
@@ -2387,7 +2409,6 @@ function renderizarListaCompraVenta() {
         </tr>`;
     }).join('');
 }
-
 function filtrarListaCompra() { renderizarListaCompraVenta(); }
 
 function renderizarListaCliente() {
@@ -2397,11 +2418,11 @@ function renderizarListaCliente() {
     select.innerHTML = '<option value="TODOS">Todas</option>';
     categorias.forEach(c => { select.innerHTML += `<option value="${c}" ${c === catActual ? 'selected' : ''}>${c}</option>`; });
     const buscar = document.getElementById('filtroClienteBuscar').value.toLowerCase().trim();
-    const catFiltro = document.getElementById('filtroClienteCategoria').value;
+    const catFiltro = select.value;
     let filtrados = productos.filter(p => {
         if (obtenerCampoActivo(p) === 'NO') return false;
-        const cumpleCat = catFiltro === 'TODOS' || (p.categoria && p.categoria.trim().toLowerCase() === catFiltro.trim().toLowerCase());
-        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        let cumpleCat = catFiltro === 'TODOS' || (p.categoria && normalizarCategoria(p.categoria) === normalizarCategoria(catFiltro));
+        let texto = `${p.nombre} ${p.codigo}`.toLowerCase();
         return cumpleCat && texto.includes(buscar);
     });
     filtrados = ordenarProductos(filtrados);
@@ -2416,7 +2437,6 @@ function renderizarListaCliente() {
         <td style="font-weight:bold;color:#002b5c;font-size:13px;">$${pFinal.toFixed(2)}</td></tr>`;
     }).join('');
 }
-
 function filtrarListaCliente() { renderizarListaCliente(); }
 
 function renderizarPromociones() {
@@ -2567,7 +2587,7 @@ function renderizarGraficas() {
         options: { responsive: true, plugins: { legend: { display: false } } }
     });
     const categorias = obtenerCategorias();
-    const cantidades = categorias.map(cat => productos.filter(p => p.categoria && p.categoria.trim().toLowerCase() === cat.trim().toLowerCase()).length);
+    const cantidades = categorias.map(cat => productos.filter(p => p.categoria && normalizarCategoria(p.categoria) === normalizarCategoria(cat)).length);
     if (chartCategorias) chartCategorias.destroy();
     chartCategorias = new Chart(document.getElementById('categoriasChart'), {
         type: 'doughnut',
@@ -2732,7 +2752,7 @@ document.getElementById('compartirBtn').onclick = function() {
 };
 
 // ============================================================
-// FUNCIONES DE EDICIÓN DE PEDIDOS
+// EDICIÓN DE PEDIDOS
 // ============================================================
 function editarPedido(id) {
     const pedido = cotizaciones.find(c => c.id === id);
@@ -2741,7 +2761,6 @@ function editarPedido(id) {
         return;
     }
     pedidoEditandoId = id;
-    // Copiar productos actuales
     productosEdicionTemp = (pedido.productos || []).map(p => ({
         id: p.id || null,
         codigo: p.codigo || 'S/C',
@@ -2751,24 +2770,17 @@ function editarPedido(id) {
         subtotal: parseFloat(p.subtotal) || 0
     }));
     
-    // Mostrar folio
     const folio = id.slice(-6).toUpperCase();
     document.getElementById('editarPedidoFolio').textContent = `Folio: GAETO-${folio}`;
-    
-    // Cargar estado actual
     document.getElementById('editarEstadoPedido').value = pedido.estado || 'PENDIENTE';
     
-    // Llenar selector de productos disponibles (para agregar nuevos)
     const select = document.getElementById('editarProductoSelect');
     select.innerHTML = '<option value="">Seleccionar producto...</option>';
     productos.forEach(p => {
         select.innerHTML += `<option value="${p.id}">[${p.codigo || 'S/C'}] ${p.nombre}</option>`;
     });
     
-    // Renderizar lista de productos
     renderizarProductosEdicion();
-    
-    // Mostrar modal
     document.getElementById('modalEditarPedido').style.display = 'flex';
 }
 
@@ -2841,7 +2853,6 @@ function agregarProductoEdicion() {
         return;
     }
     const precioUnitario = precioFinal(producto);
-    // Verificar si ya existe (por código o nombre)
     const existente = productosEdicionTemp.find(p => p.id === productoId);
     if (existente) {
         existente.cantidad += cantidad;
@@ -2858,7 +2869,6 @@ function agregarProductoEdicion() {
     }
     renderizarProductosEdicion();
     mostrarNotificacion(`✅ Agregado ${cantidad}x ${producto.nombre}`);
-    // Limpiar campos
     document.getElementById('editarCantidad').value = '1';
     select.value = '';
 }
@@ -2887,7 +2897,6 @@ function guardarEdicionPedido() {
         };
     });
     
-    // Si el nuevo estado es CONFIRMADO o posterior, actualizar tipo a PEDIDO
     let updates = {
         productos: productosFinal,
         total: total,
@@ -2914,11 +2923,9 @@ function cerrarEdicionPedido() {
     document.getElementById('modalEditarPedido').style.display = 'none';
     pedidoEditandoId = null;
     productosEdicionTemp = [];
-    // Restaurar selector
     document.getElementById('editarProductoSelect').innerHTML = '<option value="">Seleccionar producto...</option>';
 }
 
-// Cerrar modal de edición al hacer clic fuera
 document.getElementById('modalEditarPedido').addEventListener('click', function(e) {
     if (e.target === this) {
         cerrarEdicionPedido();
