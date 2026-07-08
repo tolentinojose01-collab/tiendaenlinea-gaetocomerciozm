@@ -36,7 +36,7 @@
         .codigo{font-size:9px;color:#888;padding:6px 10px 0;font-family:monospace}
         .imagen-area{width:100%;background:white;display:flex;justify-content:center;align-items:center;height:160px;overflow:hidden;position:relative;cursor:pointer}
         .imagen-area img{max-width:100%;max-height:100%;object-fit:contain}
-        .sin-imagen{color:#94a3b8;font-size:11px;text-align:center;padding:20px}
+        .sin-imagen{background:#f1f5f9;padding:20px;border-radius:12px;color:#94a3b8;font-size:14px;text-align:center;width:100%}
         .info{padding:8px 12px 12px}
         .titulo{font-size:13px;font-weight:bold;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
         .descripcion{color:#475569;font-size:11px;margin:3px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -229,6 +229,27 @@
         .btn-ticket-imagen{background:#2563eb;color:white;}
         .modal-ticket-loading{text-align:center;padding:30px;color:#64748b;font-size:14px;}
 
+        /* Estilos para el modal de edición de pedidos */
+        .modal-editar input[type="number"] { -moz-appearance: textfield; }
+        .modal-editar input[type="number"]::-webkit-outer-spin-button,
+        .modal-editar input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .editar-producto-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f8fafc;
+            padding: 6px 10px;
+            border-radius: 10px;
+            margin-bottom: 4px;
+            border: 1px solid #e2e8f0;
+            font-size: 12px;
+        }
+        .editar-producto-item .nombre { flex: 1; font-weight: 500; }
+        .editar-producto-item .cantidad { width: 50px; text-align: center; padding: 2px 4px; border-radius: 12px; border: 1px solid #ddd; font-size: 11px; }
+        .editar-producto-item .subtotal { font-weight: bold; color: #002b5c; min-width: 60px; text-align: right; }
+        .editar-producto-item .btn-eliminar-prod { background: #ef4444; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 14px; cursor: pointer; line-height: 1; }
+        .editar-producto-item .btn-eliminar-prod:hover { background: #dc2626; }
+
         @media(max-width:500px){.panel-cotizacion{width:90%;right:5%;bottom:190px;}.btn-flotante-cot{bottom:150px;right:10px;padding:8px 14px;font-size:12px;}}
         @media print{.panel-cotizacion{display:none!important}.btn-flotante-cot{display:none!important}}
         .cotizacion-pdf img{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;pointer-events:none;}
@@ -281,6 +302,45 @@
                 <button class="btn-ticket-imagen" onclick="descargarTicketImagen()">🖼️ Guardar</button>
                 <button class="btn-ticket-cerrar" onclick="cerrarModalTicket()">❌ Cerrar</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL EDITAR PEDIDO -->
+<div class="modal-editar" id="modalEditarPedido" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:9999; padding:20px;">
+    <div style="background:white; padding:20px; border-radius:20px; max-width:550px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+        <h3 style="color:#002b5c; font-size:18px; margin-bottom:5px;">✏️ Editar Pedido</h3>
+        <p style="font-size:12px; color:#64748b; margin-bottom:10px;" id="editarPedidoFolio">Folio: GAETO-XXXXXX</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+            <label style="font-size:11px; font-weight:bold; align-self:center;">Estado:</label>
+            <select id="editarEstadoPedido" style="padding:4px 12px; border-radius:20px; border:1px solid #ddd; font-size:11px;">
+                <option value="COTIZACION">📄 Cotización</option>
+                <option value="PENDIENTE">⏳ Pendiente</option>
+                <option value="CONFIRMADO">✅ Confirmado</option>
+                <option value="SURTIDO">📦 Surtido</option>
+                <option value="EN_RUTA">🚚 En Ruta</option>
+                <option value="ENTREGADO">📍 Entregado</option>
+                <option value="CANCELADO">❌ Cancelado</option>
+            </select>
+        </div>
+        <hr style="border:1px dashed #e2e8f0; margin:8px 0;">
+        <h4 style="color:#002b5c; font-size:14px;">🛒 Productos</h4>
+        <div id="editarListaProductos" style="margin:8px 0; max-height:300px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:12px; padding:6px;">
+            <div style="text-align:center; color:#94a3b8; padding:15px;">Cargando productos...</div>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; align-items:center;">
+            <select id="editarProductoSelect" style="flex:2; min-width:120px; padding:6px 12px; border-radius:20px; border:1px solid #ddd; font-size:11px;">
+                <option value="">Seleccionar producto...</option>
+            </select>
+            <input type="number" id="editarCantidad" placeholder="Cant" style="flex:1; min-width:60px; padding:6px 12px; border-radius:20px; border:1px solid #ddd; font-size:11px;" value="1" min="1">
+            <button onclick="agregarProductoEdicion()" style="background:#22c55e; color:white; border:none; padding:6px 16px; border-radius:30px; font-weight:bold; cursor:pointer; font-size:11px;">➕ Agregar</button>
+        </div>
+        <div style="text-align:right; font-size:16px; font-weight:bold; color:#002b5c; margin:10px 0; border-top:2px solid #002b5c; padding-top:8px;">
+            Total: <span id="editarTotalPedido">$0.00</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <button onclick="guardarEdicionPedido()" style="flex:1; background:#2563eb; color:white; border:none; padding:10px; border-radius:30px; font-weight:bold; cursor:pointer; font-size:13px;">💾 GUARDAR CAMBIOS</button>
+            <button onclick="cerrarEdicionPedido()" style="flex:1; background:#e2e8f0; color:#334155; border:none; padding:10px; border-radius:30px; font-weight:bold; cursor:pointer; font-size:13px;">❌ Cancelar</button>
         </div>
     </div>
 </div>
@@ -577,6 +637,10 @@ let chartVentasMes = null;
 let ticketActualId = null;
 let ticketActualData = null;
 
+// Variables para edición de pedidos
+let pedidoEditandoId = null;
+let productosEdicionTemp = [];
+
 function obtenerCampoActivo(p) { return p.activo !== undefined ? p.activo : 'SI'; }
 function ordenarProductos(lista) {
     return lista.sort((a, b) => {
@@ -598,16 +662,25 @@ function formatearFecha(f) {
 }
 
 // ============================================================
-// CATEGORÍAS
+// CATEGORÍAS - Normalización para evitar duplicados y problemas de mayúsculas
 // ============================================================
+function normalizarCategoria(cat) {
+    if (!cat) return '';
+    return cat.trim().replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
 function obtenerCategorias() { 
     let cats = [];
     productos.forEach(p => {
         if (p.categoria && p.categoria.trim() != "") {
-            let cat = p.categoria.trim().replace(/\s+/g, ' ').trim();
-            let catNormalizada = cat.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            let existe = cats.some(c => c.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === catNormalizada);
-            if (!existe) cats.push(cat);
+            let catNormalizada = normalizarCategoria(p.categoria);
+            // Buscar si ya existe una categoría con el mismo nombre normalizado
+            let existe = cats.some(c => normalizarCategoria(c) === catNormalizada);
+            if (!existe) {
+                // Guardamos la primera versión con la capitalización original (más bonita)
+                let original = p.categoria.trim().replace(/\s+/g, ' ').trim();
+                cats.push(original);
+            }
         }
     });
     cats.sort((a, b) => a.localeCompare(b));
@@ -729,7 +802,7 @@ function abrirModalStock(id) {
 }
 
 // ============================================================
-// MODAL TICKET
+// MODAL TICKET - Corregido: encabezado según estado
 // ============================================================
 function abrirModalTicket(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -750,14 +823,22 @@ function abrirModalTicket(id) {
     
     const total = parseFloat(c.total || 0).toFixed(2);
     const folio = id.slice(-6).toUpperCase();
-    const tipo = c.tipo || 'PEDIDO';
-    const estado = c.estado || 'PENDIENTE';
+    const tipo = c.tipo || 'COTIZACION';
+    const estado = c.estado || 'COTIZACION';
+    
+    // Decidir título: si es COTIZACION y estado es COTIZACION o PENDIENTE, mostrar COTIZACIÓN, sino TICKET DE VENTA
+    let tituloTicket = '';
+    if (tipo === 'COTIZACION' && (estado === 'COTIZACION' || estado === 'PENDIENTE')) {
+        tituloTicket = 'COTIZACIÓN';
+    } else {
+        tituloTicket = 'TICKET DE VENTA';
+    }
     
     let html = `
         <div class="ticket-80" id="ticketParaImprimir">
             <div class="header">
                 <img src="${LOGO_URL}" alt="GAETO COMERCIOS" style="max-width:120px;display:block;margin:0 auto;" crossorigin="anonymous">
-                <h3 style="margin:5px 0;">🧾 ${tipo === 'COTIZACION' ? 'COTIZACIÓN' : 'TICKET DE PEDIDO'}</h3>
+                <h3 style="margin:5px 0;">🧾 ${tituloTicket}</h3>
                 <div style="font-size:10px;">GAETO-${folio}</div>
                 <div style="font-size:9px;color:#666;">${c.fecha || 'S/F'} | ${c.hora || ''}</div>
             </div>
@@ -785,7 +866,7 @@ function abrirModalTicket(id) {
             </div>
             <div style="text-align:center;font-size:10px;margin:4px 0;clear:both;">
                 Estado: <strong>${estado}</strong>
-                ${tipo === 'COTIZACION' ? ' | 📄 Cotización' : ''}
+                ${tituloTicket === 'COTIZACIÓN' ? ' | 📄 Cotización' : ''}
             </div>
             <div class="footer">
                 📞 228 287 7441<br>
@@ -934,6 +1015,7 @@ function compartirTicketImagenWhatsApp() {
     const folio = ticketActualId ? ticketActualId.slice(-6).toUpperCase() : 'pedido';
     mostrarNotificacion('⏳ Preparando imagen para WhatsApp...');
     
+    // Generar la imagen y descargarla, luego abrir WhatsApp con mensaje
     const estiloOriginal = ticket.style.cssText;
     ticket.style.width = '80mm';
     ticket.style.padding = '8px 10px';
@@ -962,19 +1044,29 @@ function compartirTicketImagenWhatsApp() {
             ticket.style.cssText = estiloOriginal;
             const dataUrl = canvas.toDataURL('image/png');
             
-            const link = document.createElement('a');
-            link.download = `ticket-GAETO-${folio}.png`;
-            link.href = dataUrl;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            const mensaje = `🧾 *TICKET DE PEDIDO - GAETO COMERCIOS*\n\n📌 *Folio:* GAETO-${folio}\n📅 *Fecha:* ${ticketActualData?.fecha || 'S/F'}\n👤 *Cliente:* ${ticketActualData?.cliente?.nombre || 'Cliente'}\n📱 *Teléfono:* ${ticketActualData?.cliente?.telefono || 'Sin teléfono'}\n\n✅ Adjunto la imagen del ticket.`;
-            
-            setTimeout(() => {
-                window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
-                mostrarNotificacion('✅ Imagen descargada. Envía el archivo por WhatsApp.');
-            }, 1000);
+            // Intentar compartir usando navigator.share (móviles)
+            if (navigator.share) {
+                const blob = dataURLtoBlob(dataUrl);
+                const file = new File([blob], `ticket-GAETO-${folio}.png`, { type: 'image/png' });
+                navigator.share({
+                    title: 'Ticket GAETO',
+                    files: [file]
+                }).then(() => {
+                    mostrarNotificacion('✅ Imagen compartida');
+                }).catch(err => {
+                    // Si falla, descargar y notificar
+                    descargarDataURL(dataUrl, `ticket-GAETO-${folio}.png`);
+                    mostrarNotificacion('📥 Imagen descargada. Envía el archivo por WhatsApp.');
+                });
+            } else {
+                // Descargar y abrir WhatsApp con mensaje
+                descargarDataURL(dataUrl, `ticket-GAETO-${folio}.png`);
+                const mensaje = `🧾 *TICKET DE PEDIDO - GAETO COMERCIOS*\n\n📌 *Folio:* GAETO-${folio}\n📅 *Fecha:* ${ticketActualData?.fecha || 'S/F'}\n👤 *Cliente:* ${ticketActualData?.cliente?.nombre || 'Cliente'}\n\n✅ Adjunta la imagen descargada para enviar el ticket.`;
+                setTimeout(() => {
+                    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
+                    mostrarNotificacion('📥 Imagen descargada. Adjúntala en WhatsApp.');
+                }, 1000);
+            }
         }).catch(err => {
             ticket.style.cssText = estiloOriginal;
             mostrarNotificacion('❌ Error al generar imagen: ' + err.message);
@@ -982,8 +1074,30 @@ function compartirTicketImagenWhatsApp() {
     }, 500);
 }
 
+// Funciones auxiliares para convertir dataURL a Blob y descargar
+function dataURLtoBlob(dataURL) {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+}
+
+function descargarDataURL(dataURL, filename) {
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = dataURL;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 // ============================================================
-// RENDERIZAR FILTROS
+// RENDERIZAR FILTROS - Con categorías normalizadas
 // ============================================================
 function renderizarFiltros() {
     let categorias = obtenerCategorias();
@@ -1274,7 +1388,7 @@ function generarHTMLCotizacion(data) {
 }
 
 // ============================================================
-// RENDERIZAR PEDIDOS - CON FLUJO COMPLETO
+// RENDERIZAR PEDIDOS - Con edición y cambio automático de tipo al confirmar
 // ============================================================
 function renderizarPedidos() {
     const tbody = document.getElementById('pedidosTabla');
@@ -1284,7 +1398,7 @@ function renderizarPedidos() {
     }
     tbody.innerHTML = cotizaciones.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||'')).map(c => {
         const estado = c.estado || 'PENDIENTE';
-        const tipo = c.tipo || 'PEDIDO';
+        const tipo = c.tipo || 'COTIZACION';
         const estadoColors = {
             'COTIZACION': '#8b5cf6',
             'PENDIENTE': '#f59e0b',
@@ -1338,13 +1452,19 @@ function renderizarPedidos() {
                     ? `<button class="btn-pdf-cotizacion" onclick="generarPDFCotizacion('${c.id}')" style="background:#2563eb;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">📄 PDF</button>`
                     : `<button class="btn-pdf" onclick="generarPDFPedido('${c.id}')" style="background:#dc2626;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">📄</button>`
                 }
+                <button class="btn-editar-pedido" onclick="editarPedido('${c.id}')" style="background:#f59e0b;color:white;border:none;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">✏️ Editar</button>
             </td>
         </tr>`;
     }).join('');
 }
 
 function cambiarEstado(id, estado) {
-    database.ref('cotizaciones/' + id + '/estado').set(estado)
+    let updates = { estado: estado };
+    // Si se confirma o pasa a estado de venta, cambiar tipo a PEDIDO
+    if (estado === 'CONFIRMADO' || estado === 'SURTIDO' || estado === 'EN_RUTA' || estado === 'ENTREGADO') {
+        updates.tipo = 'PEDIDO';
+    }
+    database.ref('cotizaciones/' + id).update(updates)
         .then(() => {
             mostrarNotificacion(`✅ Pedido ${estado}`);
             if (modoAdmin) actualizarPanelAdmin();
@@ -1353,7 +1473,11 @@ function cambiarEstado(id, estado) {
 }
 
 function cambiarEstadoCotizacion(id, estado) {
-    database.ref('cotizaciones/' + id + '/estado').set(estado)
+    let updates = { estado: estado };
+    if (estado === 'CONFIRMADO' || estado === 'SURTIDO' || estado === 'EN_RUTA' || estado === 'ENTREGADO') {
+        updates.tipo = 'PEDIDO';
+    }
+    database.ref('cotizaciones/' + id).update(updates)
         .then(() => {
             mostrarNotificacion(`✅ Cotización ${estado}`);
             if (modoAdmin) actualizarPanelAdmin();
@@ -1430,7 +1554,7 @@ function generarPDFPedido(id) {
 }
 
 // ============================================================
-// RENDERIZAR PRODUCTOS
+// RENDERIZAR PRODUCTOS - Con mejora de imagen y filtro por categoría normalizado
 // ============================================================
 function renderizarProductos() {
     const contenedor = document.getElementById('contenedorProductos');
@@ -1440,7 +1564,9 @@ function renderizarProductos() {
     }
     let filtrados = productos.filter(p => {
         if (!modoAdmin && obtenerCampoActivo(p) === 'NO') return false;
-        let cumpleCat = (categoriaActiva === "TODOS" || p.categoria === categoriaActiva);
+        // Filtro por categoría normalizado (insensible a mayúsculas y espacios)
+        let catNormalizada = categoriaActiva === "TODOS" ? "TODOS" : categoriaActiva.trim().toLowerCase();
+        let cumpleCat = catNormalizada === "TODOS" || (p.categoria && p.categoria.trim().toLowerCase() === catNormalizada);
         let cad = `${p.nombre} ${p.codigo} ${p.descripcion} ${p.categoria}`.toLowerCase();
         let cumpleBusq = cad.includes(textoBusqueda.toLowerCase());
         return cumpleCat && cumpleBusq;
@@ -1474,12 +1600,20 @@ function renderizarProductos() {
         const clickImagen = p.imagenUrl ? `onclick="abrirVisor('${p.imagenUrl}', '${p.nombre}')"` : '';
         const cursorImagen = p.imagenUrl ? 'cursor:pointer;' : '';
         
+        // Manejo de imagen con onerror y placeholder mejorado
+        let imagenHTML = '';
+        if (p.imagenUrl) {
+            imagenHTML = `<img src="${p.imagenUrl}" alt="${p.nombre}" loading="lazy" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div class=\\'sin-imagen\\'>📷 Sin Imagen</div>';">`;
+        } else {
+            imagenHTML = `<div class="sin-imagen">📷 Sin Imagen</div>`;
+        }
+        
         return `<div class="producto" style="${estaOculto && modoAdmin ? 'opacity:0.6;' : ''}">
             ${esPromoValida ? `<div class="banner-promo-fuera">${p.textoPromo}${p.vigenciaPromo ? ` ⏰${formatearFecha(p.vigenciaPromo)}` : ''}</div>` : ''}
             ${etiquetaPromo}
             <div class="codigo">${p.codigo || 'S/C'}</div>
             <div class="imagen-area" ${clickImagen} style="${cursorImagen}">
-                ${p.imagenUrl ? `<img src="${p.imagenUrl}" alt="${p.nombre}" loading="lazy">` : '<div class="sin-imagen">📷 Sin Imagen</div>'}
+                ${imagenHTML}
             </div>
             <div class="info">
                 <div class="titulo">${p.nombre} ${descuentoTexto} ${ocultoBadge}</div>
@@ -2197,7 +2331,7 @@ function renderizarListaVenta() {
     const catFiltro = document.getElementById('filtroVentaCategoria').value;
     let filtrados = productos.filter(p => {
         if (obtenerCampoActivo(p) === 'NO') return false;
-        const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
+        const cumpleCat = catFiltro === 'TODOS' || (p.categoria && p.categoria.trim().toLowerCase() === catFiltro.trim().toLowerCase());
         const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
         return cumpleCat && texto.includes(buscar);
     });
@@ -2228,7 +2362,7 @@ function renderizarListaCompraVenta() {
     const buscar = document.getElementById('filtroCompraBuscar').value.toLowerCase().trim();
     const catFiltro = document.getElementById('filtroCompraCategoria').value;
     let filtrados = productos.filter(p => {
-        const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
+        const cumpleCat = catFiltro === 'TODOS' || (p.categoria && p.categoria.trim().toLowerCase() === catFiltro.trim().toLowerCase());
         const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
         return cumpleCat && texto.includes(buscar);
     });
@@ -2266,7 +2400,7 @@ function renderizarListaCliente() {
     const catFiltro = document.getElementById('filtroClienteCategoria').value;
     let filtrados = productos.filter(p => {
         if (obtenerCampoActivo(p) === 'NO') return false;
-        const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
+        const cumpleCat = catFiltro === 'TODOS' || (p.categoria && p.categoria.trim().toLowerCase() === catFiltro.trim().toLowerCase());
         const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
         return cumpleCat && texto.includes(buscar);
     });
@@ -2433,7 +2567,7 @@ function renderizarGraficas() {
         options: { responsive: true, plugins: { legend: { display: false } } }
     });
     const categorias = obtenerCategorias();
-    const cantidades = categorias.map(cat => productos.filter(p => p.categoria === cat).length);
+    const cantidades = categorias.map(cat => productos.filter(p => p.categoria && p.categoria.trim().toLowerCase() === cat.trim().toLowerCase()).length);
     if (chartCategorias) chartCategorias.destroy();
     chartCategorias = new Chart(document.getElementById('categoriasChart'), {
         type: 'doughnut',
@@ -2596,6 +2730,200 @@ document.getElementById('compartirBtn').onclick = function() {
         window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
     }
 };
+
+// ============================================================
+// FUNCIONES DE EDICIÓN DE PEDIDOS
+// ============================================================
+function editarPedido(id) {
+    const pedido = cotizaciones.find(c => c.id === id);
+    if (!pedido) {
+        mostrarNotificacion('❌ Pedido no encontrado');
+        return;
+    }
+    pedidoEditandoId = id;
+    // Copiar productos actuales
+    productosEdicionTemp = (pedido.productos || []).map(p => ({
+        id: p.id || null,
+        codigo: p.codigo || 'S/C',
+        nombre: p.nombre || 'Producto',
+        cantidad: parseInt(p.cantidad) || 1,
+        precioUnitario: parseFloat(p.precioUnitario) || 0,
+        subtotal: parseFloat(p.subtotal) || 0
+    }));
+    
+    // Mostrar folio
+    const folio = id.slice(-6).toUpperCase();
+    document.getElementById('editarPedidoFolio').textContent = `Folio: GAETO-${folio}`;
+    
+    // Cargar estado actual
+    document.getElementById('editarEstadoPedido').value = pedido.estado || 'PENDIENTE';
+    
+    // Llenar selector de productos disponibles (para agregar nuevos)
+    const select = document.getElementById('editarProductoSelect');
+    select.innerHTML = '<option value="">Seleccionar producto...</option>';
+    productos.forEach(p => {
+        select.innerHTML += `<option value="${p.id}">[${p.codigo || 'S/C'}] ${p.nombre}</option>`;
+    });
+    
+    // Renderizar lista de productos
+    renderizarProductosEdicion();
+    
+    // Mostrar modal
+    document.getElementById('modalEditarPedido').style.display = 'flex';
+}
+
+function renderizarProductosEdicion() {
+    const contenedor = document.getElementById('editarListaProductos');
+    if (productosEdicionTemp.length === 0) {
+        contenedor.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:15px;">🛍️ No hay productos en este pedido</div>';
+        actualizarTotalEdicion();
+        return;
+    }
+    let html = '';
+    productosEdicionTemp.forEach((p, index) => {
+        const subtotal = p.cantidad * p.precioUnitario;
+        p.subtotal = subtotal;
+        html += `
+            <div class="editar-producto-item">
+                <span class="nombre">[${p.codigo}] ${p.nombre}</span>
+                <input type="number" class="cantidad" value="${p.cantidad}" min="1" onchange="cambiarCantidadEdicion(${index}, this.value)" />
+                <span class="subtotal">$${subtotal.toFixed(2)}</span>
+                <button class="btn-eliminar-prod" onclick="eliminarProductoEdicion(${index})" title="Eliminar producto">✕</button>
+            </div>
+        `;
+    });
+    contenedor.innerHTML = html;
+    actualizarTotalEdicion();
+}
+
+function actualizarTotalEdicion() {
+    let total = 0;
+    productosEdicionTemp.forEach(p => {
+        total += p.cantidad * p.precioUnitario;
+    });
+    document.getElementById('editarTotalPedido').textContent = '$' + total.toFixed(2);
+}
+
+function cambiarCantidadEdicion(index, nuevoValor) {
+    const cantidad = parseInt(nuevoValor);
+    if (isNaN(cantidad) || cantidad < 1) {
+        mostrarNotificacion('⚠️ Cantidad debe ser mayor a 0');
+        renderizarProductosEdicion();
+        return;
+    }
+    productosEdicionTemp[index].cantidad = cantidad;
+    productosEdicionTemp[index].subtotal = cantidad * productosEdicionTemp[index].precioUnitario;
+    renderizarProductosEdicion();
+}
+
+function eliminarProductoEdicion(index) {
+    if (!confirm('¿Eliminar este producto del pedido?')) return;
+    productosEdicionTemp.splice(index, 1);
+    renderizarProductosEdicion();
+    mostrarNotificacion('🗑️ Producto eliminado temporalmente');
+}
+
+function agregarProductoEdicion() {
+    const select = document.getElementById('editarProductoSelect');
+    const productoId = select.value;
+    const cantidad = parseInt(document.getElementById('editarCantidad').value) || 1;
+    if (!productoId) {
+        mostrarNotificacion('❌ Selecciona un producto');
+        return;
+    }
+    if (cantidad < 1) {
+        mostrarNotificacion('❌ Cantidad inválida');
+        return;
+    }
+    const producto = productos.find(p => p.id === productoId);
+    if (!producto) {
+        mostrarNotificacion('❌ Producto no encontrado');
+        return;
+    }
+    const precioUnitario = precioFinal(producto);
+    // Verificar si ya existe (por código o nombre)
+    const existente = productosEdicionTemp.find(p => p.id === productoId);
+    if (existente) {
+        existente.cantidad += cantidad;
+        existente.subtotal = existente.cantidad * existente.precioUnitario;
+    } else {
+        productosEdicionTemp.push({
+            id: producto.id,
+            codigo: producto.codigo || 'S/C',
+            nombre: producto.nombre,
+            cantidad: cantidad,
+            precioUnitario: precioUnitario,
+            subtotal: cantidad * precioUnitario
+        });
+    }
+    renderizarProductosEdicion();
+    mostrarNotificacion(`✅ Agregado ${cantidad}x ${producto.nombre}`);
+    // Limpiar campos
+    document.getElementById('editarCantidad').value = '1';
+    select.value = '';
+}
+
+function guardarEdicionPedido() {
+    if (productosEdicionTemp.length === 0) {
+        mostrarNotificacion('⚠️ No puedes dejar el pedido vacío');
+        return;
+    }
+    if (!pedidoEditandoId) {
+        mostrarNotificacion('❌ Error: pedido no identificado');
+        return;
+    }
+    const nuevoEstado = document.getElementById('editarEstadoPedido').value;
+    let total = 0;
+    const productosFinal = productosEdicionTemp.map(p => {
+        const subtotal = p.cantidad * p.precioUnitario;
+        total += subtotal;
+        return {
+            id: p.id || null,
+            codigo: p.codigo || 'S/C',
+            nombre: p.nombre,
+            cantidad: p.cantidad,
+            precioUnitario: p.precioUnitario,
+            subtotal: subtotal
+        };
+    });
+    
+    // Si el nuevo estado es CONFIRMADO o posterior, actualizar tipo a PEDIDO
+    let updates = {
+        productos: productosFinal,
+        total: total,
+        estado: nuevoEstado
+    };
+    if (nuevoEstado === 'CONFIRMADO' || nuevoEstado === 'SURTIDO' || nuevoEstado === 'EN_RUTA' || nuevoEstado === 'ENTREGADO') {
+        updates.tipo = 'PEDIDO';
+    } else if (nuevoEstado === 'COTIZACION' || nuevoEstado === 'PENDIENTE') {
+        updates.tipo = 'COTIZACION';
+    }
+    
+    database.ref('cotizaciones/' + pedidoEditandoId).update(updates)
+        .then(() => {
+            mostrarNotificacion('✅ Pedido actualizado correctamente');
+            cerrarEdicionPedido();
+            renderizarPedidos();
+            if (modoAdmin) actualizarPanelAdmin();
+        }).catch(err => {
+            mostrarNotificacion('❌ Error al guardar: ' + err.message);
+        });
+}
+
+function cerrarEdicionPedido() {
+    document.getElementById('modalEditarPedido').style.display = 'none';
+    pedidoEditandoId = null;
+    productosEdicionTemp = [];
+    // Restaurar selector
+    document.getElementById('editarProductoSelect').innerHTML = '<option value="">Seleccionar producto...</option>';
+}
+
+// Cerrar modal de edición al hacer clic fuera
+document.getElementById('modalEditarPedido').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cerrarEdicionPedido();
+    }
+});
 
 // ============================================================
 // WINDOW ONLOAD
