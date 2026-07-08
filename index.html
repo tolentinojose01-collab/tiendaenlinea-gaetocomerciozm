@@ -625,7 +625,7 @@ function formatearFecha(f) {
 }
 
 // ============================================================
-// CATEGORÍAS
+// CATEGORÍAS - CORREGIDO
 // ============================================================
 function obtenerCategorias() { 
     let cats = [];
@@ -756,7 +756,7 @@ function abrirModalStock(id) {
 }
 
 // ============================================================
-// MODAL TICKET - CORREGIDO
+// MODAL TICKET - FUNCIONES RESTAURADAS A SU ESTADO ORIGINAL
 // ============================================================
 function abrirModalTicket(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -882,6 +882,7 @@ function imprimirTicketDesdeModal() {
     ventana.document.close();
 }
 
+// WHATSAPP SOLO TEXTO
 function compartirTicketWhatsApp() {
     if (!ticketActualData) { mostrarNotificacion('❌ No hay ticket'); return; }
     
@@ -911,9 +912,7 @@ function compartirTicketWhatsApp() {
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
-// ============================================================
-// FUNCIONES DE TICKET - CORREGIDAS
-// ============================================================
+// DESCARGAR IMAGEN - GUARDAR (FUNCIÓN ORIGINAL QUE DESCARGABA DIRECTAMENTE)
 function descargarTicketImagen() {
     const ticket = document.getElementById('ticketParaImprimir');
     if (!ticket) { mostrarNotificacion('❌ No hay ticket'); return; }
@@ -921,6 +920,7 @@ function descargarTicketImagen() {
     const folio = ticketActualId ? ticketActualId.slice(-6).toUpperCase() : 'pedido';
     mostrarNotificacion('⏳ Generando imagen...');
     
+    // Guardar estilo original
     const estiloOriginal = ticket.style.cssText;
     ticket.style.width = '80mm';
     ticket.style.padding = '8px 10px';
@@ -929,57 +929,47 @@ function descargarTicketImagen() {
     ticket.style.borderRadius = '8px';
     ticket.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
     
-    // Asegurar que la imagen del logo se cargue
+    // Asegurar que la imagen se cargue
     const img = ticket.querySelector('img');
     if (img) {
         img.crossOrigin = 'anonymous';
         img.setAttribute('crossorigin', 'anonymous');
-        // Si la imagen no se carga, esperar un poco más
-        if (!img.complete) {
-            img.onload = function() {
-                generarCanvasTicket(ticket, estiloOriginal, folio);
-            };
-            img.onerror = function() {
-                // Si falla la imagen, igual intentar generar el canvas
-                generarCanvasTicket(ticket, estiloOriginal, folio);
-            };
-            return;
-        }
     }
-    generarCanvasTicket(ticket, estiloOriginal, folio);
+    
+    setTimeout(() => {
+        html2canvas(ticket, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            allowTaint: true,
+            width: ticket.scrollWidth,
+            height: ticket.scrollHeight,
+            onclone: function(doc) {
+                const imgs = doc.querySelectorAll('img');
+                imgs.forEach(img => {
+                    img.crossOrigin = 'anonymous';
+                    img.setAttribute('crossorigin', 'anonymous');
+                });
+            }
+        }).then(canvas => {
+            ticket.style.cssText = estiloOriginal;
+            // Descargar directamente
+            const link = document.createElement('a');
+            link.download = `ticket-GAETO-${folio}.png`;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            mostrarNotificacion(`✅ Ticket GAETO-${folio} guardado como imagen`);
+        }).catch(err => {
+            ticket.style.cssText = estiloOriginal;
+            mostrarNotificacion('❌ Error al generar imagen: ' + err.message);
+        });
+    }, 500);
 }
 
-function generarCanvasTicket(ticket, estiloOriginal, folio) {
-    html2canvas(ticket, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        allowTaint: true,
-        width: ticket.scrollWidth,
-        height: ticket.scrollHeight,
-        onclone: function(doc) {
-            const imgs = doc.querySelectorAll('img');
-            imgs.forEach(img => {
-                img.crossOrigin = 'anonymous';
-                img.setAttribute('crossorigin', 'anonymous');
-            });
-        }
-    }).then(canvas => {
-        ticket.style.cssText = estiloOriginal;
-        const link = document.createElement('a');
-        link.download = `ticket-GAETO-${folio}.png`;
-        link.href = canvas.toDataURL('image/png');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        mostrarNotificacion(`✅ Ticket GAETO-${folio} guardado como imagen`);
-    }).catch(err => {
-        ticket.style.cssText = estiloOriginal;
-        mostrarNotificacion('❌ Error al generar imagen: ' + err.message);
-    });
-}
-
+// COMPARTIR IMAGEN POR WHATSAPP - FUNCIÓN ORIGINAL QUE ABRÍA VENTANA CON IMAGEN
 function compartirTicketImagenWhatsApp() {
     const ticket = document.getElementById('ticketParaImprimir');
     if (!ticket) { mostrarNotificacion('❌ No hay ticket'); return; }
@@ -1021,7 +1011,7 @@ function compartirTicketImagenWhatsApp() {
             ticket.style.cssText = estiloOriginal;
             const dataUrl = canvas.toDataURL('image/png');
             
-            // Abrir ventana con la imagen y botones
+            // ABRIR VENTANA CON LA IMAGEN
             const ventana = window.open('', '_blank', 'width=420,height=620,scrollbars=yes');
             if (!ventana) {
                 // Si no se puede abrir ventana, descargar directamente
@@ -1046,7 +1036,7 @@ function compartirTicketImagenWhatsApp() {
                     <meta charset="UTF-8">
                     <title>Ticket GAETO-${folio}</title>
                     <style>
-                        body { margin:0; padding:10px; background:#f0f0f0; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; font-family:Arial,sans-serif; }
+                        body { margin:0; padding:10px; background:#f0f0f0; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; }
                         .ticket-container { background:white; padding:10px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.2); max-width:100%; }
                         .ticket-container img { max-width:100%; height:auto; display:block; margin:0 auto; }
                         .botones { margin-top:15px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
@@ -1072,15 +1062,13 @@ function compartirTicketImagenWhatsApp() {
                         const mensaje = '${mensaje.replace(/'/g, "\\'")}';
                         
                         function compartirWA() {
-                            // Crear un enlace temporal para descargar
                             const link = document.createElement('a');
                             link.download = 'ticket-GAETO-'+folio+'.png';
                             link.href = imagenData;
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
-                            // Abrir WhatsApp después de un breve momento
-                            setTimeout(function() {
+                            setTimeout(() => {
                                 window.open('https://wa.me/522282877441?text='+encodeURIComponent(mensaje), '_blank');
                             }, 500);
                         }
@@ -1191,7 +1179,7 @@ function cerrarEditarPedido() {
 }
 
 // ============================================================
-// RENDERIZAR FILTROS - CORREGIDO
+// RENDERIZAR FILTROS
 // ============================================================
 function renderizarFiltros() {
     let categorias = obtenerCategorias();
@@ -1697,7 +1685,7 @@ function generarPDFPedido(id) {
 }
 
 // ============================================================
-// RENDERIZAR PRODUCTOS - CORREGIDO: FILTRO DE CATEGORÍAS Y BÚSQUEDA
+// RENDERIZAR PRODUCTOS
 // ============================================================
 function renderizarProductos() {
     const contenedor = document.getElementById('contenedorProductos');
@@ -1706,23 +1694,10 @@ function renderizarProductos() {
         return;
     }
     let filtrados = productos.filter(p => {
-        // Solo mostrar productos activos si no estamos en modo admin
         if (!modoAdmin && obtenerCampoActivo(p) === 'NO') return false;
-        
-        // Filtrar por categoría - comparación sin mayúsculas
-        let cumpleCat = false;
-        if (categoriaActiva === "TODOS") {
-            cumpleCat = true;
-        } else {
-            let catProducto = (p.categoria || '').toLowerCase().trim();
-            let catActiva = categoriaActiva.toLowerCase().trim();
-            cumpleCat = catProducto === catActiva;
-        }
-        
-        // Filtrar por búsqueda
+        let cumpleCat = (categoriaActiva === "TODOS" || p.categoria === categoriaActiva);
         let cad = `${p.nombre || ''} ${p.codigo || ''} ${p.descripcion || ''} ${p.categoria || ''}`.toLowerCase();
         let cumpleBusq = cad.includes(textoBusqueda.toLowerCase());
-        
         return cumpleCat && cumpleBusq;
     });
     filtrados = ordenarProductos(filtrados);
@@ -2014,6 +1989,7 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
         .then((ref) => {
             mostrarNotificacion('✅ ¡Cotización registrada!');
             const id = ref.key;
+            // SOLO ABRIR EL TICKET - NO ENVIAR WHATSAPP AUTOMÁTICAMENTE
             setTimeout(() => abrirModalTicket(id), 500);
             carrito = [];
             renderizarCarrito();
@@ -2153,66 +2129,6 @@ function renderizarCompras() {
     }).join('');
 }
 
-function verDetalleCompra(id) {
-    const compra = compras.find(c => c.id === id);
-    if (!compra) return;
-    
-    let html = `<div class="reporte-cliente">
-        <h3 style="color:#002b5c;font-size:15px;">📦 DETALLE DE COMPRA</h3>
-        <p style="font-size:12px;color:#64748b;">🏢 ${compra.proveedor} | 📅 ${compra.fecha}</p>
-        <p style="font-size:11px;color:#64748b;">🧾 ${compra.factura || 'S/F'}</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;">
-            <button class="btn-imprimir-reporte" onclick="imprimirDetalleCompra('${id}')">🖨️ Imprimir</button>
-            <button class="btn-whatsapp-reporte" onclick="compartirDetalleCompra('${id}')">📲 WhatsApp</button>
-        </div>
-        <hr style="margin:8px 0;border:0;border-top:1px solid #e2e8f0;">
-    `;
-    (compra.productos || []).forEach(p => {
-        html += `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted #e2e8f0;font-size:11px;">
-            <span>${p.cantidad}x ${p.nombre}</span>
-            <span>$${parseFloat(p.subtotal||0).toFixed(2)}</span>
-        </div>`;
-    });
-    html += `<div style="text-align:right;font-weight:bold;font-size:14px;color:#002b5c;margin-top:6px;border-top:2px solid #002b5c;padding-top:6px;">TOTAL: $${parseFloat(compra.total||0).toFixed(2)}</div>
-    <button class="btn-cerrar-reporte" onclick="document.getElementById('detalleCompraContainer').style.display='none'">❌ Cerrar</button>
-    </div>`;
-    document.getElementById('detalleCompraContainer').innerHTML = html;
-    document.getElementById('detalleCompraContainer').style.display = 'block';
-    document.getElementById('detalleCompraContainer').scrollIntoView({ behavior: 'smooth' });
-}
-
-function eliminarCompra(id) {
-    if (!confirm('⚠️ ¿Eliminar esta compra?')) return;
-    database.ref('compras/' + id).remove()
-        .then(() => mostrarNotificacion('✅ Compra eliminada'))
-        .catch(err => mostrarNotificacion('❌ Error: ' + err.message));
-}
-
-function imprimirDetalleCompra(id) {
-    const compra = compras.find(c => c.id === id);
-    if (!compra) { mostrarNotificacion('❌ Compra no encontrada'); return; }
-    let html = `<div style="font-size:12px;"><h3 style="color:#002b5c;font-size:16px;margin-bottom:8px;">📦 DETALLE DE COMPRA</h3><p style="color:#64748b;">🏢 ${compra.proveedor} | 📅 ${compra.fecha}</p><p style="color:#64748b;margin-bottom:10px;">🧾 ${compra.factura || 'S/F'}</p><hr style="border:1px solid #e2e8f0;margin:10px 0;">`;
-    (compra.productos || []).forEach(p => {
-        html += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted #e2e8f0;font-size:11px;"><span>${p.cantidad}x ${p.nombre}</span><span>$${parseFloat(p.subtotal||0).toFixed(2)}</span></div>`;
-    });
-    html += `<div style="text-align:right;font-weight:bold;font-size:16px;color:#002b5c;margin-top:8px;border-top:2px solid #002b5c;padding-top:8px;">TOTAL: $${parseFloat(compra.total||0).toFixed(2)}</div></div>`;
-    const ventana = window.open('', '_blank', 'width=700,height=600,scrollbars=yes');
-    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    ventana.document.write(generarHTMLCompletoImpresion('📦 DETALLE DE COMPRA', html));
-    ventana.document.close();
-}
-
-function compartirDetalleCompra(id) {
-    const compra = compras.find(c => c.id === id);
-    if (!compra) { mostrarNotificacion('❌ Compra no encontrada'); return; }
-    let mensaje = `📦 *DETALLE DE COMPRA - GAETO COMERCIOS*\n\n🏢 *Proveedor:* ${compra.proveedor}\n📅 *Fecha:* ${compra.fecha}\n🧾 *Factura:* ${compra.factura || 'S/F'}\n\n*🛒 PRODUCTOS:*\n───────────────────────────\n`;
-    (compra.productos || []).forEach(p => {
-        mensaje += `${p.cantidad}x ${p.nombre} - $${parseFloat(p.subtotal||0).toFixed(2)}\n`;
-    });
-    mensaje += `───────────────────────────\n*💰 TOTAL: $${parseFloat(compra.total||0).toFixed(2)}*`;
-    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
-}
-
 // ============================================================
 // FUNCIONES DE IMPRESIÓN Y LISTAS
 // ============================================================
@@ -2265,7 +2181,7 @@ function generarHTMLCompletoImpresion(titulo, contenido) {
 // COMPARTIR CATÁLOGO
 // ============================================================
 document.getElementById('compartirBtn').onclick = function() {
-    const url = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
+    const url = window.location.href;
     const mensaje = `📦 *GAETO COMERCIOS* 🛒\nCatálogo: ${url}\n📅 PEDIDOS: LUNES, MARTES, MIÉRCOLES\n🚚 ENTREGAS: VIERNES Y SÁBADOS\n\n🔗 Haz tu pedido desde el catálogo. ¡Regístrate y te contactamos!`;
     if (navigator.share) {
         navigator.share({ title: 'GAETO COMERCIOS', text: mensaje })
@@ -2277,15 +2193,158 @@ document.getElementById('compartirBtn').onclick = function() {
 };
 
 // ============================================================
+// FUNCIONES DE LISTAS (VENTA, COMPRA, CLIENTE, PROMOCIONES)
+// ============================================================
+function mostrarTabPrecios(tab) {
+    document.querySelectorAll('.tab-precios').forEach(t => t.classList.remove('visible'));
+    const tabs = ['venta', 'compra', 'cliente', 'promociones'];
+    tabs.forEach(t => {
+        const btn = document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (t === tab) {
+            document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('visible');
+            if (btn) { btn.style.background = '#002b5c'; btn.style.color = 'white'; }
+        } else {
+            if (btn) { btn.style.background = '#e2e8f0'; btn.style.color = '#334155'; }
+        }
+    });
+    if (tab === 'venta') renderizarListaVenta();
+    else if (tab === 'compra') renderizarListaCompraVenta();
+    else if (tab === 'cliente') renderizarListaCliente();
+    else if (tab === 'promociones') renderizarPromociones();
+}
+
+function renderizarListaVenta() {
+    const categorias = obtenerCategorias();
+    const select = document.getElementById('filtroVentaCategoria');
+    const catActual = select.value;
+    select.innerHTML = '<option value="TODOS">Todas</option>';
+    categorias.forEach(c => { select.innerHTML += `<option value="${c}" ${c === catActual ? 'selected' : ''}>${c}</option>`; });
+    const buscar = document.getElementById('filtroVentaBuscar').value.toLowerCase().trim();
+    const catFiltro = document.getElementById('filtroVentaCategoria').value;
+    let filtrados = productos.filter(p => {
+        if (obtenerCampoActivo(p) === 'NO') return false;
+        const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
+        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        return cumpleCat && texto.includes(buscar);
+    });
+    filtrados = ordenarProductos(filtrados);
+    const tbody = document.getElementById('listaVentaBody');
+    if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:15px;">🔍 No hay productos</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filtrados.map(p => {
+        const pFinal = precioFinal(p);
+        const stock = p.stock !== undefined ? p.stock : '-';
+        const stockClass = getStockClass(stock);
+        return `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td>
+        <td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td>
+        <td><span class="stock-badge ${stockClass}">${getStockText(stock)}</span></td></tr>`;
+    }).join('');
+}
+
+function filtrarListaVenta() { renderizarListaVenta(); }
+
+function renderizarListaCompraVenta() {
+    const categorias = obtenerCategorias();
+    const select = document.getElementById('filtroCompraCategoria');
+    const catActual = select.value;
+    select.innerHTML = '<option value="TODOS">Todas</option>';
+    categorias.forEach(c => { select.innerHTML += `<option value="${c}" ${c === catActual ? 'selected' : ''}>${c}</option>`; });
+    const buscar = document.getElementById('filtroCompraBuscar').value.toLowerCase().trim();
+    const catFiltro = document.getElementById('filtroCompraCategoria').value;
+    let filtrados = productos.filter(p => {
+        const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
+        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        return cumpleCat && texto.includes(buscar);
+    });
+    filtrados = ordenarProductos(filtrados);
+    const tbody = document.getElementById('listaCompraBody');
+    if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:15px;">🔍 No hay productos</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filtrados.map(p => {
+        const pFinal = precioFinal(p);
+        const precioCompra = parseFloat(p.precioCompra || 0);
+        const utilidad = pFinal - precioCompra;
+        const margen = pFinal > 0 ? ((pFinal - precioCompra) / pFinal * 100) : 0;
+        return `<tr>
+            <td>${p.codigo || 'S/C'}</td>
+            <td>${p.nombre}</td>
+            <td>$${precioCompra.toFixed(2)}</td>
+            <td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td>
+            <td style="color:${margen >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">${margen.toFixed(1)}%</td>
+            <td style="color:${utilidad >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">$${utilidad.toFixed(2)}</td>
+        </tr>`;
+    }).join('');
+}
+
+function filtrarListaCompra() { renderizarListaCompraVenta(); }
+
+function renderizarListaCliente() {
+    const categorias = obtenerCategorias();
+    const select = document.getElementById('filtroClienteCategoria');
+    const catActual = select.value;
+    select.innerHTML = '<option value="TODOS">Todas</option>';
+    categorias.forEach(c => { select.innerHTML += `<option value="${c}" ${c === catActual ? 'selected' : ''}>${c}</option>`; });
+    const buscar = document.getElementById('filtroClienteBuscar').value.toLowerCase().trim();
+    const catFiltro = document.getElementById('filtroClienteCategoria').value;
+    let filtrados = productos.filter(p => {
+        if (obtenerCampoActivo(p) === 'NO') return false;
+        const cumpleCat = catFiltro === 'TODOS' || p.categoria === catFiltro;
+        const texto = `${p.nombre} ${p.codigo}`.toLowerCase();
+        return cumpleCat && texto.includes(buscar);
+    });
+    filtrados = ordenarProductos(filtrados);
+    const tbody = document.getElementById('listaClienteBody');
+    if (filtrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:15px;">🔍 No hay productos</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filtrados.map(p => {
+        const pFinal = precioFinal(p);
+        return `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td>
+        <td style="font-weight:bold;color:#002b5c;font-size:13px;">$${pFinal.toFixed(2)}</td></tr>`;
+    }).join('');
+}
+
+function filtrarListaCliente() { renderizarListaCliente(); }
+
+function renderizarPromociones() {
+    const container = document.getElementById('listaPromocionesContainer');
+    let promociones = productos.filter(p => {
+        const tienePromo = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
+        const tieneDescuento = parseFloat(p.descuento) > 0;
+        if (obtenerCampoActivo(p) === 'NO') return false;
+        return tienePromo || tieneDescuento;
+    });
+    promociones = ordenarProductos(promociones);
+    if (promociones.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;">🔍 No hay promociones activas</div>';
+        return;
+    }
+    container.innerHTML = promociones.map(p => {
+        const pFinal = precioFinal(p);
+        const descNum = parseFloat(p.descuento) || 0;
+        const esPromoBanner = p.promoFuera === "SI" && p.textoPromo;
+        return `<div class="promo-card">
+            <span class="promo-badge">${descNum > 0 ? `🔥 ${descNum}% OFF` : '📢 PROMO'}</span>
+            <div class="promo-titulo">${p.nombre}</div>
+            <div style="font-size:10px;color:#64748b;">${p.codigo || 'S/C'}</div>
+            ${esPromoBanner ? `<div style="background:#fef3c7;padding:4px 10px;border-radius:8px;margin:4px 0;font-size:11px;color:#92400e;">📢 ${p.textoPromo}</div>` : ''}
+            <div>${descNum > 0 ? `<span class="promo-antes">$${parseFloat(p.precioLista).toFixed(2)}</span>` : ''}<span class="promo-precio">$${pFinal.toFixed(2)}</span></div>
+        </div>`;
+    }).join('');
+}
+
+// ============================================================
 // WINDOW ONLOAD
 // ============================================================
 window.onload = function() {
     initTabs();
     
-    document.getElementById('busquedaInput').oninput = (e) => { 
-        textoBusqueda = e.target.value; 
-        renderizarProductos(); 
-    };
+    document.getElementById('busquedaInput').oninput = (e) => { textoBusqueda = e.target.value; renderizarProductos(); };
     document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; renderizarCarrito(); };
     document.getElementById('toggleModoBtn').onclick = () => {
         if (modoAdmin) {
