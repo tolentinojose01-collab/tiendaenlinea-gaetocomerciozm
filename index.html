@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
-        /* ===== TODOS LOS ESTILOS IGUAL QUE ANTES (no los repito por claridad) ===== */
+        /* ===== TODOS LOS ESTILOS (exactamente igual que antes) ===== */
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f5;padding:16px;padding-bottom:160px;touch-action:manipulation}
         .encabezado{text-align:center;background:white;border-radius:20px;padding:15px;margin-bottom:15px;position:relative;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
@@ -663,7 +663,7 @@ function formatearFecha(f) {
 }
 
 // ============================================================
-// CATEGORÍAS - Normalización (sin cambios)
+// CATEGORÍAS - Normalización sin duplicados
 // ============================================================
 function normalizarCategoria(cat) {
     if (!cat) return '';
@@ -808,7 +808,7 @@ function abrirModalStock(id) {
 }
 
 // ============================================================
-// MODAL TICKET (sin cambios)
+// MODAL TICKET (con encabezado dinámico)
 // ============================================================
 function abrirModalTicket(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -1097,7 +1097,7 @@ function descargarDataURL(dataURL, filename) {
 }
 
 // ============================================================
-// RENDERIZAR FILTROS (sin cambios)
+// RENDERIZAR FILTROS (con categorías normalizadas)
 // ============================================================
 function renderizarFiltros() {
     let categorias = obtenerCategorias();
@@ -1115,7 +1115,7 @@ function renderizarFiltros() {
 }
 
 // ============================================================
-// TABS ADMIN (sin cambios)
+// TABS ADMIN
 // ============================================================
 function initTabs() {
     const tabs = document.querySelectorAll('.tabs-admin button');
@@ -1160,7 +1160,7 @@ function initTabs() {
 }
 
 // ============================================================
-// MODAL ADMIN - 3 CLICS (sin cambios)
+// MODAL ADMIN - 3 CLICS
 // ============================================================
 let contadorClicksLogo = 0;
 let temporizadorClicks = null;
@@ -1245,7 +1245,7 @@ function desactivarModoAdmin() {
 }
 
 // ============================================================
-// GENERAR PDF DE COTIZACIÓN (sin cambios)
+// GENERAR PDF DE COTIZACIÓN
 // ============================================================
 function generarPDFCotizacion(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -1388,7 +1388,7 @@ function generarHTMLCotizacion(data) {
 }
 
 // ============================================================
-// RENDERIZAR PEDIDOS (sin cambios)
+// RENDERIZAR PEDIDOS
 // ============================================================
 function renderizarPedidos() {
     const tbody = document.getElementById('pedidosTabla');
@@ -1553,7 +1553,7 @@ function generarPDFPedido(id) {
 }
 
 // ============================================================
-// RENDERIZAR PRODUCTOS (sin cambios)
+// RENDERIZAR PRODUCTOS (con filtro de categoría normalizado)
 // ============================================================
 function renderizarProductos() {
     const contenedor = document.getElementById('contenedorProductos');
@@ -1712,7 +1712,7 @@ window.eliminarProducto = function(id) {
 };
 
 // ============================================================
-// CARRITO (sin cambios)
+// CARRITO
 // ============================================================
 window.agregarAlCarrito = function(id) {
     let prod = productos.find(p => p.id === id);
@@ -1757,7 +1757,7 @@ function renderizarCarrito() {
 }
 
 // ============================================================
-// BUSCAR CLIENTE - CORREGIDO PARA QUE SIEMPRE FUNCIONE
+// BUSCAR CLIENTE
 // ============================================================
 document.getElementById('btnBuscarCliente').onclick = function() {
     const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
@@ -1793,7 +1793,7 @@ document.getElementById('btnBuscarCliente').onclick = function() {
 };
 
 // ============================================================
-// ENVIAR PEDIDO - ABRE MODAL LIMPIO (CORREGIDO)
+// ENVIAR PEDIDO - ABRE MODAL LIMPIO
 // ============================================================
 document.getElementById('enviarPedidoBtn').onclick = function(e) {
     e.preventDefault();
@@ -1801,7 +1801,7 @@ document.getElementById('enviarPedidoBtn').onclick = function(e) {
         mostrarNotificacion("⚠️ No hay productos");
         return;
     }
-    // Limpiar todos los campos del modal de registro
+    // Limpiar todos los campos
     document.getElementById('regTelefono').value = '';
     document.getElementById('regNombre').value = '';
     document.getElementById('regNegocio').value = '';
@@ -1811,13 +1811,12 @@ document.getElementById('enviarPedidoBtn').onclick = function(e) {
     document.getElementById('clienteNoEncontrado').style.display = 'none';
     clienteIdEncontrado = null;
     
-    // Mostrar modal
     document.getElementById('modalRegistro').style.display = 'flex';
     setTimeout(() => document.getElementById('regTelefono').focus(), 300);
 };
 
 // ============================================================
-// REGISTRO CONFIRMAR - ENVÍA PEDIDO
+// REGISTRO CONFIRMAR - CON GUARDADO AUTOMÁTICO DEL CLIENTE (CORREGIDO)
 // ============================================================
 document.getElementById('btnRegistroConfirmar').onclick = function() {
     const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
@@ -1836,67 +1835,94 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
         return;
     }
     
-    // Ocultar modal
-    document.getElementById('modalRegistro').style.display = 'none';
-    
-    let total = 0;
-    let productosPedido = [];
-    let mensajeWA = "*📦 NUEVO PEDIDO - GAETO COMERCIOS*\n\n";
-    mensajeWA += `👤 *Cliente:* ${nombre}\n📱 *Teléfono:* ${telefono}\n📍 *Dirección:* ${direccion}`;
-    if (document.getElementById('regNegocio').value) {
-        mensajeWA += `\n🏢 *Negocio:* ${document.getElementById('regNegocio').value}`;
-    }
-    if (document.getElementById('regReferencia').value) {
-        mensajeWA += `\n🏷️ *Referencia:* ${document.getElementById('regReferencia').value}`;
-    }
-    mensajeWA += `\n\n*🛒 PRODUCTOS:*\n───────────────────────────\n`;
-    
-    carrito.forEach(item => {
-        let pFinal = precioFinal(item.producto);
-        let subtotal = pFinal * item.cantidad;
-        total += subtotal;
-        const codigo = item.producto.codigo || 'S/C';
-        mensajeWA += `${item.cantidad}x [${codigo}] ${item.producto.nombre} - $${pFinal.toFixed(2)} c/u = $${subtotal.toFixed(2)}\n`;
-        productosPedido.push({
-            codigo: codigo,
-            nombre: item.producto.nombre,
-            cantidad: item.cantidad,
-            precioUnitario: pFinal,
-            subtotal: subtotal
+    // Si no hay clienteId, guardar el cliente primero
+    const guardarClienteYPedido = function(clienteIdExistente) {
+        // Ya tenemos el clienteId (nuevo o existente)
+        let total = 0;
+        let productosPedido = [];
+        let mensajeWA = "*📦 NUEVO PEDIDO - GAETO COMERCIOS*\n\n";
+        mensajeWA += `👤 *Cliente:* ${nombre}\n📱 *Teléfono:* ${telefono}\n📍 *Dirección:* ${direccion}`;
+        if (document.getElementById('regNegocio').value) {
+            mensajeWA += `\n🏢 *Negocio:* ${document.getElementById('regNegocio').value}`;
+        }
+        if (document.getElementById('regReferencia').value) {
+            mensajeWA += `\n🏷️ *Referencia:* ${document.getElementById('regReferencia').value}`;
+        }
+        mensajeWA += `\n\n*🛒 PRODUCTOS:*\n───────────────────────────\n`;
+        
+        carrito.forEach(item => {
+            let pFinal = precioFinal(item.producto);
+            let subtotal = pFinal * item.cantidad;
+            total += subtotal;
+            const codigo = item.producto.codigo || 'S/C';
+            mensajeWA += `${item.cantidad}x [${codigo}] ${item.producto.nombre} - $${pFinal.toFixed(2)} c/u = $${subtotal.toFixed(2)}\n`;
+            productosPedido.push({
+                codigo: codigo,
+                nombre: item.producto.nombre,
+                cantidad: item.cantidad,
+                precioUnitario: pFinal,
+                subtotal: subtotal
+            });
         });
-    });
-    
-    mensajeWA += `───────────────────────────\n*💰 TOTAL: $${total.toFixed(2)}*\n\n📅 PEDIDOS: LUNES, MARTES, MIÉRCOLES\n🚚 ENTREGAS: VIERNES Y SÁBADOS\n🙏 ¡GRACIAS POR TU PEDIDO!`;
-    
-    const nuevoPedido = {
-        tipo: 'COTIZACION',
-        cliente: { 
-            nombre: nombre, 
-            telefono: telefono, 
-            direccion: direccion + (document.getElementById('regReferencia').value ? ' (Ref: ' + document.getElementById('regReferencia').value + ')' : ''),
-            negocio: document.getElementById('regNegocio').value || 'Particular'
-        },
-        productos: productosPedido,
-        total: total,
-        fecha: new Date().toISOString().split('T')[0],
-        hora: new Date().toLocaleTimeString(),
-        estado: 'COTIZACION',
-        clienteId: clienteIdEncontrado || null
+        
+        mensajeWA += `───────────────────────────\n*💰 TOTAL: $${total.toFixed(2)}*\n\n📅 PEDIDOS: LUNES, MARTES, MIÉRCOLES\n🚚 ENTREGAS: VIERNES Y SÁBADOS\n🙏 ¡GRACIAS POR TU PEDIDO!`;
+        
+        const nuevoPedido = {
+            tipo: 'COTIZACION',
+            cliente: { 
+                nombre: nombre, 
+                telefono: telefono, 
+                direccion: direccion + (document.getElementById('regReferencia').value ? ' (Ref: ' + document.getElementById('regReferencia').value + ')' : ''),
+                negocio: document.getElementById('regNegocio').value || 'Particular'
+            },
+            productos: productosPedido,
+            total: total,
+            fecha: new Date().toISOString().split('T')[0],
+            hora: new Date().toLocaleTimeString(),
+            estado: 'COTIZACION',
+            clienteId: clienteIdExistente
+        };
+        
+        database.ref('cotizaciones').push(nuevoPedido)
+            .then((ref) => {
+                mostrarNotificacion('✅ ¡Cotización registrada!');
+                const id = ref.key;
+                setTimeout(() => abrirModalTicket(id), 500);
+                setTimeout(() => {
+                    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensajeWA)}`, '_blank');
+                }, 1000);
+                carrito = [];
+                renderizarCarrito();
+                if (modoAdmin) actualizarPanelAdmin();
+                // Cerrar modal
+                document.getElementById('modalRegistro').style.display = 'none';
+            })
+            .catch(err => mostrarNotificacion("❌ Error: " + err.message));
     };
     
-    database.ref('cotizaciones').push(nuevoPedido)
-        .then((ref) => {
-            mostrarNotificacion('✅ ¡Cotización registrada!');
-            const id = ref.key;
-            setTimeout(() => abrirModalTicket(id), 500);
-            setTimeout(() => {
-                window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensajeWA)}`, '_blank');
-            }, 1000);
-            carrito = [];
-            renderizarCarrito();
-            if (modoAdmin) actualizarPanelAdmin();
-        })
-        .catch(err => mostrarNotificacion("❌ Error: " + err.message));
+    // Verificar si ya tenemos clienteId
+    if (clienteIdEncontrado) {
+        // Ya existe, usar ese ID
+        guardarClienteYPedido(clienteIdEncontrado);
+    } else {
+        // Guardar nuevo cliente
+        const nuevoCliente = {
+            nombre: nombre,
+            telefono: telefono,
+            direccion: direccion,
+            negocio: document.getElementById('regNegocio').value || 'Particular',
+            referencia: document.getElementById('regReferencia').value || '',
+            fechaRegistro: new Date().toISOString()
+        };
+        database.ref('clientes').push(nuevoCliente)
+            .then((ref) => {
+                const newId = ref.key;
+                clienteIdEncontrado = newId;
+                mostrarNotificacion('✅ Cliente registrado correctamente');
+                guardarClienteYPedido(newId);
+            })
+            .catch(err => mostrarNotificacion("❌ Error al guardar cliente: " + err.message));
+    }
 };
 
 document.getElementById('btnRegistroCancelar').onclick = function() {
@@ -1904,9 +1930,6 @@ document.getElementById('btnRegistroCancelar').onclick = function() {
     mostrarNotificacion("❌ Pedido cancelado");
 };
 
-// ============================================================
-// RESTO DE FUNCIONES (clientes, compras, listas, gráficas, edición de pedidos, etc.)
-// ============================================================
 // ============================================================
 // RENDERIZAR CLIENTES
 // ============================================================
@@ -2327,7 +2350,7 @@ function compartirInventarioWhatsApp() {
 }
 
 // ============================================================
-// LISTAS DE PRECIOS
+// LISTAS DE PRECIOS (con normalización)
 // ============================================================
 function mostrarTabPrecios(tab) {
     document.querySelectorAll('.tab-precios').forEach(t => t.classList.remove('visible'));
