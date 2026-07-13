@@ -170,7 +170,6 @@
         .btn-buscar-tabla{background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
         .btn-filtrar{background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
         .btn-limpiar{background:#e2e8f0;color:#334155;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
-        /* ESTILOS PARA EL BOTÓN DUPLICAR */
         .btn-duplicar{background:#8b5cf6;color:white;border:none;padding:6px;border-radius:30px;width:100%;font-weight:bold;cursor:pointer;font-size:11px;margin-top:4px}
 
         .cotizacion-pdf{font-family:'Segoe UI',Arial,sans-serif;padding:15px;max-width:800px;margin:0 auto;background:white;}
@@ -369,6 +368,11 @@
         <div class="campo-row"><label>🏢 Negocio (opcional)</label><input type="text" id="regNegocio" placeholder="Ej: Tienda El Sol"></div>
         <div class="campo-row"><label>📍 Dirección *</label><input type="text" id="regDireccion" placeholder="Calle #123, Colonia, Ciudad"></div>
         <div class="campo-row"><label>🏷️ Referencia</label><input type="text" id="regReferencia" placeholder="Esquina con Av. Reforma"></div>
+        <!-- NUEVO CAMPO OBSERVACIONES -->
+        <div class="campo-row">
+            <label>📝 Observaciones (opcional)</label>
+            <textarea id="regObservaciones" rows="2" placeholder="Ej: color rojo, sin cebolla, entrega en la tienda..."></textarea>
+        </div>
         <button class="btn-registro-confirmar" id="btnRegistroConfirmar" style="background:#25d366;color:white;border:none;padding:10px;border-radius:30px;width:100%;font-weight:bold;font-size:14px;cursor:pointer;margin-top:6px;">📲 GENERAR PEDIDO</button>
         <button class="btn-registro-cancelar" id="btnRegistroCancelar" style="background:#e2e8f0;color:#64748b;border:none;padding:8px;border-radius:30px;width:100%;font-weight:bold;cursor:pointer;margin-top:5px;font-size:13px;">❌ Cancelar</button>
     </div>
@@ -821,7 +825,7 @@ function abrirModalStock(id) {
 }
 
 // ============================================================
-// MODAL TICKET (con encabezado dinámico)
+// MODAL TICKET (con encabezado dinámico y OBSERVACIONES)
 // ============================================================
 function abrirModalTicket(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -865,6 +869,7 @@ function abrirModalTicket(id) {
                 <div style="font-size:9px;color:#666;">📱 ${c.cliente?.telefono || 'Sin teléfono'}</div>
                 <div style="font-size:9px;color:#666;">📍 ${c.cliente?.direccion || 'Sin dirección'}</div>
                 ${c.cliente?.negocio && c.cliente.negocio !== 'Particular' ? `<div style="font-size:9px;color:#666;">🏢 ${c.cliente.negocio}</div>` : ''}
+                ${c.observaciones ? `<div style="margin:4px 0;padding:4px 8px;background:#fef9c3;border-radius:4px;font-size:10px;color:#854d0e;">📝 ${c.observaciones}</div>` : ''}
             </div>
             <div style="border-top:1px dashed #000;margin:4px 0;"></div>
     `;
@@ -967,6 +972,7 @@ function compartirTicketWhatsApp() {
     mensaje += `👤 *Cliente:* ${c.cliente?.nombre || 'Cliente'}\n`;
     mensaje += `📱 *Teléfono:* ${c.cliente?.telefono || 'Sin teléfono'}\n`;
     mensaje += `📍 *Dirección:* ${c.cliente?.direccion || 'Sin dirección'}\n`;
+    if (c.observaciones) mensaje += `📝 *Observaciones:* ${c.observaciones}\n`;
     mensaje += `\n*🛒 PRODUCTOS:*\n───────────────────────────\n`;
     
     (c.productos || []).forEach(p => {
@@ -1260,7 +1266,7 @@ function desactivarModoAdmin() {
 }
 
 // ============================================================
-// GENERAR PDF DE COTIZACIÓN
+// GENERAR PDF DE COTIZACIÓN (con OBSERVACIONES)
 // ============================================================
 function generarPDFCotizacion(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -1357,6 +1363,7 @@ function generarHTMLCotizacion(data) {
                 <strong>Negocio:</strong> ${data.cliente?.negocio || 'Particular'}<br>
                 <strong>Dirección:</strong> ${data.cliente?.direccion || 'Sin dirección'}<br>
                 <strong>Referencia:</strong> ${data.cliente?.referencia || 'Sin referencia'}
+                ${data.observaciones ? `<br><strong>📝 Observaciones:</strong> ${data.observaciones}` : ''}
             </div>
             
             <table>
@@ -1551,6 +1558,7 @@ function generarPDFPedido(id) {
                 <div><strong>👤 ${c.cliente?.nombre || 'Cliente'}</strong></div>
                 <div style="font-size:9px;color:#666;">📱 ${c.cliente?.telefono || 'Sin teléfono'}</div>
                 <div style="font-size:9px;color:#666;">📍 ${c.cliente?.direccion || 'Sin dirección'}</div>
+                ${c.observaciones ? `<div style="font-size:9px;color:#854d0e;background:#fef9c3;padding:2px 6px;border-radius:3px;">📝 ${c.observaciones}</div>` : ''}
             </div>
             <div style="border-top:1px dashed #000;margin:4px 0;"></div>
     `;
@@ -1869,6 +1877,7 @@ document.getElementById('enviarPedidoBtn').onclick = function(e) {
     document.getElementById('regNegocio').value = '';
     document.getElementById('regDireccion').value = '';
     document.getElementById('regReferencia').value = '';
+    document.getElementById('regObservaciones').value = '';  // Limpiar observaciones
     document.getElementById('clienteEncontrado').style.display = 'none';
     document.getElementById('clienteNoEncontrado').style.display = 'none';
     clienteIdEncontrado = null;
@@ -1878,12 +1887,14 @@ document.getElementById('enviarPedidoBtn').onclick = function(e) {
 };
 
 // ============================================================
-// REGISTRO CONFIRMAR - CON GUARDADO AUTOMÁTICO DEL CLIENTE
+// REGISTRO CONFIRMAR - CON GUARDADO AUTOMÁTICO DEL CLIENTE Y OBSERVACIONES
 // ============================================================
 document.getElementById('btnRegistroConfirmar').onclick = function() {
     const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
     const nombre = document.getElementById('regNombre').value.trim();
     const direccion = document.getElementById('regDireccion').value.trim();
+    const observaciones = document.getElementById('regObservaciones').value.trim();
+    
     if (telefono.length < 10) {
         mostrarNotificacion("❌ Teléfono inválido");
         return;
@@ -1907,6 +1918,9 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
         }
         if (document.getElementById('regReferencia').value) {
             mensajeWA += `\n🏷️ *Referencia:* ${document.getElementById('regReferencia').value}`;
+        }
+        if (observaciones) {
+            mensajeWA += `\n📝 *Observaciones:* ${observaciones}`;
         }
         mensajeWA += `\n\n*🛒 PRODUCTOS:*\n───────────────────────────\n`;
         
@@ -1942,7 +1956,8 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
             fecha: new Date().toISOString().split('T')[0],
             hora: new Date().toLocaleTimeString(),
             estado: 'COTIZACION',
-            clienteId: clienteIdExistente
+            clienteId: clienteIdExistente,
+            observaciones: observaciones   // <-- NUEVO
         };
         
         database.ref('cotizaciones').push(nuevoPedido)
