@@ -459,7 +459,13 @@
         <div class="tabla-container"><table><thead><tr><th>Folio</th><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Productos</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="pedidosTabla"></tbody></table></div>
     </div>
     <div id="tabClientes" class="tab-content">
-        <div style="display:flex;gap:6px;margin-bottom:8px"><input type="text" id="buscarClientes" placeholder="🔍 Buscar..." style="flex:1;padding:6px 12px;border-radius:30px;border:1px solid #ddd;font-size:11px"><button id="btnBuscarClientes" class="btn-buscar-tabla">Buscar</button></div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+            <input type="text" id="buscarClientes" placeholder="🔍 Buscar..." style="flex:1;padding:6px 12px;border-radius:30px;border:1px solid #ddd;font-size:11px">
+            <button id="btnBuscarClientes" class="btn-buscar-tabla">Buscar</button>
+            <!-- RESTAURAMOS BOTÓN DE IMPRIMIR Y COMPARTIR -->
+            <button onclick="imprimirListaClientes()" style="background:#2563eb;color:white;border:none;padding:5px 12px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer;">🖨️</button>
+            <button onclick="compartirListaClientes()" style="background:#25d366;color:white;border:none;padding:5px 12px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer;">📲</button>
+        </div>
         <div class="tabla-container"><table><thead><tr><th>N°</th><th>Nombre</th><th>Teléfono</th><th>Dirección</th><th>Pedidos</th><th>Total</th><th>Acciones</th></tr></thead><tbody id="clientesTabla"></tbody></table></div>
         <div id="reporteClienteContainer" style="display:none;margin-top:10px"></div>
     </div>
@@ -530,7 +536,7 @@
         </div>
     </div>
     <div id="tabReportes" class="tab-content">
-        <div class="stats-grid">
+        <div class="stats-grid" id="statsGridReportes">
             <div class="stat-card"><h4>📊 Total Ventas</h4><div class="numero" id="reportTotalVentas">$0</div></div>
             <div class="stat-card"><h4>📦 Productos Vendidos</h4><div class="numero" id="reportProductosVendidos">0</div></div>
             <div class="stat-card"><h4>💰 Utilidad Neta</h4><div class="numero" id="reportUtilidad">$0</div></div>
@@ -552,11 +558,13 @@
                 <button onclick="imprimirReporteVentas()" style="background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">🖨️</button>
                 <button onclick="compartirReporteVentas()" style="background:#25d366;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">📲</button>
             </div>
-            <div class="tabla-container">
+            <div class="tabla-container" id="tablaHistoricoVentas">
                 <table>
                     <thead><tr><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th></tr></thead>
                     <tbody id="historicoVentasTabla"></tbody>
                 </table>
+                <!-- AQUÍ PONEMOS EL TOTAL AL FINAL DE LA TABLA -->
+                <div id="totalVentasFiltradas" style="text-align:right;font-weight:bold;font-size:12px;color:#002b5c;padding:6px 10px;border-top:2px solid #002b5c;margin-top:4px;"></div>
             </div>
         </div>
     </div>
@@ -825,7 +833,7 @@ function abrirModalStock(id) {
 }
 
 // ============================================================
-// MODAL TICKET (con encabezado dinámico y OBSERVACIONES)
+// MODAL TICKET (con observaciones)
 // ============================================================
 function abrirModalTicket(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -856,6 +864,8 @@ function abrirModalTicket(id) {
         tituloTicket = 'TICKET DE VENTA';
     }
     
+    let observacionesMostrar = c.observaciones ? `<div style="margin:4px 0;padding:4px 8px;background:#fef9c3;border-radius:4px;font-size:10px;color:#854d0e;">📝 ${c.observaciones}</div>` : '';
+    
     let html = `
         <div class="ticket-80" id="ticketParaImprimir">
             <div class="header">
@@ -869,7 +879,7 @@ function abrirModalTicket(id) {
                 <div style="font-size:9px;color:#666;">📱 ${c.cliente?.telefono || 'Sin teléfono'}</div>
                 <div style="font-size:9px;color:#666;">📍 ${c.cliente?.direccion || 'Sin dirección'}</div>
                 ${c.cliente?.negocio && c.cliente.negocio !== 'Particular' ? `<div style="font-size:9px;color:#666;">🏢 ${c.cliente.negocio}</div>` : ''}
-                ${c.observaciones ? `<div style="margin:4px 0;padding:4px 8px;background:#fef9c3;border-radius:4px;font-size:10px;color:#854d0e;">📝 ${c.observaciones}</div>` : ''}
+                ${observacionesMostrar}
             </div>
             <div style="border-top:1px dashed #000;margin:4px 0;"></div>
     `;
@@ -2043,6 +2053,9 @@ function verHistorialCliente(clienteId) {
     const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
     if (pedidos.length === 0) { mostrarNotificacion('ℹ️ Sin pedidos'); return; }
     
+    // Calcular total de ventas del cliente
+    const totalVentas = pedidos.reduce((sum, p) => sum + parseFloat(p.total || 0), 0);
+    
     let html = `<div class="reporte-cliente">
         <h3 style="color:#002b5c;font-size:15px;">📋 HISTORIAL - ${cliente.nombre}</h3>
         <p style="font-size:12px;color:#64748b;">📱 ${cliente.telefono} | 📦 ${pedidos.length} pedidos</p>
@@ -2070,6 +2083,7 @@ function verHistorialCliente(clienteId) {
             <div style="text-align:right;font-weight:bold;color:#002b5c;font-size:13px;">$${parseFloat(p.total||0).toFixed(2)}</div>
         </div>`;
     });
+    html += `<div style="text-align:right;font-weight:bold;font-size:15px;color:#002b5c;border-top:2px solid #002b5c;padding-top:6px;margin-top:6px;">💰 TOTAL DE VENTAS: $${totalVentas.toFixed(2)}</div>`;
     html += `<button class="btn-cerrar-reporte" onclick="document.getElementById('reporteClienteContainer').style.display='none'">❌ Cerrar</button>
     </div>`;
     document.getElementById('reporteClienteContainer').innerHTML = html;
@@ -2082,6 +2096,7 @@ function imprimirReporteCliente(clienteId) {
     if (!cliente) return;
     const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
     if (pedidos.length === 0) { mostrarNotificacion('ℹ️ Sin pedidos'); return; }
+    const totalVentas = pedidos.reduce((sum, p) => sum + parseFloat(p.total || 0), 0);
     let html = `<div style="font-size:12px;"><h3 style="color:#002b5c;font-size:16px;margin-bottom:8px;">📋 HISTORIAL - ${cliente.nombre}</h3><p style="color:#64748b;margin-bottom:10px;">📱 ${cliente.telefono} | 📦 ${pedidos.length} pedidos</p><hr style="border:1px solid #e2e8f0;margin:10px 0;">`;
     pedidos.forEach((p, i) => {
         const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A';
@@ -2093,6 +2108,7 @@ function imprimirReporteCliente(clienteId) {
         }).join(', ');
         html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;"><span>#${i+1} GAETO-${folio}</span><span>${p.fecha || 'S/F'} <span style="background:${estadoColor[estado]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:8px;">${estado}</span></span></div><div style="font-size:10px;color:#475569;margin:4px 0;">${productosLista}</div><div style="text-align:right;font-weight:bold;color:#002b5c;font-size:14px;">$${parseFloat(p.total||0).toFixed(2)}</div></div>`;
     });
+    html += `<div style="text-align:right;font-weight:bold;font-size:16px;color:#002b5c;border-top:2px solid #002b5c;padding-top:8px;margin-top:8px;">💰 TOTAL DE VENTAS: $${totalVentas.toFixed(2)}</div>`;
     html += '</div>';
     const ventana = window.open('', '_blank', 'width=700,height=600,scrollbars=yes');
     if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
@@ -2104,10 +2120,59 @@ function compartirReporteCliente(clienteId) {
     const cliente = clientes.find(c => c.id === clienteId);
     if (!cliente) return;
     const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
+    const totalVentas = pedidos.reduce((sum, p) => sum + parseFloat(p.total || 0), 0);
     let mensaje = `📋 *HISTORIAL - ${cliente.nombre}*\n📱 ${cliente.telefono}\n📦 ${pedidos.length} pedidos\n────────────────────\n`;
     pedidos.forEach((p, i) => {
         mensaje += `#${i+1} ${p.fecha || 'S/F'} - $${parseFloat(p.total||0).toFixed(2)} - ${p.estado||'PENDIENTE'}\n`;
     });
+    mensaje += `────────────────────\n💰 *TOTAL VENTAS: $${totalVentas.toFixed(2)}*`;
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+// FUNCIONES PARA IMPRIMIR Y COMPARTIR LISTA DE CLIENTES (DESDE LA TABLA)
+function imprimirListaClientes() {
+    const tbody = document.getElementById('clientesTabla');
+    const filas = tbody.querySelectorAll('tr');
+    if (filas.length === 0 || filas[0].textContent.includes('No hay')) {
+        mostrarNotificacion('❌ No hay clientes para imprimir');
+        return;
+    }
+    let html = `<table><thead><tr><th>N°</th><th>Nombre</th><th>Teléfono</th><th>Dirección</th><th>Pedidos</th><th>Total</th></tr></thead><tbody>`;
+    let totalGeneral = 0;
+    filas.forEach(f => {
+        const celdas = f.querySelectorAll('td');
+        if (celdas.length >= 6) {
+            const totalCliente = parseFloat(celdas[5].textContent.replace('$', '')) || 0;
+            totalGeneral += totalCliente;
+            html += `<tr><td>${celdas[0].textContent}</td><td>${celdas[1].textContent}</td><td>${celdas[2].textContent}</td><td>${celdas[3].textContent}</td><td>${celdas[4].textContent}</td><td>${celdas[5].textContent}</td></tr>`;
+        }
+    });
+    html += `</tbody></table>`;
+    html += `<div style="text-align:right;font-weight:bold;font-size:14px;color:#002b5c;border-top:2px solid #002b5c;padding-top:8px;margin-top:8px;">💰 TOTAL GENERAL: $${totalGeneral.toFixed(2)}</div>`;
+    const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(generarHTMLCompletoImpresion('👥 LISTA DE CLIENTES', html));
+    ventana.document.close();
+}
+
+function compartirListaClientes() {
+    const tbody = document.getElementById('clientesTabla');
+    const filas = tbody.querySelectorAll('tr');
+    if (filas.length === 0 || filas[0].textContent.includes('No hay')) {
+        mostrarNotificacion('❌ No hay clientes para compartir');
+        return;
+    }
+    let mensaje = "👥 *LISTA DE CLIENTES - GAETO COMERCIOS*\n\n";
+    let totalGeneral = 0;
+    filas.forEach(f => {
+        const celdas = f.querySelectorAll('td');
+        if (celdas.length >= 6) {
+            const totalCliente = parseFloat(celdas[5].textContent.replace('$', '')) || 0;
+            totalGeneral += totalCliente;
+            mensaje += `#${celdas[0].textContent} ${celdas[1].textContent} - ${celdas[2].textContent} - ${celdas[4].textContent} pedidos - ${celdas[5].textContent}\n`;
+        }
+    });
+    mensaje += `\n💰 *TOTAL GENERAL: $${totalGeneral.toFixed(2)}*`;
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
@@ -2582,7 +2647,7 @@ function renderizarPromociones() {
 }
 
 // ============================================================
-// RENDERIZAR HISTORICO DE VENTAS (CORREGIDO Y COMPLETO)
+// RENDERIZAR HISTORICO DE VENTAS (CON TOTAL FILTRADO Y ESTADÍSTICAS ACTUALIZADAS)
 // ============================================================
 function renderizarHistoricoVentas(fechaDesde, fechaHasta) {
     const tbody = document.getElementById('historicoVentasTabla');
@@ -2595,8 +2660,33 @@ function renderizarHistoricoVentas(fechaDesde, fechaHasta) {
         filtradas = filtradas.filter(c => c.fecha && c.fecha <= fechaHasta);
     }
     filtradas.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+    
+    // CALCULAR TOTALES
+    let totalVentasFiltradas = 0;
+    let totalProductosFiltrados = 0;
+    let totalUtilidadFiltrada = 0;
+    
+    filtradas.forEach(c => {
+        const totalPedido = parseFloat(c.total || 0);
+        totalVentasFiltradas += totalPedido;
+        (c.productos || []).forEach(p => {
+            totalProductosFiltrados += parseInt(p.cantidad) || 0;
+            const prod = productos.find(pr => pr.nombre === p.nombre);
+            const costo = prod ? parseFloat(prod.precioCompra || 0) : 0;
+            totalUtilidadFiltrada += (parseFloat(p.subtotal || 0) - (costo * p.cantidad));
+        });
+    });
+    
+    // ACTUALIZAR INDICADORES DE REPORTES
+    document.getElementById('reportTotalVentas').textContent = '$' + totalVentasFiltradas.toFixed(2);
+    document.getElementById('reportProductosVendidos').textContent = totalProductosFiltrados;
+    document.getElementById('reportUtilidad').textContent = '$' + totalUtilidadFiltrada.toFixed(2);
+    const ticketPromedio = filtradas.length > 0 ? totalVentasFiltradas / filtradas.length : 0;
+    document.getElementById('reportTicketPromedio').textContent = '$' + ticketPromedio.toFixed(2);
+    
     if (filtradas.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">No hay ventas en el período</td></tr>';
+        document.getElementById('totalVentasFiltradas').textContent = '';
         return;
     }
     let html = '';
@@ -2624,9 +2714,10 @@ function renderizarHistoricoVentas(fechaDesde, fechaHasta) {
         </tr>`;
     });
     tbody.innerHTML = html;
+    document.getElementById('totalVentasFiltradas').textContent = `💰 TOTAL VENTAS: $${totalVentasFiltradas.toFixed(2)}`;
 }
 
-// FUNCIONES DE IMPRESIÓN Y COMPARTIR PARA HISTÓRICO DE VENTAS (CORREGIDAS)
+// FUNCIONES DE IMPRESIÓN Y COMPARTIR PARA HISTÓRICO DE VENTAS (CON TOTAL)
 function imprimirReporteVentas() {
     const tbody = document.getElementById('historicoVentasTabla');
     const filas = tbody.querySelectorAll('tr');
@@ -2642,6 +2733,9 @@ function imprimirReporteVentas() {
         }
     });
     html += '</tbody></table>';
+    // Agregar total al final
+    const totalVentas = document.getElementById('totalVentasFiltradas').textContent || '';
+    html += `<div style="text-align:right;font-weight:bold;font-size:14px;color:#002b5c;border-top:2px solid #002b5c;padding-top:8px;margin-top:8px;">${totalVentas}</div>`;
     const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
     if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
     ventana.document.write(generarHTMLCompletoImpresion('📊 HISTÓRICO DE VENTAS', html));
@@ -2662,6 +2756,8 @@ function compartirReporteVentas() {
             mensaje += `📅 ${celdas[0].textContent} | ${celdas[1].textContent} | ${celdas[2].textContent} | ${celdas[3].textContent} | ${celdas[4].textContent}\n`;
         }
     });
+    const totalVentas = document.getElementById('totalVentasFiltradas').textContent || '';
+    mensaje += `\n${totalVentas}`;
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
@@ -2687,6 +2783,7 @@ function actualizarPanelAdmin() {
         return s + prodUtilidad;
     }, 0);
     document.getElementById('statUtilidad').textContent = '$' + utilidad.toFixed(2);
+    // También actualizar los reportes con los datos sin filtrar (por defecto)
     document.getElementById('reportTotalVentas').textContent = '$' + totalVentas.toFixed(2);
     const prodVendidos = cotizaciones.filter(c => c.tipo !== 'COTIZACION').reduce((s, c) => {
         return s + (c.productos || []).reduce((sum, item) => sum + (parseInt(item.cantidad) || 0), 0);
@@ -3115,6 +3212,7 @@ window.onload = function() {
     document.getElementById('btnLimpiarFiltros').addEventListener('click', function() {
         document.getElementById('fechaDesde').value = '';
         document.getElementById('fechaHasta').value = '';
+        // Al limpiar, mostrar todos los datos
         renderizarHistoricoVentas();
     });
     
