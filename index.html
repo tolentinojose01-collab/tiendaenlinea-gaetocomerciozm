@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
-        /* ===== TODOS LOS ESTILOS (exactamente igual que antes) ===== */
+        /* ===== TODOS LOS ESTILOS ORIGINALES ===== */
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Segoe UI',Arial,sans-serif;background:#eef2f5;padding:16px;padding-bottom:160px;touch-action:manipulation}
         .encabezado{text-align:center;background:white;border-radius:20px;padding:15px;margin-bottom:15px;position:relative;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
@@ -159,9 +159,10 @@
         .promo-card .promo-antes{text-decoration:line-through;color:#999;font-size:12px;margin-right:6px}
         .visor-imagen{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);justify-content:center;align-items:center;z-index:99999;padding:20px}
         .visor-imagen.visible{display:flex}
-        .visor-imagen img{max-width:95%;max-height:95%;object-fit:contain}
+        .visor-imagen img{max-width:95%;max-height:70%;object-fit:contain}
         .visor-imagen .cerrar-visor{position:absolute;top:20px;right:30px;color:white;font-size:40px;cursor:pointer;font-weight:bold}
-        .visor-imagen .info-visor{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:white;padding:8px 20px;border-radius:30px;font-size:14px;text-align:center}
+        .visor-imagen .info-visor{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:white;padding:16px 24px;border-radius:16px;font-size:14px;text-align:center;max-width:95%;max-height:30%;overflow-y:auto;width:90%}
+        .visor-imagen .info-visor code{background:#333;padding:2px 8px;border-radius:6px;font-size:12px;color:#ffd966}
         .reporte-cliente{background:white;padding:15px;border-radius:12px;border:1px solid #e2e8f0;margin:10px 0}
         .btn-cerrar-reporte{background:#ef4444;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;cursor:pointer}
         .btn-whatsapp-reporte{background:#25d366;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;cursor:pointer}
@@ -169,6 +170,8 @@
         .btn-buscar-tabla{background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
         .btn-filtrar{background:#2563eb;color:white;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
         .btn-limpiar{background:#e2e8f0;color:#334155;border:none;padding:5px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer}
+        /* ESTILOS PARA EL BOTÓN DUPLICAR */
+        .btn-duplicar{background:#8b5cf6;color:white;border:none;padding:6px;border-radius:30px;width:100%;font-weight:bold;cursor:pointer;font-size:11px;margin-top:4px}
 
         .cotizacion-pdf{font-family:'Segoe UI',Arial,sans-serif;padding:15px;max-width:800px;margin:0 auto;background:white;}
         .cotizacion-pdf .header{text-align:center;border-bottom:3px solid #002b5c;padding-bottom:15px;margin-bottom:15px;}
@@ -230,7 +233,6 @@
         .btn-ticket-imagen{background:#2563eb;color:white;}
         .modal-ticket-loading{text-align:center;padding:30px;color:#64748b;font-size:14px;}
 
-        /* Estilos para el modal de edición de pedidos */
         .modal-editar input[type="number"] { -moz-appearance: textfield; }
         .modal-editar input[type="number"]::-webkit-outer-spin-button,
         .modal-editar input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -426,7 +428,7 @@
     <div id="tabDashboard" class="tab-content visible">
         <div class="stats-grid" id="statsGrid">
             <div class="stat-card"><h4>💰 Ventas</h4><div class="numero" id="statVentasHoy">$0</div></div>
-            <div class="stat-card"><h4>📦 Productos</h4><div class="numero" id="statProductos">0</div></div>
+            <div class="stat-card"><h4>📦 Productos Activos</h4><div class="numero" id="statProductos">0</div></div>
             <div class="stat-card"><h4>📋 Pedidos</h4><div class="numero" id="statPedidos">0</div></div>
             <div class="stat-card"><h4>👥 Clientes</h4><div class="numero" id="statClientes">0</div></div>
             <div class="stat-card"><h4>⚠️ Stock Bajo</h4><div class="numero" id="statStockBajo" style="color:#b91c1c;">0</div></div>
@@ -446,7 +448,8 @@
             <button onclick="generarPDFInventario()" style="background:#dc2626;color:white;border:none;padding:5px 12px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">📄</button>
             <button onclick="compartirInventarioWhatsApp()" style="background:#25d366;color:white;border:none;padding:5px 12px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">📲</button>
         </div>
-        <div class="tabla-container"><table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="inventarioTabla"></tbody></table></div>
+        <div style="background:#f8fafc;padding:6px 12px;border-radius:8px;margin-bottom:8px;font-size:12px;color:#002b5c;font-weight:bold;" id="inventarioContador">Total de productos activos: 0</div>
+        <div class="tabla-container"><table><thead><tr><th>#</th><th>Código</th><th>Producto</th><th>Color</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="inventarioTabla"></tbody></table></div>
     </div>
     <div id="tabPedidos" class="tab-content">
         <div class="tabla-container"><table><thead><tr><th>Folio</th><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Productos</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="pedidosTabla"></tbody></table></div>
@@ -498,21 +501,21 @@
             <div class="lista-precios-container">
                 <div class="lista-precios-header"><h3>💰 LISTA DE VENTA</h3><div class="acciones-lista"><button class="btn-pdf-lista" onclick="generarPDFListaVenta()">📄</button><button class="btn-imprimir-lista" onclick="imprimirListaVenta()">🖨️</button><button class="btn-whatsapp-lista" onclick="compartirListaVenta()">📲</button></div></div>
                 <div class="lista-precios-filtros"><input type="text" id="filtroVentaBuscar" placeholder="🔍 Buscar..." oninput="filtrarListaVenta()"><select id="filtroVentaCategoria" onchange="filtrarListaVenta()"><option value="TODOS">Todas</option></select></div>
-                <div class="lista-precios-tabla"><table><thead><tr><th>Código</th><th>Producto</th><th>Precio</th><th>Stock</th></tr></thead><tbody id="listaVentaBody"></tbody></table></div>
+                <div class="lista-precios-tabla"><table><thead><tr><th>Código</th><th>Producto</th><th>Color</th><th>Precio</th><th>Stock</th></tr></thead><tbody id="listaVentaBody"></tbody></table></div>
             </div>
         </div>
         <div id="tabCompra" class="tab-precios">
             <div class="lista-precios-container">
                 <div class="lista-precios-header"><h3>📊 COMPRA Y VENTA</h3><div class="acciones-lista"><button class="btn-pdf-lista" onclick="generarPDFListaCompraVenta()">📄</button><button class="btn-imprimir-lista" onclick="imprimirListaCompraVenta()">🖨️</button><button class="btn-whatsapp-lista" onclick="compartirListaCompraVenta()">📲</button></div></div>
                 <div class="lista-precios-filtros"><input type="text" id="filtroCompraBuscar" placeholder="🔍 Buscar..." oninput="filtrarListaCompra()"><select id="filtroCompraCategoria" onchange="filtrarListaCompra()"><option value="TODOS">Todas</option></select></div>
-                <div class="lista-precios-tabla"><table><thead><tr><th>Código</th><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Margen</th><th>Utilidad</th></tr></thead><tbody id="listaCompraBody"></tbody></table></div>
+                <div class="lista-precios-tabla"><table><thead><tr><th>Código</th><th>Producto</th><th>Color</th><th>P.Compra</th><th>P.Venta</th><th>Stock</th><th>Margen</th><th>Utilidad</th></tr></thead><tbody id="listaCompraBody"></tbody></table></div>
             </div>
         </div>
         <div id="tabCliente" class="tab-precios">
             <div class="lista-precios-container">
                 <div class="lista-precios-header"><h3>🧾 LISTA PARA CLIENTE</h3><div class="acciones-lista"><button class="btn-pdf-cliente" onclick="generarPDFListaCliente()">📄</button><button class="btn-imprimir-lista" onclick="imprimirListaCliente()">🖨️</button><button class="btn-whatsapp-lista" onclick="compartirListaCliente()">📲</button></div></div>
                 <div class="lista-precios-filtros"><input type="text" id="filtroClienteBuscar" placeholder="🔍 Buscar..." oninput="filtrarListaCliente()"><select id="filtroClienteCategoria" onchange="filtrarListaCliente()"><option value="TODOS">Todas</option></select></div>
-                <div class="lista-precios-tabla"><table><thead><tr><th>Código</th><th>Producto</th><th>Precio</th></tr></thead><tbody id="listaClienteBody"></tbody></table></div>
+                <div class="lista-precios-tabla"><table><thead><tr><th>Código</th><th>Producto</th><th>Color</th><th>Precio</th></tr></thead><tbody id="listaClienteBody"></tbody></table></div>
             </div>
         </div>
         <div id="tabPromociones" class="tab-precios">
@@ -600,16 +603,26 @@ function mostrarNotificacion(mensaje, duracion = 3000) {
 // ============================================================
 // VISOR DE IMÁGENES
 // ============================================================
-function abrirVisor(imagenUrl, nombre) {
-    if (!imagenUrl || imagenUrl === "") {
-        mostrarNotificacion('📷 Este producto no tiene imagen');
-        return;
+function abrirVisorProducto(producto) {
+    document.getElementById('visorImagenSrc').src = producto.imagenUrl || '';
+    if (!producto.imagenUrl) {
+        document.getElementById('visorImagenSrc').style.display = 'none';
+    } else {
+        document.getElementById('visorImagenSrc').style.display = 'block';
     }
-    document.getElementById('visorImagenSrc').src = imagenUrl;
-    document.getElementById('visorImagenInfo').textContent = nombre || 'Producto';
+    let info = `<strong>${producto.nombre}</strong>`;
+    if (producto.descripcion) info += `<br><span style="font-size:12px;color:#ccc;">${producto.descripcion}</span>`;
+    if (producto.color) info += `<br><span style="font-size:12px;color:#ffd966;">🎨 Color: ${producto.color}</span>`;
+    document.getElementById('visorImagenInfo').innerHTML = info;
     document.getElementById('visorImagen').classList.add('visible');
     document.body.style.overflow = 'hidden';
 }
+
+function abrirVisorPorId(id) {
+    const producto = productos.find(p => p.id === id);
+    if (producto) abrirVisorProducto(producto);
+}
+
 function cerrarVisor() {
     document.getElementById('visorImagen').classList.remove('visible');
     document.body.style.overflow = 'auto';
@@ -858,8 +871,9 @@ function abrirModalTicket(id) {
     
     (c.productos || []).forEach(p => {
         const precioFormateado = parseFloat(p.subtotal || 0).toFixed(2);
+        const colorTexto = p.color ? ` (${p.color})` : '';
         html += `<div class="producto">
-            <span class="producto-nombre">${p.cantidad}x ${p.nombre}</span>
+            <span class="producto-nombre">${p.cantidad}x ${p.nombre}${colorTexto}</span>
             <span class="producto-precio">$${precioFormateado}</span>
         </div>`;
     });
@@ -956,7 +970,8 @@ function compartirTicketWhatsApp() {
     mensaje += `\n*🛒 PRODUCTOS:*\n───────────────────────────\n`;
     
     (c.productos || []).forEach(p => {
-        mensaje += `${p.cantidad}x ${p.nombre} - $${parseFloat(p.subtotal||0).toFixed(2)}\n`;
+        const colorTexto = p.color ? ` [${p.color}]` : '';
+        mensaje += `${p.cantidad}x ${p.nombre}${colorTexto} - $${parseFloat(p.subtotal||0).toFixed(2)}\n`;
     });
     
     mensaje += `───────────────────────────\n`;
@@ -1311,9 +1326,10 @@ function generarHTMLCotizacion(data) {
     const folio = data.folio || data.id?.slice(-6).toUpperCase() || 'N/A';
     
     let productosHTML = (data.productos || []).map(p => {
+        const colorTexto = p.color ? ` (${p.color})` : '';
         return `<tr>
             <td>${p.codigo || 'S/C'}</td>
-            <td class="nombre-producto">${p.nombre}</td>
+            <td class="nombre-producto">${p.nombre}${colorTexto}</td>
             <td style="text-align:center;">${p.cantidad}</td>
             <td style="text-align:right;">$${parseFloat(p.precioUnitario || 0).toFixed(2)}</td>
             <td style="text-align:right;">$${parseFloat(p.subtotal || 0).toFixed(2)}</td>
@@ -1409,7 +1425,10 @@ function renderizarPedidos() {
             'CANCELADO': '#ef4444'
         };
         const folio = c.id ? c.id.slice(-6).toUpperCase() : 'N/A';
-        const productosLista = (c.productos || []).map(p => `${p.cantidad}x ${p.nombre}`).join(', ');
+        const productosLista = (c.productos || []).map(p => {
+            const colorTexto = p.color ? ` (${p.color})` : '';
+            return `${p.cantidad}x ${p.nombre}${colorTexto}`;
+        }).join(', ');
         const tipoIcon = tipo === 'COTIZACION' ? '📄' : '📦';
         const estaCancelado = estado === 'CANCELADO';
         const estaEntregado = estado === 'ENTREGADO';
@@ -1536,7 +1555,8 @@ function generarPDFPedido(id) {
             <div style="border-top:1px dashed #000;margin:4px 0;"></div>
     `;
     (c.productos || []).forEach(p => {
-        html += `<div class="producto"><span class="producto-nombre">${p.cantidad}x ${p.nombre}</span><span class="producto-precio">$${parseFloat(p.subtotal||0).toFixed(2)}</span></div>`;
+        const colorTexto = p.color ? ` (${p.color})` : '';
+        html += `<div class="producto"><span class="producto-nombre">${p.cantidad}x ${p.nombre}${colorTexto}</span><span class="producto-precio">$${parseFloat(p.subtotal||0).toFixed(2)}</span></div>`;
     });
     html += `
             <div class="total"><span class="total-label">TOTAL:</span> $${total}</div>
@@ -1553,7 +1573,45 @@ function generarPDFPedido(id) {
 }
 
 // ============================================================
-// RENDERIZAR PRODUCTOS (con filtro de categoría normalizado)
+// FUNCIÓN DUPLICAR PRODUCTO
+// ============================================================
+window.duplicarProducto = function(id) {
+    const prod = productos.find(p => p.id === id);
+    if (!prod) { mostrarNotificacion('❌ Producto no encontrado'); return; }
+    
+    const nuevoCodigo = (prod.codigo || 'GAETO') + '-' + Math.floor(1000 + Math.random() * 9000);
+    const nuevoNombre = (prod.nombre || 'Producto') + ' - COPIA';
+    
+    const nuevoProducto = {
+        codigo: nuevoCodigo,
+        nombre: nuevoNombre,
+        descripcion: prod.descripcion || '',
+        categoria: prod.categoria || 'GENERAL',
+        precioLista: prod.precioLista || '100',
+        descuento: prod.descuento || '0',
+        precioCompra: prod.precioCompra || '60',
+        stock: prod.stock || '10',
+        imagenUrl: prod.imagenUrl || '',
+        promoFuera: prod.promoFuera || 'NO',
+        textoPromo: prod.textoPromo || '',
+        vigenciaPromo: prod.vigenciaPromo || '',
+        activo: prod.activo || 'SI',
+        color: ''
+    };
+    
+    database.ref('productos').push(nuevoProducto)
+        .then(() => {
+            mostrarNotificacion('✅ Producto duplicado correctamente');
+            setTimeout(() => {
+                renderizarProductos();
+                if (modoAdmin) actualizarPanelAdmin();
+            }, 500);
+        })
+        .catch(err => mostrarNotificacion('❌ Error al duplicar: ' + err.message));
+};
+
+// ============================================================
+// RENDERIZAR PRODUCTOS (con campo Color y botón Duplicar)
 // ============================================================
 function renderizarProductos() {
     const contenedor = document.getElementById('contenedorProductos');
@@ -1595,8 +1653,9 @@ function renderizarProductos() {
         const precioClase = descNum > 0 ? 'precio-promo' : '';
         const ocultoBadge = (modoAdmin && estaOculto) ? `<span class="oculto-badge">🔒 OCULTO</span>` : '';
         const botonEditar = modoAdmin ? `<button class="btn-editar" onclick="toggleEditor('${p.id}')">✏️ EDITAR</button>` : '';
-        const clickImagen = p.imagenUrl ? `onclick="abrirVisor('${p.imagenUrl}', '${p.nombre}')"` : '';
+        const clickImagen = p.imagenUrl ? `onclick="abrirVisorPorId('${p.id}')"` : '';
         const cursorImagen = p.imagenUrl ? 'cursor:pointer;' : '';
+        const colorTexto = p.color ? `<span style="background:#f0f0f0;padding:1px 8px;border-radius:12px;font-size:8px;display:inline-block;margin-left:4px;">🎨 ${p.color}</span>` : '';
         
         let imagenHTML = '';
         if (p.imagenUrl) {
@@ -1608,7 +1667,7 @@ function renderizarProductos() {
         return `<div class="producto" style="${estaOculto && modoAdmin ? 'opacity:0.6;' : ''}">
             ${esPromoValida ? `<div class="banner-promo-fuera">${p.textoPromo}${p.vigenciaPromo ? ` ⏰${formatearFecha(p.vigenciaPromo)}` : ''}</div>` : ''}
             ${etiquetaPromo}
-            <div class="codigo">${p.codigo || 'S/C'}</div>
+            <div class="codigo">${p.codigo || 'S/C'} ${colorTexto}</div>
             <div class="imagen-area" ${clickImagen} style="${cursorImagen}">
                 ${imagenHTML}
             </div>
@@ -1630,6 +1689,7 @@ function renderizarProductos() {
                     <div class="campo-row"><label>Nombre</label><input type="text" id="edit-nombre-${p.id}" value="${p.nombre || ''}"></div>
                     <div class="campo-row"><label>Descripción</label><textarea id="edit-descripcion-${p.id}">${p.descripcion || ''}</textarea></div>
                     <div class="campo-row"><label>Categoría</label><input type="text" id="edit-categoria-${p.id}" value="${p.categoria || ''}"></div>
+                    <div class="campo-row"><label>🎨 Color</label><input type="text" id="edit-color-${p.id}" value="${p.color || ''}" placeholder="Ej: Rojo, Azul, Verde"></div>
                     <div class="campo-row"><label>Precio Lista ($)</label><input type="number" step="0.01" id="edit-precio-${p.id}" value="${p.precioLista || ''}"></div>
                     <div class="campo-row"><label>Descuento (%)</label><input type="number" id="edit-descuento-${p.id}" value="${p.descuento || '0'}"></div>
                     <div class="campo-row"><label>Precio Compra ($)</label><input type="number" step="0.01" id="edit-precioCompra-${p.id}" value="${p.precioCompra || ''}"></div>
@@ -1641,6 +1701,7 @@ function renderizarProductos() {
                     <div class="campo-row"><label>Texto Banner</label><input type="text" id="edit-textopromo-${p.id}" value="${p.textoPromo || ''}"></div>
                     <div class="campo-row"><label>Vigencia</label><input type="date" id="edit-vigencia-${p.id}" value="${p.vigenciaPromo || ''}"></div>
                     <button class="btn-guardar" onclick="guardarCambios('${p.id}')">💾 GUARDAR</button>
+                    <button class="btn-duplicar" onclick="duplicarProducto('${p.id}')">📋 DUPLICAR</button>
                     <button class="btn-eliminar" onclick="eliminarProducto('${p.id}')">🗑️ ELIMINAR</button>
                 </div>
             </div>
@@ -1684,6 +1745,7 @@ window.guardarCambios = function(id) {
         nombre: document.getElementById(`edit-nombre-${id}`).value,
         descripcion: document.getElementById(`edit-descripcion-${id}`).value,
         categoria: document.getElementById(`edit-categoria-${id}`).value,
+        color: document.getElementById(`edit-color-${id}`).value,
         precioLista: document.getElementById(`edit-precio-${id}`).value,
         descuento: document.getElementById(`edit-descuento-${id}`).value,
         precioCompra: document.getElementById(`edit-precioCompra-${id}`).value,
@@ -1751,7 +1813,8 @@ function renderizarCarrito() {
         let pFinal = precioFinal(item.producto);
         let subtotal = pFinal * item.cantidad;
         total += subtotal;
-        return `<div class="carrito-item"><span>${item.cantidad}x ${item.producto.nombre}</span><span>$${subtotal.toFixed(2)} <button onclick="eliminarDelCarrito('${item.id}')" style="background:none;border:none;color:#f43f5e;cursor:pointer;font-size:13px;">✕</button></span></div>`;
+        const colorTexto = item.producto.color ? ` (${item.producto.color})` : '';
+        return `<div class="carrito-item"><span>${item.cantidad}x ${item.producto.nombre}${colorTexto}</span><span>$${subtotal.toFixed(2)} <button onclick="eliminarDelCarrito('${item.id}')" style="background:none;border:none;color:#f43f5e;cursor:pointer;font-size:13px;">✕</button></span></div>`;
     }).join('');
     totalCont.innerText = `Total: $${total.toFixed(2)}`;
 }
@@ -1801,7 +1864,6 @@ document.getElementById('enviarPedidoBtn').onclick = function(e) {
         mostrarNotificacion("⚠️ No hay productos");
         return;
     }
-    // Limpiar todos los campos
     document.getElementById('regTelefono').value = '';
     document.getElementById('regNombre').value = '';
     document.getElementById('regNegocio').value = '';
@@ -1816,7 +1878,7 @@ document.getElementById('enviarPedidoBtn').onclick = function(e) {
 };
 
 // ============================================================
-// REGISTRO CONFIRMAR - CON GUARDADO AUTOMÁTICO DEL CLIENTE (CORREGIDO)
+// REGISTRO CONFIRMAR - CON GUARDADO AUTOMÁTICO DEL CLIENTE
 // ============================================================
 document.getElementById('btnRegistroConfirmar').onclick = function() {
     const telefono = document.getElementById('regTelefono').value.replace(/\D/g, '');
@@ -1835,9 +1897,7 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
         return;
     }
     
-    // Si no hay clienteId, guardar el cliente primero
     const guardarClienteYPedido = function(clienteIdExistente) {
-        // Ya tenemos el clienteId (nuevo o existente)
         let total = 0;
         let productosPedido = [];
         let mensajeWA = "*📦 NUEVO PEDIDO - GAETO COMERCIOS*\n\n";
@@ -1855,13 +1915,15 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
             let subtotal = pFinal * item.cantidad;
             total += subtotal;
             const codigo = item.producto.codigo || 'S/C';
-            mensajeWA += `${item.cantidad}x [${codigo}] ${item.producto.nombre} - $${pFinal.toFixed(2)} c/u = $${subtotal.toFixed(2)}\n`;
+            const colorTexto = item.producto.color ? ` [${item.producto.color}]` : '';
+            mensajeWA += `${item.cantidad}x [${codigo}] ${item.producto.nombre}${colorTexto} - $${pFinal.toFixed(2)} c/u = $${subtotal.toFixed(2)}\n`;
             productosPedido.push({
                 codigo: codigo,
                 nombre: item.producto.nombre,
                 cantidad: item.cantidad,
                 precioUnitario: pFinal,
-                subtotal: subtotal
+                subtotal: subtotal,
+                color: item.producto.color || ''
             });
         });
         
@@ -1894,18 +1956,14 @@ document.getElementById('btnRegistroConfirmar').onclick = function() {
                 carrito = [];
                 renderizarCarrito();
                 if (modoAdmin) actualizarPanelAdmin();
-                // Cerrar modal
                 document.getElementById('modalRegistro').style.display = 'none';
             })
             .catch(err => mostrarNotificacion("❌ Error: " + err.message));
     };
     
-    // Verificar si ya tenemos clienteId
     if (clienteIdEncontrado) {
-        // Ya existe, usar ese ID
         guardarClienteYPedido(clienteIdEncontrado);
     } else {
-        // Guardar nuevo cliente
         const nuevoCliente = {
             nombre: nombre,
             telefono: telefono,
@@ -1984,12 +2042,16 @@ function verHistorialCliente(clienteId) {
         const tipo = p.tipo || 'PEDIDO';
         const estado = p.estado || 'PENDIENTE';
         const estadoColor = {COTIZACION:'#8b5cf6',PENDIENTE:'#f59e0b',CONFIRMADO:'#22c55e',SURTIDO:'#8b5cf6',EN_RUTA:'#06b6d4',ENTREGADO:'#3b82f6',CANCELADO:'#ef4444'};
+        const productosLista = (p.productos || []).map(prod => {
+            const colorTexto = prod.color ? ` (${prod.color})` : '';
+            return `${prod.cantidad}x ${prod.nombre}${colorTexto}`;
+        }).join(', ');
         html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:6px;">
             <div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;">
                 <span>#${i+1} ${tipo === 'COTIZACION' ? '📄' : '📦'} GAETO-${folio}</span>
                 <span>${p.fecha || 'S/F'} <span style="background:${estadoColor[estado]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:8px;">${estado}</span></span>
             </div>
-            <div style="font-size:10px;color:#475569;margin:3px 0;">${(p.productos || []).map(prod => `${prod.cantidad}x ${prod.nombre}`).join(', ')}</div>
+            <div style="font-size:10px;color:#475569;margin:3px 0;">${productosLista}</div>
             <div style="text-align:right;font-weight:bold;color:#002b5c;font-size:13px;">$${parseFloat(p.total||0).toFixed(2)}</div>
         </div>`;
     });
@@ -2010,7 +2072,11 @@ function imprimirReporteCliente(clienteId) {
         const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A';
         const estado = p.estado || 'PENDIENTE';
         const estadoColor = {COTIZACION:'#8b5cf6',PENDIENTE:'#f59e0b',CONFIRMADO:'#22c55e',SURTIDO:'#8b5cf6',EN_RUTA:'#06b6d4',ENTREGADO:'#3b82f6',CANCELADO:'#ef4444'};
-        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;"><span>#${i+1} GAETO-${folio}</span><span>${p.fecha || 'S/F'} <span style="background:${estadoColor[estado]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:8px;">${estado}</span></span></div><div style="font-size:10px;color:#475569;margin:4px 0;">${(p.productos || []).map(prod => `${prod.cantidad}x ${prod.nombre}`).join(', ')}</div><div style="text-align:right;font-weight:bold;color:#002b5c;font-size:14px;">$${parseFloat(p.total||0).toFixed(2)}</div></div>`;
+        const productosLista = (p.productos || []).map(prod => {
+            const colorTexto = prod.color ? ` (${prod.color})` : '';
+            return `${prod.cantidad}x ${prod.nombre}${colorTexto}`;
+        }).join(', ');
+        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;"><span>#${i+1} GAETO-${folio}</span><span>${p.fecha || 'S/F'} <span style="background:${estadoColor[estado]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:8px;">${estado}</span></span></div><div style="font-size:10px;color:#475569;margin:4px 0;">${productosLista}</div><div style="text-align:right;font-weight:bold;color:#002b5c;font-size:14px;">$${parseFloat(p.total||0).toFixed(2)}</div></div>`;
     });
     html += '</div>';
     const ventana = window.open('', '_blank', 'width=700,height=600,scrollbars=yes');
@@ -2170,13 +2236,13 @@ function generarHTMLCompletoImpresion(titulo, contenido) {
 function imprimirInventario() {
     if (productos.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
     const datos = ordenarProductos([...productos]);
-    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th></tr></thead><tbody>';
+    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>Color</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th></tr></thead><tbody>';
     datos.forEach(p => {
         const stock = p.stock !== undefined ? p.stock : '-';
         const stockText = getStockText(stock);
         const precio = parseFloat(p.precioLista || 0).toFixed(2);
         const estaOculto = obtenerCampoActivo(p) === 'NO';
-        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}${estaOculto ? ' (OCULTO)' : ''}</td><td>${p.categoria || 'General'}</td><td>$${precio}</td><td>${stock}</td><td>${stockText}</td></tr>`;
+        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}${estaOculto ? ' (OCULTO)' : ''}</td><td>${p.color || ''}</td><td>${p.categoria || 'General'}</td><td>$${precio}</td><td>${stock}</td><td>${stockText}</td></tr>`;
     });
     tablaHTML += '</tbody></table>';
     const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
@@ -2192,11 +2258,11 @@ function generarPDFInventario() { imprimirInventario(); }
 function imprimirListaVenta() {
     if (productos.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
     const datos = ordenarProductos([...productos]);
-    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>Precio</th><th>Stock</th></tr></thead><tbody>';
+    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>Color</th><th>Precio</th><th>Stock</th></tr></thead><tbody>';
     datos.forEach(p => {
         const pFinal = precioFinal(p);
         const stockText = getStockText(p.stock !== undefined ? p.stock : '-');
-        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td><td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td><td>${stockText}</td></tr>`;
+        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td><td>${p.color || ''}</td><td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td><td>${stockText}</td></tr>`;
     });
     tablaHTML += '</tbody></table>';
     const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
@@ -2212,13 +2278,14 @@ function generarPDFListaVenta() { imprimirListaVenta(); }
 function imprimirListaCompraVenta() {
     if (productos.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
     const datos = ordenarProductos([...productos]);
-    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>P.Compra</th><th>P.Venta</th><th>Margen</th><th>Utilidad</th></tr></thead><tbody>';
+    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>Color</th><th>P.Compra</th><th>P.Venta</th><th>Stock</th><th>Margen</th><th>Utilidad</th></tr></thead><tbody>';
     datos.forEach(p => {
         const pFinal = precioFinal(p);
         const precioCompra = parseFloat(p.precioCompra || 0);
         const utilidad = pFinal - precioCompra;
         const margen = pFinal > 0 ? ((pFinal - precioCompra) / pFinal * 100) : 0;
-        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td><td>$${precioCompra.toFixed(2)}</td><td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td><td style="color:${margen >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">${margen.toFixed(1)}%</td><td style="color:${utilidad >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">$${utilidad.toFixed(2)}</td></tr>`;
+        const stockText = getStockText(p.stock !== undefined ? p.stock : '-');
+        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td><td>${p.color || ''}</td><td>$${precioCompra.toFixed(2)}</td><td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td><td>${stockText}</td><td style="color:${margen >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">${margen.toFixed(1)}%</td><td style="color:${utilidad >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">$${utilidad.toFixed(2)}</td></tr>`;
     });
     tablaHTML += '</tbody></table>';
     const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
@@ -2234,10 +2301,10 @@ function generarPDFListaCompraVenta() { imprimirListaCompraVenta(); }
 function imprimirListaCliente() {
     if (productos.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
     const datos = ordenarProductos([...productos]);
-    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>Precio</th></tr></thead><tbody>';
+    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>Color</th><th>Precio</th></tr></thead><tbody>';
     datos.forEach(p => {
         const pFinal = precioFinal(p);
-        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td><td style="font-weight:bold;color:#002b5c;font-size:14px;">$${pFinal.toFixed(2)}</td></tr>`;
+        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td><td>${p.color || ''}</td><td style="font-weight:bold;color:#002b5c;font-size:14px;">$${pFinal.toFixed(2)}</td></tr>`;
     });
     tablaHTML += '</tbody></table>';
     const ventana = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
@@ -2268,7 +2335,7 @@ function imprimirPromociones() {
             <div style="border:2px solid #e11d48;border-radius:12px;padding:15px;page-break-inside:avoid;background:white;">
                 <div style="background:#e11d48;color:white;display:inline-block;padding:2px 14px;border-radius:12px;font-size:9px;font-weight:bold;">${descNum > 0 ? '🔥 ' + descNum + '% OFF' : '📢 PROMO'}</div>
                 <div style="font-weight:bold;font-size:16px;color:#002b5c;margin-top:4px;">${p.nombre}</div>
-                <div style="font-size:10px;color:#64748b;">${p.codigo || 'S/C'}</div>
+                <div style="font-size:10px;color:#64748b;">${p.codigo || 'S/C'} ${p.color ? '🎨 ' + p.color : ''}</div>
                 ${esPromoBanner ? `<div style="background:#fef3c7;padding:6px 12px;border-radius:8px;margin:6px 0;font-size:12px;color:#92400e;">📢 ${p.textoPromo}</div>` : ''}
                 <div style="margin-top:6px;">${descNum > 0 ? `<span style="text-decoration:line-through;color:#999;font-size:14px;margin-right:8px;">$${precioLista}</span>` : ''}<span style="font-size:22px;font-weight:bold;color:#e11d48;">$${pFinal.toFixed(2)}</span></div>
             </div>
@@ -2292,7 +2359,7 @@ function compartirListaVenta() {
     filas.forEach(f => {
         const celdas = f.querySelectorAll('td');
         if (celdas.length >= 3) {
-            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent} - ${celdas[2].textContent}\n`;
+            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}${celdas[2].textContent ? ' (' + celdas[2].textContent + ')' : ''} - ${celdas[3].textContent}\n`;
         }
     });
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
@@ -2305,7 +2372,7 @@ function compartirListaCompraVenta() {
     filas.forEach(f => {
         const celdas = f.querySelectorAll('td');
         if (celdas.length >= 4) {
-            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}\n   Compra: ${celdas[2].textContent} | Venta: ${celdas[3].textContent} | Utilidad: ${celdas[5].textContent}\n`;
+            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}${celdas[2].textContent ? ' (' + celdas[2].textContent + ')' : ''}\n   Compra: ${celdas[3].textContent} | Venta: ${celdas[4].textContent} | Utilidad: ${celdas[7].textContent}\n`;
         }
     });
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
@@ -2318,7 +2385,7 @@ function compartirListaCliente() {
     filas.forEach(f => {
         const celdas = f.querySelectorAll('td');
         if (celdas.length >= 3) {
-            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent} - ${celdas[2].textContent}\n`;
+            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}${celdas[2].textContent ? ' (' + celdas[2].textContent + ')' : ''} - ${celdas[3].textContent}\n`;
         }
     });
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
@@ -2343,7 +2410,7 @@ function compartirInventarioWhatsApp() {
     filas.forEach(f => {
         const celdas = f.querySelectorAll('td');
         if (celdas.length >= 4) {
-            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}\n   ${celdas[3].textContent} - Stock: ${celdas[4].textContent}\n`;
+            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}${celdas[2].textContent ? ' (' + celdas[2].textContent + ')' : ''}\n   ${celdas[4].textContent} - Stock: ${celdas[5].textContent}\n`;
         }
     });
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
@@ -2387,7 +2454,7 @@ function renderizarListaVenta() {
     filtrados = ordenarProductos(filtrados);
     const tbody = document.getElementById('listaVentaBody');
     if (filtrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:15px;">🔍 No hay productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:15px;">🔍 No hay productos</td></tr>';
         return;
     }
     tbody.innerHTML = filtrados.map(p => {
@@ -2395,6 +2462,7 @@ function renderizarListaVenta() {
         const stock = p.stock !== undefined ? p.stock : '-';
         const stockClass = getStockClass(stock);
         return `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td>
+        <td>${p.color || ''}</td>
         <td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td>
         <td><span class="stock-badge ${stockClass}">${getStockText(stock)}</span></td></tr>`;
     }).join('');
@@ -2417,7 +2485,7 @@ function renderizarListaCompraVenta() {
     filtrados = ordenarProductos(filtrados);
     const tbody = document.getElementById('listaCompraBody');
     if (filtrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:15px;">🔍 No hay productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:15px;">🔍 No hay productos</td></tr>';
         return;
     }
     tbody.innerHTML = filtrados.map(p => {
@@ -2425,11 +2493,15 @@ function renderizarListaCompraVenta() {
         const precioCompra = parseFloat(p.precioCompra || 0);
         const utilidad = pFinal - precioCompra;
         const margen = pFinal > 0 ? ((pFinal - precioCompra) / pFinal * 100) : 0;
+        const stock = p.stock !== undefined ? p.stock : '-';
+        const stockClass = getStockClass(stock);
         return `<tr>
             <td>${p.codigo || 'S/C'}</td>
             <td>${p.nombre}</td>
+            <td>${p.color || ''}</td>
             <td>$${precioCompra.toFixed(2)}</td>
             <td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td>
+            <td><span class="stock-badge ${stockClass}">${getStockText(stock)}</span></td>
             <td style="color:${margen >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">${margen.toFixed(1)}%</td>
             <td style="color:${utilidad >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">$${utilidad.toFixed(2)}</td>
         </tr>`;
@@ -2454,12 +2526,13 @@ function renderizarListaCliente() {
     filtrados = ordenarProductos(filtrados);
     const tbody = document.getElementById('listaClienteBody');
     if (filtrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:15px;">🔍 No hay productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:15px;">🔍 No hay productos</td></tr>';
         return;
     }
     tbody.innerHTML = filtrados.map(p => {
         const pFinal = precioFinal(p);
         return `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td>
+        <td>${p.color || ''}</td>
         <td style="font-weight:bold;color:#002b5c;font-size:13px;">$${pFinal.toFixed(2)}</td></tr>`;
     }).join('');
 }
@@ -2482,18 +2555,19 @@ function renderizarPromociones() {
         const pFinal = precioFinal(p);
         const descNum = parseFloat(p.descuento) || 0;
         const esPromoBanner = p.promoFuera === "SI" && p.textoPromo;
+        const precioLista = parseFloat(p.precioLista || 0).toFixed(2);
         return `<div class="promo-card">
             <span class="promo-badge">${descNum > 0 ? `🔥 ${descNum}% OFF` : '📢 PROMO'}</span>
             <div class="promo-titulo">${p.nombre}</div>
-            <div style="font-size:10px;color:#64748b;">${p.codigo || 'S/C'}</div>
+            <div style="font-size:10px;color:#64748b;">${p.codigo || 'S/C'} ${p.color ? '🎨 ' + p.color : ''}</div>
             ${esPromoBanner ? `<div style="background:#fef3c7;padding:4px 10px;border-radius:8px;margin:4px 0;font-size:11px;color:#92400e;">📢 ${p.textoPromo}</div>` : ''}
-            <div>${descNum > 0 ? `<span class="promo-antes">$${parseFloat(p.precioLista).toFixed(2)}</span>` : ''}<span class="promo-precio">$${pFinal.toFixed(2)}</span></div>
+            <div>${descNum > 0 ? `<span class="promo-antes">$${precioLista}</span>` : ''}<span class="promo-precio">$${pFinal.toFixed(2)}</span></div>
         </div>`;
     }).join('');
 }
 
 // ============================================================
-// RENDERIZAR HISTORICO DE VENTAS
+// RENDERIZAR HISTORICO DE VENTAS (CORREGIDO Y COMPLETO)
 // ============================================================
 function renderizarHistoricoVentas(fechaDesde, fechaHasta) {
     const tbody = document.getElementById('historicoVentasTabla');
@@ -2510,8 +2584,13 @@ function renderizarHistoricoVentas(fechaDesde, fechaHasta) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">No hay ventas en el período</td></tr>';
         return;
     }
-    tbody.innerHTML = filtradas.map(c => {
-        const productosLista = (c.productos || []).map(item => `${item.cantidad}x ${item.nombre}`).join(', ');
+    let html = '';
+    filtradas.forEach(c => {
+        const productosLista = (c.productos || []).map(item => {
+            const colorTexto = item.color ? ` (${item.color})` : '';
+            const codigoTexto = item.codigoColor ? ` [${item.codigoColor}]` : '';
+            return `${item.cantidad}x ${item.nombre}${colorTexto}${codigoTexto}`;
+        }).join(', ');
         const estado = c.estado || 'PENDIENTE';
         const estadoColors = {
             'PENDIENTE': '#f59e0b',
@@ -2521,14 +2600,54 @@ function renderizarHistoricoVentas(fechaDesde, fechaHasta) {
             'ENTREGADO': '#3b82f6',
             'CANCELADO': '#ef4444'
         };
-        return `<tr>
+        html += `<tr>
             <td>${c.fecha || 'S/F'}</td>
             <td>${c.cliente?.nombre || 'Anónimo'}</td>
             <td style="font-size:9px;max-width:120px;">${productosLista || 'Sin productos'}</td>
             <td><strong>$${parseFloat(c.total || 0).toFixed(2)}</strong></td>
             <td><span style="background:${estadoColors[estado]||'#999'};color:white;padding:2px 8px;border-radius:10px;font-size:8px;">${estado}</span></td>
         </tr>`;
-    }).join('');
+    });
+    tbody.innerHTML = html;
+}
+
+// FUNCIONES DE IMPRESIÓN Y COMPARTIR PARA HISTÓRICO DE VENTAS (CORREGIDAS)
+function imprimirReporteVentas() {
+    const tbody = document.getElementById('historicoVentasTabla');
+    const filas = tbody.querySelectorAll('tr');
+    if (filas.length === 0 || filas[0].textContent.includes('No hay')) {
+        mostrarNotificacion('❌ No hay datos para imprimir');
+        return;
+    }
+    let html = '<table><thead><tr><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th></tr></thead><tbody>';
+    filas.forEach(f => {
+        const celdas = f.querySelectorAll('td');
+        if (celdas.length >= 5) {
+            html += `<tr><td>${celdas[0].textContent}</td><td>${celdas[1].textContent}</td><td>${celdas[2].textContent}</td><td>${celdas[3].textContent}</td><td>${celdas[4].textContent}</td></tr>`;
+        }
+    });
+    html += '</tbody></table>';
+    const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(generarHTMLCompletoImpresion('📊 HISTÓRICO DE VENTAS', html));
+    ventana.document.close();
+}
+
+function compartirReporteVentas() {
+    const tbody = document.getElementById('historicoVentasTabla');
+    const filas = tbody.querySelectorAll('tr');
+    if (filas.length === 0 || filas[0].textContent.includes('No hay')) {
+        mostrarNotificacion('❌ No hay datos para compartir');
+        return;
+    }
+    let mensaje = "📊 *HISTÓRICO DE VENTAS - GAETO COMERCIOS*\n\n";
+    filas.forEach(f => {
+        const celdas = f.querySelectorAll('td');
+        if (celdas.length >= 5) {
+            mensaje += `📅 ${celdas[0].textContent} | ${celdas[1].textContent} | ${celdas[2].textContent} | ${celdas[3].textContent} | ${celdas[4].textContent}\n`;
+        }
+    });
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
 // ============================================================
@@ -2538,7 +2657,8 @@ function actualizarPanelAdmin() {
     if (!modoAdmin) return;
     const totalVentas = cotizaciones.filter(c => c.tipo !== 'COTIZACION').reduce((s, c) => s + parseFloat(c.total || 0), 0);
     document.getElementById('statVentasHoy').textContent = '$' + totalVentas.toFixed(2);
-    document.getElementById('statProductos').textContent = productos.length;
+    const productosActivos = productos.filter(p => obtenerCampoActivo(p) === 'SI').length;
+    document.getElementById('statProductos').textContent = productosActivos;
     document.getElementById('statPedidos').textContent = cotizaciones.length;
     document.getElementById('statClientes').textContent = clientes.length;
     const stockBajo = productos.filter(p => p.stock !== undefined && p.stock <= 5).length;
@@ -2569,21 +2689,27 @@ function actualizarPanelAdmin() {
 
 function renderizarInventario() {
     const tbody = document.getElementById('inventarioTabla');
+    const contador = document.getElementById('inventarioContador');
+    const productosActivos = productos.filter(p => obtenerCampoActivo(p) === 'SI');
+    contador.textContent = `Total de productos activos: ${productosActivos.length}`;
     if (productos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">No hay productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#94a3b8;">No hay productos</td></tr>';
         return;
     }
     const productosOrdenados = ordenarProductos([...productos]);
-    tbody.innerHTML = productosOrdenados.map(p => {
+    tbody.innerHTML = productosOrdenados.map((p, index) => {
         const stock = p.stock !== undefined ? p.stock : '-';
         const stockClass = getStockClass(stock);
         const stockText = getStockText(stock);
         const esPromo = (p.promoFuera === "SI" && p.textoPromo) || parseFloat(p.descuento) > 0;
         const estaOculto = obtenerCampoActivo(p) === 'NO';
         const precio = parseFloat(p.precioLista || 0).toFixed(2);
+        const num = index + 1;
         return `<tr style="${estaOculto ? 'opacity:0.6;background:#fef2f2;' : ''}">
+            <td>${num}</td>
             <td>${p.codigo || 'S/C'} ${esPromo ? '🔥' : ''}</td>
             <td>${p.nombre} ${estaOculto ? '<span style="color:#b91c1c;font-size:8px;">(OCULTO)</span>' : ''}</td>
+            <td>${p.color || ''}</td>
             <td>${p.categoria || 'General'}</td>
             <td>$${precio}</td>
             <td>${stock}</td>
@@ -2821,9 +2947,10 @@ function renderizarProductosEdicion() {
     productosEdicionTemp.forEach((p, index) => {
         const subtotal = p.cantidad * p.precioUnitario;
         p.subtotal = subtotal;
+        const colorTexto = p.color ? ` (${p.color})` : '';
         html += `
             <div class="editar-producto-item">
-                <span class="nombre">[${p.codigo}] ${p.nombre}</span>
+                <span class="nombre">[${p.codigo}] ${p.nombre}${colorTexto}</span>
                 <input type="number" class="cantidad" value="${p.cantidad}" min="1" onchange="cambiarCantidadEdicion(${index}, this.value)" />
                 <span class="subtotal">$${subtotal.toFixed(2)}</span>
                 <button class="btn-eliminar-prod" onclick="eliminarProductoEdicion(${index})" title="Eliminar producto">✕</button>
@@ -2964,6 +3091,18 @@ document.getElementById('modalEditarPedido').addEventListener('click', function(
 window.onload = function() {
     initTabs();
     
+    // Event listeners para filtros de histórico de ventas
+    document.getElementById('btnFiltrarVentas').addEventListener('click', function() {
+        const desde = document.getElementById('fechaDesde').value;
+        const hasta = document.getElementById('fechaHasta').value;
+        renderizarHistoricoVentas(desde, hasta);
+    });
+    document.getElementById('btnLimpiarFiltros').addEventListener('click', function() {
+        document.getElementById('fechaDesde').value = '';
+        document.getElementById('fechaHasta').value = '';
+        renderizarHistoricoVentas();
+    });
+    
     document.getElementById('busquedaInput').oninput = (e) => { textoBusqueda = e.target.value; renderizarProductos(); };
     document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; renderizarCarrito(); };
     document.getElementById('toggleModoBtn').onclick = () => {
@@ -2990,6 +3129,7 @@ window.onload = function() {
             nombre: "Nuevo Artículo",
             descripcion: "Descripción",
             categoria: "GENERAL",
+            color: "",
             precioLista: "100",
             descuento: "0",
             stock: "10",
