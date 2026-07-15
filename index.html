@@ -904,7 +904,7 @@ function abrirModalTicket(id) {
             </div>
             <div class="footer">
                 📞 228 287 7441<br>
-                📍 Jiménez 408, Col. Miguel Alemán<br>
+                📍 Jiménez s/n, Col. Miguel Alemán, Veracruz, Ver.<br>
                 📅 Pedidos: Lun, Mar, Mié<br>
                 🚚 Entregas: Vie y Sáb 9am-6:30pm
             </div>
@@ -1412,7 +1412,7 @@ function generarHTMLCotizacion(data) {
             
             <div class="footer">
                 <strong>GAETO COMERCIOS</strong><br>
-                📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán, Veracruz, Ver.<br>
+                📞 228 287 7441 | 📍 Jiménez s/n, Col. Miguel Alemán, Veracruz, Ver.<br>
                 📧 gaetocomercios@gmail.com | 🌐 www.gaetocomercios.com<br>
                 <span style="font-size:10px;">*Esta cotización es válida únicamente con la aceptación del cliente.*</span>
             </div>
@@ -1579,7 +1579,7 @@ function generarPDFPedido(id) {
     html += `
             <div class="total"><span class="total-label">TOTAL:</span> $${total}</div>
             <div style="text-align:center;font-size:10px;margin:4px 0;clear:both;">Estado: ${c.estado || 'PENDIENTE'}</div>
-            <div class="footer">📞 228 287 7441<br>📍 Jiménez 408, Col. Miguel Alemán</div>
+            <div class="footer">📞 228 287 7441<br>📍 Jiménez s/n, Col. Miguel Alemán, Veracruz, Ver.</div>
             <div class="btn">
                 <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir</button>
                 <button class="btn-cerrar" onclick="window.close()">❌ Cerrar</button>
@@ -2299,7 +2299,7 @@ function generarHTMLCompletoImpresion(titulo, contenido) {
     </div>
     ${contenido}
     <div class="pie">
-        📞 228 287 7441 | 📍 Jiménez 408, Col. Miguel Alemán, Veracruz, Ver.
+        📞 228 287 7441 | 📍 Jiménez s/n, Col. Miguel Alemán, Veracruz, Ver.
     </div>
     <div class="no-print" style="text-align:center;margin-top:15px;padding:10px;border-top:1px solid #ccc;">
         <button onclick="window.print()" style="background:#2563eb;color:white;border:none;padding:8px 20px;border-radius:30px;font-weight:bold;cursor:pointer;font-size:12px;">🖨️ Imprimir</button>
