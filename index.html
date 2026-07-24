@@ -3576,6 +3576,9 @@ function actualizarPanelAdmin() {
     renderizarGraficas();
 }
 
+// ============================================================
+// RENDERIZAR INVENTARIO CON BUSCADOR
+// ============================================================
 function renderizarInventario() {
     const tbody = document.getElementById('inventarioTabla');
     const contador = document.getElementById('inventarioContador');
@@ -3618,6 +3621,69 @@ function renderizarInventario() {
             <td colspan="3" style="color:#2563eb;font-size:14px;">$${valorTotalInventario.toFixed(2)}</td>
         </tr>`;
     }
+}
+
+// ============================================================
+// BUSCADOR DE INVENTARIO - CORREGIDO
+// ============================================================
+document.getElementById('btnBuscarInventario').addEventListener('click', function() {
+    filtrarInventario();
+});
+
+document.getElementById('buscarInventario').addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') {
+        filtrarInventario();
+    }
+});
+
+function filtrarInventario() {
+    const busqueda = document.getElementById('buscarInventario').value.toLowerCase().trim();
+    const filas = document.querySelectorAll('#inventarioTabla tr');
+    
+    const totalRows = filas.length;
+    let totalVisible = 0;
+    
+    filas.forEach((fila, index) => {
+        if (index === totalRows - 1) {
+            return;
+        }
+        const texto = fila.textContent.toLowerCase();
+        if (busqueda === '' || texto.includes(busqueda)) {
+            fila.style.display = '';
+            totalVisible++;
+        } else {
+            fila.style.display = 'none';
+        }
+    });
+    
+    document.getElementById('inventarioContador').textContent = `Productos encontrados: ${totalVisible}`;
+}
+
+// ============================================================
+// BUSCADOR DE CLIENTES - CORREGIDO
+// ============================================================
+document.getElementById('btnBuscarClientes').addEventListener('click', function() {
+    filtrarClientes();
+});
+
+document.getElementById('buscarClientes').addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') {
+        filtrarClientes();
+    }
+});
+
+function filtrarClientes() {
+    const busqueda = document.getElementById('buscarClientes').value.toLowerCase().trim();
+    const filas = document.querySelectorAll('#clientesTabla tr');
+    
+    filas.forEach(fila => {
+        const texto = fila.textContent.toLowerCase();
+        if (busqueda === '' || texto.includes(busqueda)) {
+            fila.style.display = '';
+        } else {
+            fila.style.display = 'none';
+        }
+    });
 }
 
 // ============================================================
