@@ -504,6 +504,7 @@
             <div class="stat-card"><h4>📋 Pedidos</h4><div class="numero" id="statPedidos">0</div></div>
             <div class="stat-card"><h4>👥 Clientes</h4><div class="numero" id="statClientes">0</div></div>
             <div class="stat-card"><h4>⚠️ Stock Bajo</h4><div class="numero" id="statStockBajo" style="color:#b91c1c;">0</div></div>
+            <div class="stat-card"><h4>💰 Valor Inventario</h4><div class="numero" id="statValorInventario" style="color:#2563eb;">$0</div></div>
             <div class="stat-card"><h4>📈 Utilidad</h4><div class="numero" id="statUtilidad">$0</div></div>
         </div>
         <div class="chart-container"><h4 style="margin-bottom:8px;font-size:12px;">📈 Ventas por Día</h4><canvas id="ventasChart" style="max-height:180px;max-width:100%"></canvas></div>
@@ -521,7 +522,7 @@
             <button onclick="compartirInventarioWhatsApp()" style="background:#25d366;color:white;border:none;padding:5px 12px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer">📲</button>
         </div>
         <div style="background:#f8fafc;padding:6px 12px;border-radius:8px;margin-bottom:8px;font-size:12px;color:#002b5c;font-weight:bold;" id="inventarioContador">Total de productos activos: 0</div>
-        <div class="tabla-container"><table><thead><tr><th>#</th><th>Código</th><th>Producto</th><th>Color</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="inventarioTabla"></tbody></table></div>
+        <div class="tabla-container"><table><thead><tr><th>#</th><th>Código</th><th>Producto</th><th>Color</th><th>Categoría</th><th>Precio</th><th>Costo</th><th>Stock</th><th>Valor</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="inventarioTabla"></tbody></table></div>
     </div>
     <div id="tabPedidos" class="tab-content">
         <div class="tabla-container"><table><thead><tr><th>Folio</th><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Productos</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="pedidosTabla"></tbody></table></div>
@@ -759,7 +760,6 @@ let ticketActualData = null;
 let pedidoEditandoId = null;
 let productosEdicionTemp = [];
 
-// Variable para guardar los datos filtrados de ventas (para impresión y WhatsApp)
 let ventasFiltradasActuales = [];
 
 // ============================================================
@@ -827,8 +827,20 @@ function getStockText(stock) {
     return 'Disponible';
 }
 
+function calcularValorInventario() {
+    let total = 0;
+    productos.forEach(p => {
+        if (esActivo(p)) {
+            const stock = parseInt(p.stock) || 0;
+            const precio = precioFinal(p);
+            total += stock * precio;
+        }
+    });
+    return total;
+}
+
 // ============================================================
-// LEER DATOS DE FIREBASE - ORIGINAL FUNCIONAL
+// LEER DATOS DE FIREBASE
 // ============================================================
 database.ref('productos').on('value', (snapshot) => {
     const data = snapshot.val();
@@ -2113,7 +2125,7 @@ window.eliminarProducto = function(id) {
 };
 
 // ============================================================
-// CARRITO - PERMITIR STOCK 0
+// CARRITO
 // ============================================================
 window.agregarAlCarrito = function(id) {
     let prod = productos.find(p => p.id === id);
@@ -2383,7 +2395,7 @@ function eliminarCliente(clienteId) {
 }
 
 // ============================================================
-// verHistorialCliente CON UTILIDAD POR PEDIDO
+// verHistorialCliente
 // ============================================================
 function verHistorialCliente(clienteId) {
     const cliente = clientes.find(c => c.id === clienteId);
@@ -2899,20 +2911,25 @@ function generarHTMLCompletoImpresion(titulo, contenido) {
 }
 
 // ============================================================
-// IMPRIMIR INVENTARIO
+// IMPRIMIR INVENTARIO CON VALOR
 // ============================================================
 function imprimirInventario() {
     const activos = productos.filter(p => esActivo(p));
     if (activos.length === 0) { mostrarNotificacion('❌ No hay productos activos'); return; }
     const datos = ordenarProductos([...activos]);
-    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>Color</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th></tr></thead><tbody>';
+    let tablaHTML = '<table><thead><tr><th>Código</th><th>Producto</th><th>Color</th><th>Categoría</th><th>Precio</th><th>Costo</th><th>Stock</th><th>Valor</th><th>Estado</th></tr></thead><tbody>';
+    let valorTotal = 0;
     datos.forEach(p => {
-        const stock = p.stock !== undefined ? p.stock : '-';
+        const stock = parseInt(p.stock) || 0;
+        const precio = precioFinal(p);
+        const costo = parseFloat(p.precioCompra) || 0;
+        const valor = stock * precio;
+        valorTotal += valor;
         const stockText = getStockText(stock);
-        let precio = parseFloat(p.precioLista || 0).toFixed(2);
-        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td><td>${p.color || ''}</td><td>${p.categoria || 'General'}</td><td>$${precio}</td><td>${stock}</td><td>${stockText}</td></tr>`;
+        tablaHTML += `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td><td>${p.color || ''}</td><td>${p.categoria || 'General'}</td><td>$${precio.toFixed(2)}</td><td>$${costo.toFixed(2)}</td><td>${stock}</td><td>$${valor.toFixed(2)}</td><td>${stockText}</td></tr>`;
     });
     tablaHTML += '</tbody></table>';
+    tablaHTML += `<div style="text-align:right;font-weight:bold;font-size:16px;color:#2563eb;border-top:2px solid #2563eb;padding-top:10px;margin-top:10px;">💰 VALOR TOTAL DEL INVENTARIO: $${valorTotal.toFixed(2)}</div>`;
     const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
     if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
     ventana.document.write(generarHTMLCompletoImpresion('📦 INVENTARIO - GAETO COMERCIOS', tablaHTML));
@@ -3078,12 +3095,18 @@ function compartirInventarioWhatsApp() {
     const filas = document.querySelectorAll('#inventarioTabla tr');
     if (filas.length === 0) { mostrarNotificacion('❌ No hay productos'); return; }
     let mensaje = "📦 *INVENTARIO - GAETO COMERCIOS*\n\n";
+    let valorTotal = 0;
     filas.forEach(f => {
         const celdas = f.querySelectorAll('td');
-        if (celdas.length >= 4) {
-            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}${celdas[2].textContent ? ' (' + celdas[2].textContent + ')' : ''}\n   ${celdas[4].textContent} - Stock: ${celdas[5].textContent}\n`;
+        if (celdas.length >= 8) {
+            const stock = parseInt(celdas[7].textContent) || 0;
+            const precio = parseFloat(celdas[5].textContent.replace('$', '')) || 0;
+            const valor = stock * precio;
+            valorTotal += valor;
+            mensaje += `📌 ${celdas[0].textContent} - ${celdas[1].textContent}${celdas[2].textContent ? ' (' + celdas[2].textContent + ')' : ''}\n   ${celdas[4].textContent} - Stock: ${stock} - Valor: $${valor.toFixed(2)}\n`;
         }
     });
+    mensaje += `\n💰 *VALOR TOTAL DEL INVENTARIO: $${valorTotal.toFixed(2)}*`;
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
@@ -3218,7 +3241,6 @@ function renderizarPromociones() {
     
     let promociones = [];
     
-    // 1. Productos con promociones normales (banner o descuento)
     const promocionesNormales = productos.filter(p => {
         if (!esActivo(p)) return false;
         const tienePromo = p.promoFuera === "SI" && p.textoPromo && p.textoPromo.trim() !== "";
@@ -3226,12 +3248,10 @@ function renderizarPromociones() {
         return tienePromo || tieneDescuento;
     });
     
-    // Combinar ambas listas sin duplicados
     const idsPromociones = new Set();
     promocionesNormales.forEach(p => idsPromociones.add(p.id));
     promociones = [...promocionesNormales];
     
-    // Ordenar productos
     promociones = ordenarProductos(promociones);
     
     if (promociones.length === 0) {
@@ -3243,7 +3263,7 @@ function renderizarPromociones() {
         let pFinal = precioFinal(p);
         const descNum = parseFloat(p.descuento) || 0;
         const esPromoBanner = p.promoFuera === "SI" && p.textoPromo;
-        const precioListaStr = descNum > 0 ? precioOriginal.toFixed(2) : parseFloat(p.precioLista || 0).toFixed(2);
+        const precioListaStr = parseFloat(p.precioLista || 0).toFixed(2);
         
         let badgeText = '';
         let badgeStyle = '';
@@ -3530,6 +3550,8 @@ function actualizarPanelAdmin() {
     document.getElementById('statClientes').textContent = clientes.length;
     const stockBajo = productos.filter(p => p.stock !== undefined && p.stock <= 5 && esActivo(p)).length;
     document.getElementById('statStockBajo').textContent = stockBajo;
+    const valorInventario = calcularValorInventario();
+    document.getElementById('statValorInventario').textContent = '$' + valorInventario.toFixed(2);
     const utilidad = cotizaciones.filter(c => c.tipo !== 'COTIZACION').reduce((s, c) => {
         const prodUtilidad = (c.productos || []).reduce((sum, p) => {
             const prod = productos.find(pr => pr.nombre === p.nombre);
@@ -3560,17 +3582,21 @@ function renderizarInventario() {
     const productosActivos = productos.filter(p => esActivo(p));
     contador.textContent = `Total de productos activos: ${productosActivos.length}`;
     if (productos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#94a3b8;">No hay productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:#94a3b8;">No hay productos</td></tr>';
         return;
     }
     const productosOrdenados = ordenarProductos([...productos]);
+    let valorTotalInventario = 0;
     tbody.innerHTML = productosOrdenados.map((p, index) => {
-        const stock = p.stock !== undefined ? p.stock : '-';
+        const stock = parseInt(p.stock) || 0;
+        const precio = precioFinal(p);
+        const costo = parseFloat(p.precioCompra) || 0;
+        const valor = stock * precio;
+        valorTotalInventario += valor;
         const stockClass = getStockClass(stock);
         const stockText = getStockText(stock);
         const esPromo = (p.promoFuera === "SI" && p.textoPromo) || parseFloat(p.descuento) > 0;
         const estaOculto = !esActivo(p);
-        let precio = parseFloat(p.precioLista || 0).toFixed(2);
         const num = index + 1;
         return `<tr style="${estaOculto ? 'opacity:0.6;background:#fef2f2;' : ''}">
             <td>${num}</td>
@@ -3578,12 +3604,20 @@ function renderizarInventario() {
             <td>${p.nombre} ${estaOculto ? '<span style="color:#b91c1c;font-size:8px;">(OCULTO)</span>' : ''}</td>
             <td>${p.color || ''}</td>
             <td>${p.categoria || 'General'}</td>
-            <td>$${precio}</td>
+            <td>$${precio.toFixed(2)}</td>
+            <td>$${costo.toFixed(2)}</td>
             <td>${stock}</td>
+            <td>$${valor.toFixed(2)}</td>
             <td><span class="stock-badge ${stockClass}">${stockText}</span></td>
             <td><button class="btn-editar-stock" onclick="abrirModalStock('${p.id}')">📦</button></td>
         </tr>`;
     }).join('');
+    if (productosOrdenados.length > 0) {
+        tbody.innerHTML += `<tr style="background:#e2e8f0;font-weight:bold;">
+            <td colspan="8" style="text-align:right;">💰 VALOR TOTAL DEL INVENTARIO:</td>
+            <td colspan="3" style="color:#2563eb;font-size:14px;">$${valorTotalInventario.toFixed(2)}</td>
+        </tr>`;
+    }
 }
 
 // ============================================================
@@ -3738,7 +3772,7 @@ document.getElementById('btnCrearProductoCompra').addEventListener('click', func
 });
 
 // ============================================================
-// COMPARTIR CATÁLOGO
+// COMPARTIR CATÁLOGO CON LOGO - CORREGIDO
 // ============================================================
 document.getElementById('compartirBtn').onclick = function() {
     const url = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
@@ -3993,7 +4027,7 @@ window.onload = function() {
     };
     
     // ============================================================
-    // BOTÓN PROMOCIONES - CORREGIDO
+    // BOTÓN PROMOCIONES
     // ============================================================
     document.getElementById('promocionesBtn').onclick = function() {
         if (modoAdmin) {
