@@ -326,6 +326,10 @@
         .btn-cotizar{display:none !important;}
         .modal-cotizacion{display:none !important;}
         #capturaCotizacion{display:none !important;}
+        
+        /* Estilos para el botón de reporte de promociones */
+        .btn-reporte-promociones{background:#e11d48;color:white;border:none;padding:6px 14px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer;}
+        .btn-reporte-promociones:hover{background:#b91c1c;}
     </style>
 </head>
 <body>
@@ -654,6 +658,9 @@
         </div>
     </div>
     <div id="tabReportes" class="tab-content">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+            <button onclick="generarReportePromociones()" class="btn-reporte-promociones">🔥 REPORTE PROMOCIONES</button>
+        </div>
         <div class="stats-grid" id="statsGridReportes">
             <div class="stat-card"><h4>📊 Total Ventas</h4><div class="numero" id="reportTotalVentas">$0</div></div>
             <div class="stat-card"><h4>📦 Productos Vendidos</h4><div class="numero" id="reportProductosVendidos">0</div></div>
@@ -684,6 +691,7 @@
                 <div id="totalVentasFiltradas" style="text-align:right;font-weight:bold;font-size:12px;color:#002b5c;padding:6px 10px;border-top:2px solid #002b5c;margin-top:4px;"></div>
             </div>
         </div>
+        <div id="reportePromocionesContainer" style="margin-top:15px;"></div>
     </div>
 </div>
 
@@ -1487,66 +1495,605 @@ function renderizarClientes() {
 
 function eliminarCliente(clienteId) { if (!confirm('⚠️ ¿Eliminar este cliente?')) return; database.ref('clientes/' + clienteId).remove().then(() => mostrarNotificacion('✅ Cliente eliminado')).catch(err => mostrarNotificacion('❌ Error: ' + err.message)); }
 
+// ============================================================
+// VER HISTORIAL CLIENTE CON UTILIDAD
+// ============================================================
 function verHistorialCliente(clienteId) {
-    const cliente = clientes.find(c => c.id === clienteId); if (!cliente) return;
-    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
-    if (pedidos.length === 0) { mostrarNotificacion('ℹ️ Sin pedidos'); return; }
-    let totalVentas = 0; let utilidadTotal = 0;
-    let html = `<div class="reporte-cliente"><h3 style="color:#002b5c;font-size:15px;">📋 HISTORIAL - ${cliente.nombre}</h3><p style="font-size:12px;color:#64748b;">📱 ${cliente.telefono} | 📦 ${pedidos.length} pedidos</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;"><button class="btn-imprimir-reporte" onclick="imprimirReporteCliente('${clienteId}')">🖨️ Imprimir</button><button class="btn-whatsapp-reporte" onclick="compartirReporteCliente('${clienteId}')">📲 WhatsApp</button></div><hr style="margin:8px 0;border:0;border-top:1px solid #e2e8f0;">`;
-    pedidos.forEach((p, i) => {
-        const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A'; const tipo = p.tipo || 'PEDIDO'; const estado = p.estado || 'PENDIENTE'; const estadoColor = {COTIZACION:'#8b5cf6',PENDIENTE:'#f59e0b',CONFIRMADO:'#22c55e',SURTIDO:'#8b5cf6',EN_RUTA:'#06b6d4',ENTREGADO:'#3b82f6',CANCELADO:'#ef4444'};
-        const productosLista = (p.productos || []).map(prod => { const colorTexto = prod.color ? ` (${prod.color})` : ''; return `${prod.cantidad}x ${prod.nombre}${colorTexto}`; }).join(', ');
-        let utilidadPedido = 0; (p.productos || []).forEach(prod => { const productoDB = productos.find(pr => pr.nombre === prod.nombre); const costo = productoDB ? parseFloat(productoDB.precioCompra || 0) : 0; utilidadPedido += (parseFloat(prod.subtotal || 0) - (costo * prod.cantidad)); });
-        utilidadTotal += utilidadPedido; const totalPedido = parseFloat(p.total || 0); totalVentas += totalPedido;
-        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:6px;"><div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;"><span>#${i+1} ${tipo === 'COTIZACION' ? '📄' : '📦'} GAETO-${folio}</span><span>${p.fecha || 'S/F'} <span style="background:${estadoColor[estado]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:8px;">${estado}</span></span></div><div style="font-size:10px;color:#475569;margin:3px 0;">${productosLista}</div><div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:#16a34a;">💰 Utilidad: $${utilidadPedido.toFixed(2)}</span><span style="font-weight:bold;color:#002b5c;">$${totalPedido.toFixed(2)}</span></div></div>`;
-    });
-    html += `<div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;color:#002b5c;border-top:2px solid #002b5c;padding-top:6px;margin-top:6px;"><span>💰 UTILIDAD TOTAL: $${utilidadTotal.toFixed(2)}</span><span>TOTAL DE VENTAS: $${totalVentas.toFixed(2)}</span></div><button class="btn-cerrar-reporte" onclick="document.getElementById('reporteClienteContainer').style.display='none'">❌ Cerrar</button></div>`;
-    document.getElementById('reporteClienteContainer').innerHTML = html; document.getElementById('reporteClienteContainer').style.display = 'block'; document.getElementById('reporteClienteContainer').scrollIntoView({ behavior: 'smooth' });
-}
-
-function imprimirReporteCliente(clienteId) {
-    const cliente = clientes.find(c => c.id === clienteId);
+    const cliente = clientes.find(c => c.id === clienteId); 
     if (!cliente) return;
     const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
     if (pedidos.length === 0) { mostrarNotificacion('ℹ️ Sin pedidos'); return; }
-    let totalVentas = 0;
+    
+    let totalVentas = 0; 
     let utilidadTotal = 0;
-    let html = `<div style="font-size:12px;"><h3 style="color:#002b5c;font-size:16px;margin-bottom:8px;">📋 HISTORIAL - ${cliente.nombre}</h3><p style="color:#64748b;margin-bottom:10px;">📱 ${cliente.telefono} | 📦 ${pedidos.length} pedidos</p><hr style="border:1px solid #e2e8f0;margin:10px 0;">`;
+    let totalDescuentosAplicados = 0;
+    let productosPromoVendidos = 0;
+    
+    let html = `<div class="reporte-cliente">
+        <h3 style="color:#002b5c;font-size:15px;">📋 HISTORIAL - ${cliente.nombre}</h3>
+        <p style="font-size:12px;color:#64748b;">📱 ${cliente.telefono} | 📦 ${pedidos.length} pedidos</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;">
+            <button class="btn-imprimir-reporte" onclick="imprimirReporteCliente('${clienteId}')">🖨️ Imprimir</button>
+            <button class="btn-whatsapp-reporte" onclick="compartirReporteCliente('${clienteId}')">📲 WhatsApp</button>
+        </div>
+        <hr style="margin:8px 0;border:0;border-top:1px solid #e2e8f0;">`;
+    
     pedidos.forEach((p, i) => {
         const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A';
-        const productosLista = (p.productos || []).map(prod => { const colorTexto = prod.color ? ` (${prod.color})` : ''; return `${prod.cantidad}x ${prod.nombre}${colorTexto}`; }).join(', ');
+        const tipo = p.tipo || 'PEDIDO';
+        const estado = p.estado || 'PENDIENTE';
+        const estadoColor = {COTIZACION:'#8b5cf6',PENDIENTE:'#f59e0b',CONFIRMADO:'#22c55e',SURTIDO:'#8b5cf6',EN_RUTA:'#06b6d4',ENTREGADO:'#3b82f6',CANCELADO:'#ef4444'};
+        
+        const productosLista = (p.productos || []).map(prod => {
+            const colorTexto = prod.color ? ` (${prod.color})` : '';
+            const prodDB = productos.find(pr => pr.nombre === prod.nombre);
+            const esPromo = prodDB && (parseFloat(prodDB.descuento) > 0 || prodDB.promoFuera === 'SI');
+            return `${prod.cantidad}x ${prod.nombre}${colorTexto}${esPromo ? ' 🔥' : ''}`;
+        }).join(', ');
+        
         // Calcular utilidad del pedido
         let utilidadPedido = 0;
+        let descuentoPedido = 0;
+        let tienePromo = false;
+        
         (p.productos || []).forEach(prod => {
             const productoDB = productos.find(pr => pr.nombre === prod.nombre);
             const costo = productoDB ? parseFloat(productoDB.precioCompra || 0) : 0;
-            utilidadPedido += (parseFloat(prod.subtotal || 0) - (costo * prod.cantidad));
+            const precioVenta = parseFloat(prod.precioUnitario || 0);
+            const cantidad = parseInt(prod.cantidad) || 0;
+            utilidadPedido += (precioVenta - costo) * cantidad;
+            
+            if (productoDB && parseFloat(productoDB.descuento) > 0) {
+                const precioOriginal = parseFloat(productoDB.precioLista || 0);
+                descuentoPedido += (precioOriginal - precioVenta) * cantidad;
+                tienePromo = true;
+                productosPromoVendidos += cantidad;
+            } else if (productoDB && productoDB.promoFuera === 'SI') {
+                tienePromo = true;
+                productosPromoVendidos += cantidad;
+            }
         });
+        
         utilidadTotal += utilidadPedido;
+        totalDescuentosAplicados += descuentoPedido;
         const totalPedido = parseFloat(p.total || 0);
         totalVentas += totalPedido;
-        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;"><span>#${i+1} GAETO-${folio}</span><span>${p.fecha || 'S/F'}</span></div><div style="font-size:10px;color:#475569;margin:4px 0;">${productosLista}</div><div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:#16a34a;">💰 Utilidad: $${utilidadPedido.toFixed(2)}</span><span style="font-weight:bold;color:#002b5c;">$${totalPedido.toFixed(2)}</span></div></div>`;
+        
+        const promoBadge = tienePromo ? ' <span style="background:#e11d48;color:white;padding:1px 8px;border-radius:10px;font-size:8px;">🔥 PROMO</span>' : '';
+        
+        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:6px;${tienePromo ? 'border-left:4px solid #e11d48;' : ''}">
+            <div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;">
+                <span>#${i+1} ${tipo === 'COTIZACION' ? '📄' : '📦'} GAETO-${folio}${promoBadge}</span>
+                <span>${p.fecha || 'S/F'} <span style="background:${estadoColor[estado]||'#999'};color:white;padding:1px 8px;border-radius:10px;font-size:8px;">${estado}</span></span>
+            </div>
+            <div style="font-size:10px;color:#475569;margin:3px 0;">${productosLista}</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;font-size:11px;margin-top:3px;">
+                <span style="color:#002b5c;font-weight:bold;">💲 Total: $${totalPedido.toFixed(2)}</span>
+                <span style="color:${utilidadPedido >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">📈 Utilidad: $${utilidadPedido.toFixed(2)}</span>
+                ${descuentoPedido > 0 ? `<span style="color:#e11d48;font-weight:bold;">🏷️ Desc: -$${descuentoPedido.toFixed(2)}</span>` : '<span></span>'}
+            </div>
+        </div>`;
     });
-    html += `<div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;color:#002b5c;border-top:2px solid #002b5c;padding-top:8px;margin-top:8px;"><span>💰 UTILIDAD TOTAL: $${utilidadTotal.toFixed(2)}</span><span>TOTAL DE VENTAS: $${totalVentas.toFixed(2)}</span></div></div>`;
+    
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:2px solid #002b5c;padding-top:8px;margin-top:6px;">
+        <div style="text-align:center;font-weight:bold;font-size:13px;color:#002b5c;">
+            💰 TOTAL VENTAS: $${totalVentas.toFixed(2)}
+        </div>
+        <div style="text-align:center;font-weight:bold;font-size:13px;color:${utilidadTotal >= 0 ? '#16a34a' : '#dc2626'};">
+            📈 UTILIDAD TOTAL: $${utilidadTotal.toFixed(2)}
+        </div>
+        <div style="text-align:center;font-weight:bold;font-size:13px;color:#e11d48;">
+            🔥 PRODUCTOS PROMO: ${productosPromoVendidos}
+        </div>
+    </div>`;
+    
+    // Botón para ver reporte de promociones del cliente
+    html += `<div style="text-align:center;margin-top:10px;">
+        <button onclick="generarReportePromocionesCliente('${clienteId}')" style="background:#e11d48;color:white;border:none;padding:6px 20px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer;">🔥 VER PROMOCIONES DE ESTE CLIENTE</button>
+    </div>`;
+    
+    html += `<button class="btn-cerrar-reporte" onclick="document.getElementById('reporteClienteContainer').style.display='none'" style="margin-top:10px;">❌ Cerrar</button></div>`;
+    
+    document.getElementById('reporteClienteContainer').innerHTML = html;
+    document.getElementById('reporteClienteContainer').style.display = 'block';
+    document.getElementById('reporteClienteContainer').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ============================================================
+// REPORTE DE PROMOCIONES POR CLIENTE
+// ============================================================
+function generarReportePromocionesCliente(clienteId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (!cliente) { mostrarNotificacion('❌ Cliente no encontrado'); return; }
+    
+    const pedidosPromo = cotizaciones.filter(c => {
+        if (c.clienteId !== clienteId) return false;
+        if (c.tipo === 'COTIZACION') return false;
+        const tienePromo = (c.productos || []).some(item => {
+            const prod = productos.find(p => p.nombre === item.nombre);
+            return prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
+        });
+        return tienePromo;
+    });
+
+    if (pedidosPromo.length === 0) {
+        mostrarNotificacion(`ℹ️ ${cliente.nombre} no tiene compras en promoción`);
+        return;
+    }
+
+    let totalVentas = 0;
+    let totalUtilidad = 0;
+    let totalDescuento = 0;
+    let productosPromo = 0;
+
+    let html = `
+    <div style="background:white;border-radius:16px;padding:20px;margin-top:15px;border:2px solid #e11d48;">
+        <h3 style="color:#e11d48;font-size:16px;">🔥 PROMOCIONES - ${cliente.nombre}</h3>
+        <p style="font-size:11px;color:#64748b;margin-bottom:10px;">📱 ${cliente.telefono} | 📦 ${pedidosPromo.length} pedidos en promoción</p>
+        <div style="overflow-x:auto;">`;
+
+    pedidosPromo.forEach((p, i) => {
+        const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A';
+        const total = parseFloat(p.total || 0);
+        totalVentas += total;
+        
+        let utilidadPedido = 0;
+        let descuentoPedido = 0;
+        let productosLista = [];
+        
+        (p.productos || []).forEach(item => {
+            const prod = productos.find(pr => pr.nombre === item.nombre);
+            const cantidad = parseInt(item.cantidad) || 0;
+            const precioVenta = parseFloat(item.precioUnitario || 0);
+            
+            if (prod && parseFloat(prod.descuento) > 0) {
+                const precioOriginal = parseFloat(prod.precioLista || 0);
+                descuentoPedido += (precioOriginal - precioVenta) * cantidad;
+            }
+            
+            const costo = prod ? parseFloat(prod.precioCompra || 0) : 0;
+            utilidadPedido += (precioVenta - costo) * cantidad;
+            productosPromo += cantidad;
+            
+            const colorTexto = item.color ? ` (${item.color})` : '';
+            const esPromo = prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
+            productosLista.push(`${item.cantidad}x ${item.nombre}${colorTexto}${esPromo ? ' 🔥' : ''}`);
+        });
+        
+        totalUtilidad += utilidadPedido;
+        totalDescuento += descuentoPedido;
+        
+        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px;border-left:4px solid #e11d48;">
+            <div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;">
+                <span>#${i+1} GAETO-${folio}</span>
+                <span>${p.fecha || 'S/F'}</span>
+            </div>
+            <div style="font-size:10px;color:#475569;margin:3px 0;">${productosLista.join(', ')}</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;font-size:11px;margin-top:4px;">
+                <span style="color:#002b5c;font-weight:bold;">💰 $${total.toFixed(2)}</span>
+                <span style="color:${utilidadPedido >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">📈 $${utilidadPedido.toFixed(2)}</span>
+                ${descuentoPedido > 0 ? `<span style="color:#e11d48;font-weight:bold;">🏷️ -$${descuentoPedido.toFixed(2)}</span>` : '<span></span>'}
+            </div>
+        </div>`;
+    });
+
+    html += `
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;border-top:2px solid #e11d48;padding-top:10px;margin-top:10px;">
+            <div style="text-align:center;font-weight:bold;font-size:14px;color:#e11d48;">💰 $${totalVentas.toFixed(2)}</div>
+            <div style="text-align:center;font-weight:bold;font-size:14px;color:${totalUtilidad >= 0 ? '#16a34a' : '#dc2626'};">📈 $${totalUtilidad.toFixed(2)}</div>
+            <div style="text-align:center;font-weight:bold;font-size:14px;color:#e11d48;">🏷️ $${totalDescuento.toFixed(2)}</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
+            <button onclick="imprimirReportePromocionesCliente('${clienteId}')" style="background:#2563eb;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer;">🖨️ Imprimir</button>
+            <button onclick="compartirReportePromocionesCliente('${clienteId}')" style="background:#25d366;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer;">📲 WhatsApp</button>
+            <button onclick="this.parentElement.parentElement.remove()" style="background:#e2e8f0;color:#334155;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer;">❌ Cerrar</button>
+        </div>
+    </div>`;
+
+    const container = document.getElementById('reporteClienteContainer');
+    container.innerHTML += html;
+    container.scrollIntoView({ behavior: 'smooth' });
+}
+
+function imprimirReportePromocionesCliente(clienteId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (!cliente) return;
+    
+    const pedidosPromo = cotizaciones.filter(c => {
+        if (c.clienteId !== clienteId) return false;
+        if (c.tipo === 'COTIZACION') return false;
+        const tienePromo = (c.productos || []).some(item => {
+            const prod = productos.find(p => p.nombre === item.nombre);
+            return prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
+        });
+        return tienePromo;
+    });
+
+    if (pedidosPromo.length === 0) { mostrarNotificacion('❌ No hay promociones'); return; }
+
+    let html = `<h3 style="color:#e11d48;">🔥 PROMOCIONES - ${cliente.nombre}</h3>
+    <p>📱 ${cliente.telefono} | 📦 ${pedidosPromo.length} pedidos</p>
+    <hr style="margin:10px 0;">`;
+    
+    pedidosPromo.forEach((p, i) => {
+        const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A';
+        const productosLista = (p.productos || []).map(item => {
+            const colorTexto = item.color ? ` (${item.color})` : '';
+            return `${item.cantidad}x ${item.nombre}${colorTexto}`;
+        }).join(', ');
+        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;font-weight:bold;">
+                <span>#${i+1} GAETO-${folio}</span>
+                <span>${p.fecha || 'S/F'}</span>
+            </div>
+            <div style="font-size:10px;margin:4px 0;">${productosLista}</div>
+            <div style="font-weight:bold;">$${parseFloat(p.total||0).toFixed(2)}</div>
+        </div>`;
+    });
+
     const ventana = window.open('', '_blank', 'width=700,height=600,scrollbars=yes');
     if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
-    ventana.document.write(generarHTMLCompletoImpresion('📋 HISTORIAL DE PEDIDOS', html));
+    ventana.document.write(generarHTMLCompletoImpresion('🔥 PROMOCIONES - ' + cliente.nombre, html));
     ventana.document.close();
 }
 
-function compartirReporteCliente(clienteId) { 
+function compartirReportePromocionesCliente(clienteId) {
     const cliente = clientes.find(c => c.id === clienteId);
     if (!cliente) return;
-    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
-    const totalVentas = pedidos.reduce((sum, p) => sum + parseFloat(p.total || 0), 0);
-    let mensaje = `📋 *HISTORIAL - ${cliente.nombre}*\n📱 ${cliente.telefono}\n📦 ${pedidos.length} pedidos\n────────────────────\n`;
-    pedidos.forEach((p, i) => { mensaje += `#${i+1} ${p.fecha || 'S/F'} - $${parseFloat(p.total||0).toFixed(2)}\n`; });
-    mensaje += `────────────────────\n💰 *TOTAL VENTAS: $${totalVentas.toFixed(2)}*`;
+    
+    const pedidosPromo = cotizaciones.filter(c => {
+        if (c.clienteId !== clienteId) return false;
+        if (c.tipo === 'COTIZACION') return false;
+        const tienePromo = (c.productos || []).some(item => {
+            const prod = productos.find(p => p.nombre === item.nombre);
+            return prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
+        });
+        return tienePromo;
+    });
+
+    if (pedidosPromo.length === 0) { mostrarNotificacion('❌ No hay promociones'); return; }
+
+    let mensaje = `🔥 *PROMOCIONES - ${cliente.nombre}*\n📱 ${cliente.telefono}\n📦 ${pedidosPromo.length} pedidos en promoción\n───────────────────────────\n\n`;
+    pedidosPromo.forEach((p, i) => {
+        const productosLista = (p.productos || []).map(item => {
+            const colorTexto = item.color ? ` [${item.color}]` : '';
+            return `${item.cantidad}x ${item.nombre}${colorTexto}`;
+        }).join(', ');
+        mensaje += `#${i+1} ${p.fecha || 'S/F'} - $${parseFloat(p.total||0).toFixed(2)}\n   ${productosLista}\n\n`;
+    });
+    mensaje += `───────────────────────────\n💰 *TOTAL PROMO: $${pedidosPromo.reduce((s, p) => s + parseFloat(p.total||0), 0).toFixed(2)}*`;
+
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
 // ============================================================
-// TICKET - FUNCIONES PRINCIPALES
+// REPORTE GENERAL DE PROMOCIONES
+// ============================================================
+function generarReportePromociones() {
+    // Filtrar solo pedidos con promociones
+    const pedidosPromo = cotizaciones.filter(c => {
+        if (c.tipo === 'COTIZACION') return false;
+        const tienePromo = (c.productos || []).some(item => {
+            const prod = productos.find(p => p.nombre === item.nombre);
+            return prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
+        });
+        return tienePromo;
+    });
+
+    if (pedidosPromo.length === 0) {
+        mostrarNotificacion('❌ No hay ventas de promociones registradas');
+        return;
+    }
+
+    let totalVentas = 0;
+    let totalUtilidad = 0;
+    let totalDescuento = 0;
+    let productosVendidos = 0;
+
+    let html = `
+    <div style="background:white;border-radius:16px;padding:20px;margin-top:15px;border:2px solid #e11d48;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:15px;">
+            <h3 style="color:#e11d48;font-size:18px;">🔥 REPORTE DE VENTAS - PROMOCIONES</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button onclick="imprimirReportePromociones()" style="background:#2563eb;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer;">🖨️ Imprimir</button>
+                <button onclick="compartirReportePromociones()" style="background:#25d366;color:white;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer;">📲 WhatsApp</button>
+                <button onclick="document.getElementById('reportePromocionesContainer').style.display='none'" style="background:#e2e8f0;color:#334155;border:none;padding:6px 16px;border-radius:30px;font-weight:bold;font-size:10px;cursor:pointer;">❌ Cerrar</button>
+            </div>
+        </div>
+        
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px;">
+            <div style="background:#fef3c7;padding:10px;border-radius:12px;text-align:center;border:1px solid #f59e0b;">
+                <div style="font-size:9px;color:#92400e;">💰 Total Ventas Promo</div>
+                <div style="font-size:18px;font-weight:bold;color:#e11d48;" id="reportPromoTotal">$0</div>
+            </div>
+            <div style="background:#dcfce7;padding:10px;border-radius:12px;text-align:center;border:1px solid #22c55e;">
+                <div style="font-size:9px;color:#166534;">📈 Utilidad Promo</div>
+                <div style="font-size:18px;font-weight:bold;color:#16a34a;" id="reportPromoUtilidad">$0</div>
+            </div>
+            <div style="background:#fef3c7;padding:10px;border-radius:12px;text-align:center;border:1px solid #f59e0b;">
+                <div style="font-size:9px;color:#92400e;">🏷️ Descuentos Aplicados</div>
+                <div style="font-size:18px;font-weight:bold;color:#e11d48;" id="reportPromoDescuento">$0</div>
+            </div>
+            <div style="background:#e0f2fe;padding:10px;border-radius:12px;text-align:center;border:1px solid #3b82f6;">
+                <div style="font-size:9px;color:#1e40af;">📦 Pedidos Promo</div>
+                <div style="font-size:18px;font-weight:bold;color:#1e40af;" id="reportPromoPedidos">0</div>
+            </div>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                <thead>
+                    <tr style="background:#e11d48;color:white;">
+                        <th style="padding:6px 10px;text-align:left;">Fecha</th>
+                        <th style="padding:6px 10px;text-align:left;">Folio</th>
+                        <th style="padding:6px 10px;text-align:left;">Cliente</th>
+                        <th style="padding:6px 10px;text-align:left;">Productos</th>
+                        <th style="padding:6px 10px;text-align:right;">Total</th>
+                        <th style="padding:6px 10px;text-align:right;">Descuento</th>
+                        <th style="padding:6px 10px;text-align:right;">Utilidad</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    pedidosPromo.forEach(c => {
+        const folio = c.id ? c.id.slice(-6).toUpperCase() : 'N/A';
+        const total = parseFloat(c.total || 0);
+        totalVentas += total;
+        
+        let descuentoPedido = 0;
+        let utilidadPedido = 0;
+        let productosLista = [];
+        
+        (c.productos || []).forEach(item => {
+            const prod = productos.find(p => p.nombre === item.nombre);
+            const cantidad = parseInt(item.cantidad) || 0;
+            const precioVenta = parseFloat(item.precioUnitario || 0);
+            const subtotal = precioVenta * cantidad;
+            
+            if (prod && parseFloat(prod.descuento) > 0) {
+                const precioOriginal = parseFloat(prod.precioLista || 0);
+                const descuentoUnitario = (precioOriginal - precioVenta);
+                descuentoPedido += descuentoUnitario * cantidad;
+            }
+            
+            const costo = prod ? parseFloat(prod.precioCompra || 0) : 0;
+            utilidadPedido += (precioVenta - costo) * cantidad;
+            productosVendidos += cantidad;
+            
+            const colorTexto = item.color ? ` (${item.color})` : '';
+            const esPromo = prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
+            productosLista.push(`${item.cantidad}x ${item.nombre}${colorTexto}${esPromo ? ' 🔥' : ''}`);
+        });
+        
+        totalUtilidad += utilidadPedido;
+        totalDescuento += descuentoPedido;
+        
+        html += `<tr style="border-bottom:1px solid #e2e8f0;">
+            <td style="padding:5px 10px;">${c.fecha || 'S/F'}</td>
+            <td style="padding:5px 10px;font-weight:bold;color:#e11d48;">GAETO-${folio}</td>
+            <td style="padding:5px 10px;">${c.cliente?.nombre || 'Anónimo'}</td>
+            <td style="padding:5px 10px;font-size:9px;max-width:150px;">${productosLista.join(', ')}</td>
+            <td style="padding:5px 10px;text-align:right;font-weight:bold;">$${total.toFixed(2)}</td>
+            <td style="padding:5px 10px;text-align:right;color:#e11d48;">-$${descuentoPedido.toFixed(2)}</td>
+            <td style="padding:5px 10px;text-align:right;color:${utilidadPedido >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">$${utilidadPedido.toFixed(2)}</td>
+        </tr>`;
+    });
+
+    html += `
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;margin-top:15px;padding-top:15px;border-top:2px solid #e11d48;">
+            <div style="text-align:center;">
+                <div style="font-size:10px;color:#64748b;">💰 TOTAL VENTAS PROMO</div>
+                <div style="font-size:20px;font-weight:bold;color:#e11d48;">$${totalVentas.toFixed(2)}</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:10px;color:#64748b;">📈 UTILIDAD TOTAL</div>
+                <div style="font-size:20px;font-weight:bold;color:${totalUtilidad >= 0 ? '#16a34a' : '#dc2626'};">$${totalUtilidad.toFixed(2)}</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:10px;color:#64748b;">🏷️ DESCUENTOS TOTALES</div>
+                <div style="font-size:20px;font-weight:bold;color:#e11d48;">$${totalDescuento.toFixed(2)}</div>
+            </div>
+        </div>
+        <div style="text-align:center;font-size:9px;color:#64748b;margin-top:10px;">
+            📦 Productos vendidos en promoción: ${productosVendidos} | 📋 Pedidos: ${pedidosPromo.length}
+        </div>
+    </div>`;
+
+    let container = document.getElementById('reportePromocionesContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'reportePromocionesContainer';
+        const panel = document.getElementById('tabReportes');
+        if (panel) {
+            panel.appendChild(container);
+        } else {
+            document.getElementById('adminPanel').appendChild(container);
+        }
+    }
+    container.innerHTML = html;
+    container.style.display = 'block';
+    container.scrollIntoView({ behavior: 'smooth' });
+
+    document.getElementById('reportPromoTotal').textContent = '$' + totalVentas.toFixed(2);
+    document.getElementById('reportPromoUtilidad').textContent = '$' + totalUtilidad.toFixed(2);
+    document.getElementById('reportPromoDescuento').textContent = '$' + totalDescuento.toFixed(2);
+    document.getElementById('reportPromoPedidos').textContent = pedidosPromo.length;
+}
+
+// ============================================================
+// IMPRIMIR Y COMPARTIR REPORTE DE PROMOCIONES
+// ============================================================
+function imprimirReportePromociones() {
+    const container = document.getElementById('reportePromocionesContainer');
+    if (!container) { mostrarNotificacion('❌ No hay reporte para imprimir'); return; }
+    
+    const ventana = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    
+    const clon = container.cloneNode(true);
+    const botones = clon.querySelectorAll('button');
+    botones.forEach(b => b.remove());
+    
+    ventana.document.write(generarHTMLCompletoImpresion('🔥 REPORTE DE VENTAS - PROMOCIONES', clon.innerHTML));
+    ventana.document.close();
+}
+
+function compartirReportePromociones() {
+    const pedidosPromo = cotizaciones.filter(c => {
+        if (c.tipo === 'COTIZACION') return false;
+        const tienePromo = (c.productos || []).some(item => {
+            const prod = productos.find(p => p.nombre === item.nombre);
+            return prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
+        });
+        return tienePromo;
+    });
+
+    if (pedidosPromo.length === 0) {
+        mostrarNotificacion('❌ No hay ventas de promociones');
+        return;
+    }
+
+    let totalVentas = 0;
+    let totalUtilidad = 0;
+    let totalDescuento = 0;
+    let mensaje = "🔥 *REPORTE DE VENTAS - PROMOCIONES GAETO COMERCIOS*\n\n";
+    mensaje += `📅 ${new Date().toLocaleDateString('es-MX')}\n`;
+    mensaje += `───────────────────────────\n\n`;
+
+    pedidosPromo.forEach((c, i) => {
+        const folio = c.id ? c.id.slice(-6).toUpperCase() : 'N/A';
+        const total = parseFloat(c.total || 0);
+        totalVentas += total;
+        
+        let descuentoPedido = 0;
+        let utilidadPedido = 0;
+        let productosLista = [];
+        
+        (c.productos || []).forEach(item => {
+            const prod = productos.find(p => p.nombre === item.nombre);
+            const cantidad = parseInt(item.cantidad) || 0;
+            const precioVenta = parseFloat(item.precioUnitario || 0);
+            
+            if (prod && parseFloat(prod.descuento) > 0) {
+                const precioOriginal = parseFloat(prod.precioLista || 0);
+                descuentoPedido += (precioOriginal - precioVenta) * cantidad;
+            }
+            
+            const costo = prod ? parseFloat(prod.precioCompra || 0) : 0;
+            utilidadPedido += (precioVenta - costo) * cantidad;
+            
+            const colorTexto = item.color ? ` [${item.color}]` : '';
+            productosLista.push(`${item.cantidad}x ${item.nombre}${colorTexto}`);
+        });
+        
+        totalUtilidad += utilidadPedido;
+        totalDescuento += descuentoPedido;
+        
+        mensaje += `📌 #${i+1} GAETO-${folio} (${c.fecha || 'S/F'})\n`;
+        mensaje += `   Cliente: ${c.cliente?.nombre || 'Anónimo'}\n`;
+        mensaje += `   Productos: ${productosLista.join(', ')}\n`;
+        mensaje += `   Total: $${total.toFixed(2)} | Descuento: -$${descuentoPedido.toFixed(2)} | Utilidad: $${utilidadPedido.toFixed(2)}\n\n`;
+    });
+
+    mensaje += `───────────────────────────\n`;
+    mensaje += `💰 *TOTAL VENTAS PROMO: $${totalVentas.toFixed(2)}*\n`;
+    mensaje += `📈 *UTILIDAD TOTAL: $${totalUtilidad.toFixed(2)}*\n`;
+    mensaje += `🏷️ *DESCUENTOS TOTALES: $${totalDescuento.toFixed(2)}*\n`;
+    mensaje += `📦 *PEDIDOS: ${pedidosPromo.length}*\n\n`;
+    mensaje += `📞 228 287 7441 | GAETO COMERCIOS`;
+
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+// ============================================================
+// CAMBIAR ESTADO - PERMITE STOCK NEGATIVO
+// ============================================================
+function cambiarEstado(id, estado) {
+    const pedido = cotizaciones.find(c => c.id === id);
+    if (!pedido) {
+        mostrarNotificacion('❌ Pedido no encontrado');
+        return;
+    }
+    
+    // Si vamos a SURTIDO, descontar inventario (incluso si queda negativo)
+    if (estado === 'SURTIDO') {
+        // Descontar inventario sin validar stock
+        let promesas = (pedido.productos || []).map(item => {
+            const prod = productos.find(p => p.nombre === item.nombre);
+            if (prod) {
+                const stockActual = parseInt(prod.stock) || 0;
+                const cantidad = parseInt(item.cantidad) || 0;
+                const nuevoStock = stockActual - cantidad;
+                return database.ref('productos/' + prod.id + '/stock').set(nuevoStock);
+            }
+            return Promise.resolve();
+        });
+        
+        // Si es promoción, guardar registro separado
+        const esPromocion = (pedido.productos || []).some(item => {
+            const prod = productos.find(p => p.nombre === item.nombre);
+            return prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
+        });
+        
+        // Mostrar advertencia si queda stock negativo
+        let hayNegativo = false;
+        (pedido.productos || []).forEach(item => {
+            const prod = productos.find(p => p.nombre === item.nombre);
+            if (prod) {
+                const stockActual = parseInt(prod.stock) || 0;
+                const cantidad = parseInt(item.cantidad) || 0;
+                if (stockActual - cantidad < 0) hayNegativo = true;
+            }
+        });
+        
+        Promise.all(promesas).then(() => {
+            let updates = { estado: estado, tipo: 'PEDIDO' };
+            if (esPromocion) {
+                updates.esPromocion = true;
+            }
+            database.ref('cotizaciones/' + id).update(updates).then(() => {
+                let mensaje = `✅ Pedido SURTIDO - Inventario actualizado`;
+                if (hayNegativo) {
+                    mensaje += ' ⚠️ Algunos productos quedaron en STOCK NEGATIVO';
+                }
+                mostrarNotificacion(mensaje);
+                if (modoAdmin) actualizarPanelAdmin();
+                renderizarProductos();
+            }).catch(err => mostrarNotificacion('❌ Error: ' + err.message));
+        }).catch(err => {
+            mostrarNotificacion('❌ Error al descontar inventario: ' + err.message);
+        });
+        return;
+    }
+    
+    // Para los demás estados, comportamiento normal
+    let updates = { estado: estado };
+    if (estado === 'CONFIRMADO' || estado === 'SURTIDO' || estado === 'EN_RUTA' || estado === 'ENTREGADO') {
+        updates.tipo = 'PEDIDO';
+    }
+    database.ref('cotizaciones/' + id).update(updates).then(() => {
+        mostrarNotificacion(`✅ Pedido ${estado}`);
+        if (modoAdmin) actualizarPanelAdmin();
+    }).catch(err => mostrarNotificacion('❌ Error: ' + err.message));
+}
+
+// ============================================================
+// FUNCIONES DE CAMBIO DE ESTADO COTIZACIÓN
+// ============================================================
+function cambiarEstadoCotizacion(id, estado) { let updates = { estado: estado }; if (estado === 'CONFIRMADO' || estado === 'SURTIDO' || estado === 'EN_RUTA' || estado === 'ENTREGADO') { updates.tipo = 'PEDIDO'; } database.ref('cotizaciones/' + id).update(updates).then(() => { mostrarNotificacion(`✅ Cotización ${estado}`); if (modoAdmin) actualizarPanelAdmin(); }).catch(err => mostrarNotificacion('❌ Error: ' + err.message)); }
+
+function eliminarPedido(id) { if (!confirm('⚠️ ¿Estás seguro de eliminar este pedido?')) return; database.ref('cotizaciones/' + id).remove().then(() => { mostrarNotificacion('🗑️ Pedido eliminado correctamente'); if (modoAdmin) actualizarPanelAdmin(); }).catch(err => mostrarNotificacion('❌ Error: ' + err.message)); }
+
+function generarPDFCotizacion(id) { const c = cotizaciones.find(p => p.id === id); if (!c) { mostrarNotificacion('❌ Cotización no encontrada'); return; } mostrarNotificacion('📄 Generando PDF...'); }
+function generarPDFPedido(id) { mostrarNotificacion('📄 Generando PDF...'); }
+
+// ============================================================
+// TICKET - FUNCIONES PRINCIPALES (CORREGIDAS - DEFINIDAS ANTES DE SER LLAMADAS)
 // ============================================================
 function abrirModalTicket(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -1633,38 +2180,219 @@ function descargarTicketImagen() {
 }
 
 // ============================================================
-// PEDIDOS
+// TICKET PROMOCIONAL - NUEVA FUNCIÓN
+// ============================================================
+function abrirModalTicketPromo(id) {
+    const c = cotizaciones.find(p => p.id === id);
+    if (!c) {
+        mostrarNotificacion('❌ Pedido no encontrado');
+        return;
+    }
+    
+    // Verificar si tiene productos en promoción
+    const tienePromocion = (c.productos || []).some(item => {
+        const prod = productos.find(p => p.nombre === item.nombre);
+        return prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
+    });
+    
+    if (!tienePromocion) {
+        // Si no tiene promociones, usar el ticket normal
+        abrirModalTicket(id);
+        return;
+    }
+    
+    ticketActualId = id;
+    ticketActualData = c;
+    
+    const modal = document.getElementById('modalTicket');
+    const loading = document.getElementById('ticketLoading');
+    const content = document.getElementById('ticketContent');
+    const wrapper = document.getElementById('ticketWrapper');
+    
+    modal.classList.add('visible');
+    loading.style.display = 'block';
+    content.style.display = 'none';
+    wrapper.innerHTML = '';
+    
+    const total = parseFloat(c.total || 0).toFixed(2);
+    const folio = id.slice(-6).toUpperCase();
+    const tipo = c.tipo || 'COTIZACION';
+    const estado = c.estado || 'COTIZACION';
+    
+    let observacionesMostrar = c.observaciones ? 
+        `<div style="margin:4px 0;padding:4px 8px;background:#fef9c3;border-radius:4px;font-size:10px;color:#854d0e;">📝 ${c.observaciones}</div>` : '';
+    
+    let html = `<div class="ticket-80" id="ticketParaImprimir">
+        <div class="header">
+            <img src="${LOGO_URL}" alt="GAETO COMERCIOS" style="max-width:120px;display:block;margin:0 auto;" crossorigin="anonymous">
+            <h3 style="margin:5px 0;color:#e11d48;">🔥 TICKET PROMOCIONAL</h3>
+            <div style="font-size:10px;font-weight:bold;color:#e11d48;">GAETO-${folio}</div>
+            <div style="font-size:9px;color:#666;">${c.fecha || 'S/F'} | ${c.hora || ''}</div>
+        </div>
+        <div class="cliente-info" style="margin:5px 0;font-size:10px;">
+            <div><strong>👤 ${c.cliente?.nombre || 'Cliente'}</strong></div>
+            <div style="font-size:9px;color:#666;">📱 ${c.cliente?.telefono || 'Sin teléfono'}</div>
+            <div style="font-size:9px;color:#666;">📍 ${c.cliente?.direccion || 'Sin dirección'}</div>
+            ${c.cliente?.negocio && c.cliente.negocio !== 'Particular' ? `<div style="font-size:9px;color:#666;">🏢 ${c.cliente.negocio}</div>` : ''}
+            ${observacionesMostrar}
+        </div>
+        <div style="border-top:1px dashed #000;margin:4px 0;"></div>
+        <div style="background:#fef3c7;padding:4px 8px;border-radius:4px;margin:4px 0;text-align:center;font-size:9px;color:#92400e;">
+            ⭐ PRODUCTOS EN PROMOCIÓN ⭐
+        </div>`;
+    
+    (c.productos || []).forEach(item => {
+        const prod = productos.find(p => p.nombre === item.nombre);
+        const precioOriginal = prod ? parseFloat(prod.precioLista || 0) : parseFloat(item.precioUnitario || 0);
+        const precioConDescuento = parseFloat(item.precioUnitario || 0);
+        const descuentoAplicado = prod ? parseFloat(prod.descuento) || 0 : 0;
+        const esPromo = prod && (descuentoAplicado > 0 || prod.promoFuera === 'SI');
+        const colorTexto = item.color ? ` (${item.color})` : '';
+        
+        html += `<div class="producto" style="${esPromo ? 'background:#fef3c7;border-radius:4px;padding:4px 6px;' : ''}">
+            <span class="producto-nombre">
+                ${item.cantidad}x ${item.nombre}${colorTexto}
+                ${esPromo ? ' 🔥' : ''}
+            </span>
+            <span class="producto-precio">
+                ${esPromo && descuentoAplicado > 0 ? `<span style="text-decoration:line-through;color:#999;font-size:9px;margin-right:4px;">$${precioOriginal.toFixed(2)}</span>` : ''}
+                $${(item.cantidad * item.precioUnitario).toFixed(2)}
+            </span>
+        </div>`;
+    });
+    
+    // Mostrar ahorro total si hay promociones
+    let ahorroTotal = 0;
+    (c.productos || []).forEach(item => {
+        const prod = productos.find(p => p.nombre === item.nombre);
+        if (prod && parseFloat(prod.descuento) > 0) {
+            const precioOriginal = parseFloat(prod.precioLista || 0);
+            const precioConDescuento = parseFloat(item.precioUnitario || 0);
+            const cantidad = parseInt(item.cantidad) || 0;
+            ahorroTotal += (precioOriginal - precioConDescuento) * cantidad;
+        }
+    });
+    
+    if (ahorroTotal > 0) {
+        html += `<div style="background:#bbf7d0;padding:4px 8px;border-radius:4px;margin:4px 0;text-align:center;font-size:10px;color:#166534;">
+            💰 AHORRO TOTAL: $${ahorroTotal.toFixed(2)}
+        </div>`;
+    }
+    
+    html += `<div class="total">
+        <span class="total-label">TOTAL:</span> $${total}
+    </div>
+    <div style="text-align:center;font-size:10px;margin:4px 0;clear:both;">
+        Estado: <strong>${estado}</strong> | 🔥 Promoción Aplicada
+    </div>
+    <div class="footer">
+        📞 228 287 7441<br>
+        📍 Jiménez s/n, Col. Miguel Alemán, Veracruz, Ver.<br>
+        📅 Pedidos: Lun, Mar, Mié<br>
+        🚚 Entregas: Vie y Sáb 9am-6:30pm
+    </div>
+    </div>`;
+    
+    wrapper.innerHTML = html;
+    setTimeout(() => {
+        loading.style.display = 'none';
+        content.style.display = 'block';
+    }, 300);
+}
+
+// ============================================================
+// RENDERIZAR PEDIDOS - VERSIÓN CON PROMOCIONES
 // ============================================================
 function renderizarPedidos() {
     const tbody = document.getElementById('pedidosTabla');
-    if (cotizaciones.length === 0) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#94a3b8;">No hay pedidos o cotizaciones</td></tr>'; return; }
+    if (cotizaciones.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#94a3b8;">No hay pedidos o cotizaciones</td></tr>';
+        return;
+    }
+    
     tbody.innerHTML = cotizaciones.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||'')).map(c => {
-        const estado = c.estado || 'PENDIENTE'; const tipo = c.tipo || 'COTIZACION';
-        const estadoColors = { 'COTIZACION': '#8b5cf6', 'PENDIENTE': '#f59e0b', 'CONFIRMADO': '#22c55e', 'SURTIDO': '#8b5cf6', 'EN_RUTA': '#06b6d4', 'ENTREGADO': '#3b82f6', 'CANCELADO': '#ef4444' };
+        const estado = c.estado || 'PENDIENTE';
+        const tipo = c.tipo || 'COTIZACION';
+        const esPromocion = c.esPromocion || false;
+        
+        // Verificar si tiene productos en promoción
+        const tieneProductosPromo = (c.productos || []).some(item => {
+            const prod = productos.find(p => p.nombre === item.nombre);
+            return prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
+        });
+        
+        const esPromo = esPromocion || tieneProductosPromo;
+        
+        const estadoColors = { 
+            'COTIZACION': '#8b5cf6', 
+            'PENDIENTE': '#f59e0b', 
+            'CONFIRMADO': '#22c55e', 
+            'SURTIDO': '#8b5cf6', 
+            'EN_RUTA': '#06b6d4', 
+            'ENTREGADO': '#3b82f6', 
+            'CANCELADO': '#ef4444' 
+        };
+        
         const folio = c.id ? c.id.slice(-6).toUpperCase() : 'N/A';
-        const productosLista = (c.productos || []).map(p => { const colorTexto = p.color ? ` (${p.color})` : ''; return `${p.cantidad}x ${p.nombre}${colorTexto}`; }).join(', ');
-        const tipoIcon = tipo === 'COTIZACION' ? '📄' : '📦'; const estaCancelado = estado === 'CANCELADO'; const estaEntregado = estado === 'ENTREGADO';
+        const productosLista = (c.productos || []).map(p => {
+            const colorTexto = p.color ? ` (${p.color})` : '';
+            const prod = productos.find(pr => pr.nombre === p.nombre);
+            const esPromoProducto = prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
+            return `${p.cantidad}x ${p.nombre}${colorTexto}${esPromoProducto ? ' 🔥' : ''}`;
+        }).join(', ');
+        
+        const tipoIcon = tipo === 'COTIZACION' ? '📄' : '📦';
+        const estaCancelado = estado === 'CANCELADO';
+        const estaEntregado = estado === 'ENTREGADO';
+        const promoIcon = esPromo ? ' 🔥' : '';
+        
         let botonesAccion = '';
         if (!estaCancelado && !estaEntregado) {
-            if (estado === 'COTIZACION') { botonesAccion += `<button class="btn-accion btn-confirmar" onclick="cambiarEstadoCotizacion('${c.id}','CONFIRMADO')">✅ CONFIRMAR</button>`; }
-            if (estado === 'CONFIRMADO') { botonesAccion += `<button class="btn-accion btn-surtido" onclick="cambiarEstado('${c.id}','SURTIDO')">📦 SURTIR</button>`; }
-            if (estado === 'SURTIDO') { botonesAccion += `<button class="btn-accion btn-en-ruta" onclick="cambiarEstado('${c.id}','EN_RUTA')">🚚 EN RUTA</button>`; }
-            if (estado === 'EN_RUTA') { botonesAccion += `<button class="btn-accion btn-entregar" onclick="cambiarEstado('${c.id}','ENTREGADO')">📍 ENTREGAR</button>`; }
+            if (estado === 'COTIZACION') {
+                botonesAccion += `<button class="btn-accion btn-confirmar" onclick="cambiarEstado('${c.id}','CONFIRMADO')">✅ CONFIRMAR</button>`;
+            }
+            if (estado === 'CONFIRMADO') {
+                botonesAccion += `<button class="btn-accion btn-surtido" onclick="cambiarEstado('${c.id}','SURTIDO')">📦 SURTIR</button>`;
+            }
+            if (estado === 'SURTIDO') {
+                botonesAccion += `<button class="btn-accion btn-en-ruta" onclick="cambiarEstado('${c.id}','EN_RUTA')">🚚 EN RUTA</button>`;
+            }
+            if (estado === 'EN_RUTA') {
+                botonesAccion += `<button class="btn-accion btn-entregar" onclick="cambiarEstado('${c.id}','ENTREGADO')">📍 ENTREGAR</button>`;
+            }
             botonesAccion += `<button class="btn-accion btn-cancelar" onclick="cambiarEstado('${c.id}','CANCELADO')">❌ CANCELAR</button>`;
         }
-        if (estaCancelado) { botonesAccion += `<button class="btn-accion btn-confirmar" onclick="cambiarEstado('${c.id}','PENDIENTE')">↩️ RESTAURAR</button>`; }
-        return `<tr style="${estaCancelado ? 'opacity:0.5;background:#fef2f2;' : ''}"><td><strong>${tipoIcon} GAETO-${folio}</strong></td><td>${c.fecha || 'S/F'}</td><td>${c.cliente?.nombre || 'Anónimo'}</td><td><span style="background:${tipo === 'COTIZACION' ? '#8b5cf6' : '#3b82f6'};color:white;padding:2px 8px;border-radius:10px;font-size:8px;">${tipo}</span></td><td style="font-size:9px;max-width:100px;">${productosLista || 'Sin productos'}</td><td>$${parseFloat(c.total||0).toFixed(2)}</td><td><span style="background:${estadoColors[estado] || '#999'};color:white;padding:2px 8px;border-radius:10px;font-size:8px;">${estado}</span></td><td style="display:flex;gap:3px;flex-wrap:wrap;">${botonesAccion}<button class="btn-eliminar-pedido" onclick="eliminarPedido('${c.id}')">🗑️ ELIMINAR</button><button class="btn-ticket" onclick="abrirModalTicket('${c.id}')" style="background:#f59e0b;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">🧾 TICKET</button>${tipo === 'COTIZACION' ? `<button class="btn-pdf-cotizacion" onclick="generarPDFCotizacion('${c.id}')" style="background:#2563eb;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">📄 PDF</button>` : `<button class="btn-pdf" onclick="generarPDFPedido('${c.id}')" style="background:#dc2626;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">📄</button>`}<button class="btn-editar-pedido" onclick="editarPedido('${c.id}')" style="background:#f59e0b;color:white;border:none;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">✏️ Editar</button></td></tr>`;
+        if (estaCancelado) {
+            botonesAccion += `<button class="btn-accion btn-confirmar" onclick="cambiarEstado('${c.id}','PENDIENTE')">↩️ RESTAURAR</button>`;
+        }
+        
+        // Determinar qué función de ticket usar - AHORA las funciones están definidas
+        const ticketFunction = esPromo ? `abrirModalTicketPromo('${c.id}')` : `abrirModalTicket('${c.id}')`;
+        
+        return `<tr style="${estaCancelado ? 'opacity:0.5;background:#fef2f2;' : ''}${esPromo ? 'border-left:4px solid #e11d48;' : ''}">
+            <td><strong>${tipoIcon} GAETO-${folio}${promoIcon}</strong></td>
+            <td>${c.fecha || 'S/F'}</td>
+            <td>${c.cliente?.nombre || 'Anónimo'}</td>
+            <td><span style="background:${tipo === 'COTIZACION' ? '#8b5cf6' : '#3b82f6'};color:white;padding:2px 8px;border-radius:10px;font-size:8px;">${tipo}</span>
+            ${esPromo ? '<span style="background:#e11d48;color:white;padding:2px 6px;border-radius:10px;font-size:8px;margin-left:3px;">🔥</span>' : ''}</td>
+            <td style="font-size:9px;max-width:100px;">${productosLista || 'Sin productos'}</td>
+            <td>$${parseFloat(c.total||0).toFixed(2)}</td>
+            <td><span style="background:${estadoColors[estado] || '#999'};color:white;padding:2px 8px;border-radius:10px;font-size:8px;">${estado}</span></td>
+            <td style="display:flex;gap:3px;flex-wrap:wrap;">
+                ${botonesAccion}
+                <button class="btn-eliminar-pedido" onclick="eliminarPedido('${c.id}')">🗑️ ELIMINAR</button>
+                <button class="btn-ticket" onclick="${ticketFunction}" style="background:${esPromo ? '#e11d48' : '#f59e0b'};color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">
+                    ${esPromo ? '🔥 TICKET' : '🧾 TICKET'}
+                </button>
+                ${tipo === 'COTIZACION' ? 
+                    `<button class="btn-pdf-cotizacion" onclick="generarPDFCotizacion('${c.id}')" style="background:#2563eb;color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">📄 PDF</button>` : 
+                    `<button class="btn-pdf" onclick="generarPDFPedido('${c.id}')" style="background:${esPromo ? '#e11d48' : '#dc2626'};color:white;border:none;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">📄</button>`
+                }
+                <button class="btn-editar-pedido" onclick="editarPedido('${c.id}')" style="background:#f59e0b;color:white;border:none;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:bold;cursor:pointer;">✏️ Editar</button>
+            </td>
+        </tr>`;
     }).join('');
 }
-
-function cambiarEstado(id, estado) { let updates = { estado: estado }; if (estado === 'CONFIRMADO' || estado === 'SURTIDO' || estado === 'EN_RUTA' || estado === 'ENTREGADO') { updates.tipo = 'PEDIDO'; } database.ref('cotizaciones/' + id).update(updates).then(() => { mostrarNotificacion(`✅ Pedido ${estado}`); if (modoAdmin) actualizarPanelAdmin(); }).catch(err => mostrarNotificacion('❌ Error: ' + err.message)); }
-
-function cambiarEstadoCotizacion(id, estado) { let updates = { estado: estado }; if (estado === 'CONFIRMADO' || estado === 'SURTIDO' || estado === 'EN_RUTA' || estado === 'ENTREGADO') { updates.tipo = 'PEDIDO'; } database.ref('cotizaciones/' + id).update(updates).then(() => { mostrarNotificacion(`✅ Cotización ${estado}`); if (modoAdmin) actualizarPanelAdmin(); }).catch(err => mostrarNotificacion('❌ Error: ' + err.message)); }
-
-function eliminarPedido(id) { if (!confirm('⚠️ ¿Estás seguro de eliminar este pedido?')) return; database.ref('cotizaciones/' + id).remove().then(() => { mostrarNotificacion('🗑️ Pedido eliminado correctamente'); if (modoAdmin) actualizarPanelAdmin(); }).catch(err => mostrarNotificacion('❌ Error: ' + err.message)); }
-
-function generarPDFCotizacion(id) { const c = cotizaciones.find(p => p.id === id); if (!c) { mostrarNotificacion('❌ Cotización no encontrada'); return; } mostrarNotificacion('📄 Generando PDF...'); }
-function generarPDFPedido(id) { mostrarNotificacion('📄 Generando PDF...'); }
 
 // ============================================================
 // EDICIÓN DE PEDIDOS
@@ -1702,7 +2430,7 @@ function cerrarEdicionPedido() { document.getElementById('modalEditarPedido').st
 document.getElementById('modalEditarPedido').addEventListener('click', function(e) { if (e.target === this) { cerrarEdicionPedido(); } });
 
 // ============================================================
-// COMPRAS - FUNCIÓN EDITAR COMPRA CORREGIDA
+// COMPRAS - FUNCIÓN EDITAR COMPRA
 // ============================================================
 function editarCompra(id) {
     const compra = compras.find(c => c.id === id);
@@ -2260,6 +2988,33 @@ document.getElementById('catalogoImprimirBtn').onclick = function() {
     imprimirCatalogoCompleto();
 };
 
+function imprimirCatalogoCompleto() {
+    const activos = productos.filter(p => esActivo(p));
+    if (activos.length === 0) {
+        mostrarNotificacion('❌ No hay productos activos para imprimir');
+        return;
+    }
+    
+    // Guardar estado
+    const catActual = categoriaActiva;
+    const busqActual = textoBusqueda;
+    
+    // Mostrar todos
+    categoriaActiva = "TODOS";
+    textoBusqueda = "";
+    renderizarFiltros();
+    renderizarProductos();
+    
+    setTimeout(() => {
+        window.print();
+        categoriaActiva = catActual;
+        textoBusqueda = busqActual;
+        renderizarFiltros();
+        renderizarProductos();
+        mostrarNotificacion('📦 Catálogo enviado a impresión');
+    }, 600);
+}
+
 // ============================================================
 // WINDOW ONLOAD
 // ============================================================
@@ -2280,6 +3035,10 @@ window.onload = function() {
     console.log('📦 Imprimir Catálogo: Botón "IMPRIMIR CATÁLOGO" - Modo Admin');
     console.log('📷 Ticket: Botón "📷 WhatsApp" en el ticket - Ahora funciona correctamente');
     console.log('✏️ Editar Compra: Botón "✏️" en compras - Ahora funciona correctamente');
+    console.log('📊 Reporte de Promociones: Botón "🔥 REPORTE PROMOCIONES" en la pestaña Reportes');
+    console.log('👤 Utilidad en historial de clientes: Mostrada en cada pedido');
+    console.log('📦 Stock negativo permitido al surtir: Ahora se puede surtir aunque no haya stock');
+    console.log('🧾 Tickets: Corregido el orden de funciones para que abran correctamente');
 };
 </script>
 </body>
