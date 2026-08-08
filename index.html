@@ -853,7 +853,7 @@ database.ref('compras').on('value', (snapshot) => {
 });
 
 // ============================================================
-// MODAL ADMIN - 3 CLICS EN LOGO
+// MODAL ADMIN - 10 CLICS EN LOGO
 // ============================================================
 let contadorClicksLogo = 0;
 let temporizadorClicks = null;
@@ -862,8 +862,8 @@ document.getElementById('logoAdmin').addEventListener('click', function(e) {
     e.preventDefault(); e.stopPropagation();
     contadorClicksLogo++;
     clearTimeout(temporizadorClicks);
-    temporizadorClicks = setTimeout(function() { contadorClicksLogo = 0; }, 1500);
-    if (contadorClicksLogo >= 3) {
+    temporizadorClicks = setTimeout(function() { contadorClicksLogo = 0; }, 2000);
+    if (contadorClicksLogo >= 10) {
         contadorClicksLogo = 0; clearTimeout(temporizadorClicks);
         document.getElementById('modalPwd').style.display = 'flex';
         document.getElementById('pwdInput').value = '';
@@ -922,7 +922,6 @@ function desactivarModoAdmin() {
 // FUNCIÓN PARA IMPRIMIR CATÁLOGO COMPLETO
 // ============================================================
 function imprimirCatalogoCompleto() {
-    // Mostrar todos los productos activos
     const contenedor = document.getElementById('contenedorProductos');
     const productosActivos = productos.filter(p => esActivo(p));
     
@@ -931,21 +930,16 @@ function imprimirCatalogoCompleto() {
         return;
     }
     
-    // Guardar estado actual
-    const filtrosActuales = document.querySelectorAll('.filtro-btn');
     const busquedaActual = document.getElementById('busquedaInput').value;
     const categoriaActual = categoriaActiva;
     
-    // Mostrar todos los productos sin filtros
     categoriaActiva = "TODOS";
     textoBusqueda = "";
     renderizarFiltros();
     renderizarProductos();
     
-    // Imprimir después de un pequeño retraso para que se renderice
     setTimeout(() => {
         window.print();
-        // Restaurar estado
         categoriaActiva = categoriaActual;
         textoBusqueda = busquedaActual;
         renderizarFiltros();
@@ -955,7 +949,7 @@ function imprimirCatalogoCompleto() {
 }
 
 // ============================================================
-// PROMOS EN IMAGEN - CORREGIDO CON LOGO
+// PROMOS EN IMAGEN
 // ============================================================
 function abrirPromosImg() {
     const modal = document.getElementById('modalPromosImg');
@@ -1496,6 +1490,92 @@ function renderizarClientes() {
 function eliminarCliente(clienteId) { if (!confirm('⚠️ ¿Eliminar este cliente?')) return; database.ref('clientes/' + clienteId).remove().then(() => mostrarNotificacion('✅ Cliente eliminado')).catch(err => mostrarNotificacion('❌ Error: ' + err.message)); }
 
 // ============================================================
+// FUNCIONES PARA IMPRIMIR Y COMPARTIR REPORTE DE CLIENTE
+// ============================================================
+function imprimirReporteCliente(clienteId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (!cliente) { mostrarNotificacion('❌ Cliente no encontrado'); return; }
+    
+    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
+    if (pedidos.length === 0) { mostrarNotificacion('ℹ️ Sin pedidos para imprimir'); return; }
+    
+    let html = `<h3 style="color:#002b5c;">📋 HISTORIAL - ${cliente.nombre}</h3>
+    <p style="color:#64748b;">📱 ${cliente.telefono} | 📦 ${pedidos.length} pedidos</p>
+    <hr style="margin:10px 0;">`;
+    
+    let totalVentas = 0;
+    let totalUtilidad = 0;
+    
+    pedidos.forEach((p, i) => {
+        const folio = p.id ? p.id.slice(-6).toUpperCase() : 'N/A';
+        const productosLista = (p.productos || []).map(prod => {
+            const colorTexto = prod.color ? ` (${prod.color})` : '';
+            return `${prod.cantidad}x ${prod.nombre}${colorTexto}`;
+        }).join(', ');
+        
+        let utilidadPedido = 0;
+        (p.productos || []).forEach(prod => {
+            const productoDB = productos.find(pr => pr.nombre === prod.nombre);
+            const costo = productoDB ? parseFloat(productoDB.precioCompra || 0) : 0;
+            const precioVenta = parseFloat(prod.precioUnitario || 0);
+            const cantidad = parseInt(prod.cantidad) || 0;
+            utilidadPedido += (precioVenta - costo) * cantidad;
+        });
+        
+        totalUtilidad += utilidadPedido;
+        const totalPedido = parseFloat(p.total || 0);
+        totalVentas += totalPedido;
+        
+        html += `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:6px;">
+            <div style="display:flex;justify-content:space-between;font-weight:bold;color:#002b5c;font-size:12px;">
+                <span>#${i+1} GAETO-${folio}</span>
+                <span>${p.fecha || 'S/F'}</span>
+            </div>
+            <div style="font-size:10px;color:#475569;margin:3px 0;">${productosLista}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;margin-top:3px;">
+                <span style="color:#002b5c;font-weight:bold;">💲 Total: $${totalPedido.toFixed(2)}</span>
+                <span style="color:${utilidadPedido >= 0 ? '#16a34a' : '#dc2626'};font-weight:bold;">📈 Utilidad: $${utilidadPedido.toFixed(2)}</span>
+            </div>
+        </div>`;
+    });
+    
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;border-top:2px solid #002b5c;padding-top:8px;margin-top:6px;">
+        <div style="text-align:center;font-weight:bold;font-size:13px;color:#002b5c;">💰 TOTAL VENTAS: $${totalVentas.toFixed(2)}</div>
+        <div style="text-align:center;font-weight:bold;font-size:13px;color:${totalUtilidad >= 0 ? '#16a34a' : '#dc2626'};">📈 UTILIDAD TOTAL: $${totalUtilidad.toFixed(2)}</div>
+    </div>`;
+    
+    const ventana = window.open('', '_blank', 'width=700,height=600,scrollbars=yes');
+    if (!ventana) { mostrarNotificacion('❌ Permite ventanas emergentes'); return; }
+    ventana.document.write(generarHTMLCompletoImpresion('📋 HISTORIAL - ' + cliente.nombre, html));
+    ventana.document.close();
+}
+
+function compartirReporteCliente(clienteId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (!cliente) { mostrarNotificacion('❌ Cliente no encontrado'); return; }
+    
+    const pedidos = cotizaciones.filter(c => c.clienteId === clienteId);
+    if (pedidos.length === 0) { mostrarNotificacion('ℹ️ Sin pedidos para compartir'); return; }
+    
+    let mensaje = `📋 *HISTORIAL DE PEDIDOS - ${cliente.nombre}*\n📱 ${cliente.telefono}\n📦 ${pedidos.length} pedidos\n───────────────────────────\n\n`;
+    let totalVentas = 0;
+    
+    pedidos.forEach((p, i) => {
+        const productosLista = (p.productos || []).map(prod => {
+            const colorTexto = prod.color ? ` [${prod.color}]` : '';
+            return `${prod.cantidad}x ${prod.nombre}${colorTexto}`;
+        }).join(', ');
+        const totalPedido = parseFloat(p.total || 0);
+        totalVentas += totalPedido;
+        mensaje += `#${i+1} ${p.fecha || 'S/F'} - $${totalPedido.toFixed(2)}\n   ${productosLista}\n\n`;
+    });
+    
+    mensaje += `───────────────────────────\n💰 *TOTAL: $${totalVentas.toFixed(2)}*`;
+    
+    window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
+}
+
+// ============================================================
 // VER HISTORIAL CLIENTE CON UTILIDAD
 // ============================================================
 function verHistorialCliente(clienteId) {
@@ -1531,7 +1611,6 @@ function verHistorialCliente(clienteId) {
             return `${prod.cantidad}x ${prod.nombre}${colorTexto}${esPromo ? ' 🔥' : ''}`;
         }).join(', ');
         
-        // Calcular utilidad del pedido
         let utilidadPedido = 0;
         let descuentoPedido = 0;
         let tienePromo = false;
@@ -1587,7 +1666,6 @@ function verHistorialCliente(clienteId) {
         </div>
     </div>`;
     
-    // Botón para ver reporte de promociones del cliente
     html += `<div style="text-align:center;margin-top:10px;">
         <button onclick="generarReportePromocionesCliente('${clienteId}')" style="background:#e11d48;color:white;border:none;padding:6px 20px;border-radius:30px;font-weight:bold;font-size:11px;cursor:pointer;">🔥 VER PROMOCIONES DE ESTE CLIENTE</button>
     </div>`;
@@ -1771,7 +1849,6 @@ function compartirReportePromocionesCliente(clienteId) {
 // REPORTE GENERAL DE PROMOCIONES
 // ============================================================
 function generarReportePromociones() {
-    // Filtrar solo pedidos con promociones
     const pedidosPromo = cotizaciones.filter(c => {
         if (c.tipo === 'COTIZACION') return false;
         const tienePromo = (c.productos || []).some(item => {
@@ -1925,9 +2002,6 @@ function generarReportePromociones() {
     document.getElementById('reportPromoPedidos').textContent = pedidosPromo.length;
 }
 
-// ============================================================
-// IMPRIMIR Y COMPARTIR REPORTE DE PROMOCIONES
-// ============================================================
 function imprimirReportePromociones() {
     const container = document.getElementById('reportePromocionesContainer');
     if (!container) { mostrarNotificacion('❌ No hay reporte para imprimir'); return; }
@@ -2020,9 +2094,7 @@ function cambiarEstado(id, estado) {
         return;
     }
     
-    // Si vamos a SURTIDO, descontar inventario (incluso si queda negativo)
     if (estado === 'SURTIDO') {
-        // Descontar inventario sin validar stock
         let promesas = (pedido.productos || []).map(item => {
             const prod = productos.find(p => p.nombre === item.nombre);
             if (prod) {
@@ -2034,13 +2106,11 @@ function cambiarEstado(id, estado) {
             return Promise.resolve();
         });
         
-        // Si es promoción, guardar registro separado
         const esPromocion = (pedido.productos || []).some(item => {
             const prod = productos.find(p => p.nombre === item.nombre);
             return prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
         });
         
-        // Mostrar advertencia si queda stock negativo
         let hayNegativo = false;
         (pedido.productos || []).forEach(item => {
             const prod = productos.find(p => p.nombre === item.nombre);
@@ -2071,7 +2141,6 @@ function cambiarEstado(id, estado) {
         return;
     }
     
-    // Para los demás estados, comportamiento normal
     let updates = { estado: estado };
     if (estado === 'CONFIRMADO' || estado === 'SURTIDO' || estado === 'EN_RUTA' || estado === 'ENTREGADO') {
         updates.tipo = 'PEDIDO';
@@ -2082,9 +2151,6 @@ function cambiarEstado(id, estado) {
     }).catch(err => mostrarNotificacion('❌ Error: ' + err.message));
 }
 
-// ============================================================
-// FUNCIONES DE CAMBIO DE ESTADO COTIZACIÓN
-// ============================================================
 function cambiarEstadoCotizacion(id, estado) { let updates = { estado: estado }; if (estado === 'CONFIRMADO' || estado === 'SURTIDO' || estado === 'EN_RUTA' || estado === 'ENTREGADO') { updates.tipo = 'PEDIDO'; } database.ref('cotizaciones/' + id).update(updates).then(() => { mostrarNotificacion(`✅ Cotización ${estado}`); if (modoAdmin) actualizarPanelAdmin(); }).catch(err => mostrarNotificacion('❌ Error: ' + err.message)); }
 
 function eliminarPedido(id) { if (!confirm('⚠️ ¿Estás seguro de eliminar este pedido?')) return; database.ref('cotizaciones/' + id).remove().then(() => { mostrarNotificacion('🗑️ Pedido eliminado correctamente'); if (modoAdmin) actualizarPanelAdmin(); }).catch(err => mostrarNotificacion('❌ Error: ' + err.message)); }
@@ -2093,7 +2159,7 @@ function generarPDFCotizacion(id) { const c = cotizaciones.find(p => p.id === id
 function generarPDFPedido(id) { mostrarNotificacion('📄 Generando PDF...'); }
 
 // ============================================================
-// TICKET - FUNCIONES PRINCIPALES (CORREGIDAS - DEFINIDAS ANTES DE SER LLAMADAS)
+// TICKET - FUNCIONES PRINCIPALES
 // ============================================================
 function abrirModalTicket(id) {
     const c = cotizaciones.find(p => p.id === id);
@@ -2179,9 +2245,6 @@ function descargarTicketImagen() {
     }, 500);
 }
 
-// ============================================================
-// TICKET PROMOCIONAL - NUEVA FUNCIÓN
-// ============================================================
 function abrirModalTicketPromo(id) {
     const c = cotizaciones.find(p => p.id === id);
     if (!c) {
@@ -2189,14 +2252,12 @@ function abrirModalTicketPromo(id) {
         return;
     }
     
-    // Verificar si tiene productos en promoción
     const tienePromocion = (c.productos || []).some(item => {
         const prod = productos.find(p => p.nombre === item.nombre);
         return prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
     });
     
     if (!tienePromocion) {
-        // Si no tiene promociones, usar el ticket normal
         abrirModalTicket(id);
         return;
     }
@@ -2261,7 +2322,6 @@ function abrirModalTicketPromo(id) {
         </div>`;
     });
     
-    // Mostrar ahorro total si hay promociones
     let ahorroTotal = 0;
     (c.productos || []).forEach(item => {
         const prod = productos.find(p => p.nombre === item.nombre);
@@ -2300,9 +2360,6 @@ function abrirModalTicketPromo(id) {
     }, 300);
 }
 
-// ============================================================
-// RENDERIZAR PEDIDOS - VERSIÓN CON PROMOCIONES
-// ============================================================
 function renderizarPedidos() {
     const tbody = document.getElementById('pedidosTabla');
     if (cotizaciones.length === 0) {
@@ -2315,7 +2372,6 @@ function renderizarPedidos() {
         const tipo = c.tipo || 'COTIZACION';
         const esPromocion = c.esPromocion || false;
         
-        // Verificar si tiene productos en promoción
         const tieneProductosPromo = (c.productos || []).some(item => {
             const prod = productos.find(p => p.nombre === item.nombre);
             return prod && (parseFloat(prod.descuento) > 0 || prod.promoFuera === 'SI');
@@ -2366,7 +2422,6 @@ function renderizarPedidos() {
             botonesAccion += `<button class="btn-accion btn-confirmar" onclick="cambiarEstado('${c.id}','PENDIENTE')">↩️ RESTAURAR</button>`;
         }
         
-        // Determinar qué función de ticket usar - AHORA las funciones están definidas
         const ticketFunction = esPromo ? `abrirModalTicketPromo('${c.id}')` : `abrirModalTicket('${c.id}')`;
         
         return `<tr style="${estaCancelado ? 'opacity:0.5;background:#fef2f2;' : ''}${esPromo ? 'border-left:4px solid #e11d48;' : ''}">
@@ -2394,9 +2449,6 @@ function renderizarPedidos() {
     }).join('');
 }
 
-// ============================================================
-// EDICIÓN DE PEDIDOS
-// ============================================================
 function editarPedido(id) {
     const pedido = cotizaciones.find(c => c.id === id); if (!pedido) { mostrarNotificacion('❌ Pedido no encontrado'); return; }
     pedidoEditandoId = id; productosEdicionTemp = (pedido.productos || []).map(p => ({ id: p.id || null, codigo: p.codigo || 'S/C', nombre: p.nombre || 'Producto', cantidad: parseInt(p.cantidad) || 1, precioUnitario: parseFloat(p.precioUnitario) || 0, subtotal: parseFloat(p.subtotal) || 0 }));
@@ -2429,9 +2481,6 @@ function cerrarEdicionPedido() { document.getElementById('modalEditarPedido').st
 
 document.getElementById('modalEditarPedido').addEventListener('click', function(e) { if (e.target === this) { cerrarEdicionPedido(); } });
 
-// ============================================================
-// COMPRAS - FUNCIÓN EDITAR COMPRA
-// ============================================================
 function editarCompra(id) {
     const compra = compras.find(c => c.id === id);
     if (!compra) { 
@@ -2545,9 +2594,6 @@ function cerrarEdicionCompra() {
     window.compraEditandoId = null;
 }
 
-// ============================================================
-// COMPRAS
-// ============================================================
 function renderizarCompras() { const tbody = document.getElementById('comprasTabla'); if (compras.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">No hay compras</td></tr>'; return; } tbody.innerHTML = compras.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||'')).map(c => { const folio = c.id ? c.id.slice(-6).toUpperCase() : 'N/A'; return `<tr><td><strong>COMP-${folio}</strong></td><td>${c.fecha || 'S/F'}</td><td>${c.proveedor || 'Sin proveedor'}</td><td>$${parseFloat(c.total||0).toFixed(2)}</td><td style="display:flex;gap:3px;flex-wrap:wrap;"><button onclick="verDetalleCompra('${c.id}')" style="background:#8b5cf6;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">📋</button><button onclick="imprimirDetalleCompra('${c.id}')" style="background:#2563eb;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">🖨️</button><button onclick="compartirDetalleCompra('${c.id}')" style="background:#25d366;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">📲</button><button onclick="eliminarCompra('${c.id}')" style="background:#ef4444;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">🗑️</button><button onclick="editarCompra('${c.id}')" style="background:#f59e0b;color:white;border:none;border-radius:10px;padding:2px 8px;font-size:9px;cursor:pointer;">✏️</button></td></tr>`; }).join(''); }
 
 function verDetalleCompra(id) { const compra = compras.find(c => c.id === id); if (!compra) return; let html = `<div class="reporte-cliente"><h3 style="color:#002b5c;font-size:15px;">📦 DETALLE DE COMPRA</h3><p style="font-size:12px;color:#64748b;">🏢 ${compra.proveedor} | 📅 ${compra.fecha}</p><p style="font-size:11px;color:#64748b;">🧾 ${compra.factura || 'S/F'}</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;"><button class="btn-imprimir-reporte" onclick="imprimirDetalleCompra('${id}')">🖨️ Imprimir</button><button class="btn-whatsapp-reporte" onclick="compartirDetalleCompra('${id}')">📲 WhatsApp</button><button class="btn-editar-compra" onclick="editarCompra('${id}')">✏️ Editar</button></div><hr style="margin:8px 0;border:0;border-top:1px solid #e2e8f0;">`; (compra.productos || []).forEach(p => { html += `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted #e2e8f0;font-size:11px;"><span>${p.cantidad}x ${p.nombre}</span><span>$${parseFloat(p.subtotal||0).toFixed(2)}</span></div>`; }); html += `<div style="text-align:right;font-weight:bold;font-size:14px;color:#002b5c;margin-top:6px;border-top:2px solid #002b5c;padding-top:6px;">TOTAL: $${parseFloat(compra.total||0).toFixed(2)}</div><button class="btn-cerrar-reporte" onclick="document.getElementById('detalleCompraContainer').style.display='none'">❌ Cerrar</button></div>`; document.getElementById('detalleCompraContainer').innerHTML = html; document.getElementById('detalleCompraContainer').style.display = 'block'; document.getElementById('detalleCompraContainer').scrollIntoView({ behavior: 'smooth' }); }
@@ -2579,9 +2625,6 @@ function compartirDetalleCompra(id) {
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
-// ============================================================
-// COMPRAS - NUEVA COMPRA
-// ============================================================
 document.getElementById('btnNuevaCompra').onclick = function() { document.getElementById('formNuevaCompra').style.display = 'block'; document.getElementById('historialCompras').style.display = 'none'; productosCompraTemp = []; renderizarProductosCompraTemp(); llenarSelectProductosCompra(); document.getElementById('compraFecha').value = new Date().toISOString().split('T')[0]; document.getElementById('compraProveedor').value = ''; document.getElementById('compraFactura').value = ''; document.getElementById('compraTotal').value = ''; document.getElementById('compraObservaciones').value = ''; document.getElementById('compraBuscarProducto').value = ''; };
 document.getElementById('btnVerCompras').onclick = function() { document.getElementById('formNuevaCompra').style.display = 'none'; document.getElementById('historialCompras').style.display = 'block'; renderizarCompras(); };
 document.getElementById('btnCancelarCompra').onclick = function() { document.getElementById('formNuevaCompra').style.display = 'none'; document.getElementById('historialCompras').style.display = 'block'; productosCompraTemp = []; };
@@ -2620,9 +2663,6 @@ document.getElementById('btnGuardarCompra').onclick = function() {
 
 document.getElementById('btnCrearProductoCompra').addEventListener('click', function() { const container = document.getElementById('nuevoProductoCompra'); if (container.style.display === 'flex') { container.style.display = 'none'; this.style.display = 'inline-block'; } else { container.style.display = 'flex'; this.style.display = 'none'; document.getElementById('nuevoProdNombre').focus(); } });
 
-// ============================================================
-// LISTAS DE PRECIOS
-// ============================================================
 function mostrarTabPrecios(tab) { document.querySelectorAll('.tab-precios').forEach(t => t.classList.remove('visible')); const tabs = ['venta', 'compra', 'cliente', 'promociones']; tabs.forEach(t => { const btn = document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1)); if (t === tab) { document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('visible'); if (btn) { btn.style.background = '#002b5c'; btn.style.color = 'white'; } } else { if (btn) { btn.style.background = '#e2e8f0'; btn.style.color = '#334155'; } } }); if (tab === 'venta') renderizarListaVenta(); else if (tab === 'compra') renderizarListaCompraVenta(); else if (tab === 'cliente') renderizarListaCliente(); else if (tab === 'promociones') renderizarPromociones(); }
 
 function renderizarListaVenta() { const categorias = obtenerCategorias(); const select = document.getElementById('filtroVentaCategoria'); const catActual = select.value; select.innerHTML = '<option value="TODOS">Todas</option>'; categorias.forEach(c => { select.innerHTML += `<option value="${c}" ${c === catActual ? 'selected' : ''}>${c}</option>`; }); const buscar = document.getElementById('filtroVentaBuscar').value.toLowerCase().trim(); const catFiltro = select.value; let filtrados = productos.filter(p => { if (!esActivo(p)) return false; let cumpleCat = catFiltro === 'TODOS' || (p.categoria && normalizarCategoria(p.categoria) === normalizarCategoria(catFiltro)); let texto = `${p.nombre} ${p.codigo}`.toLowerCase(); return cumpleCat && texto.includes(buscar); }); filtrados = ordenarProductos(filtrados); const tbody = document.getElementById('listaVentaBody'); if (filtrados.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:15px;">🔍 No hay productos</td></tr>'; return; } tbody.innerHTML = filtrados.map(p => { let pFinal = precioFinal(p); const stock = p.stock !== undefined ? p.stock : '-'; const stockClass = getStockClass(stock); return `<tr><td>${p.codigo || 'S/C'}</td><td>${p.nombre}</td><td>${p.color || ''}</td><td style="font-weight:bold;color:#002b5c;">$${pFinal.toFixed(2)}</td><td><span class="stock-badge ${stockClass}">${getStockText(stock)}</span></td></tr>`; }).join(''); }
@@ -2810,9 +2850,6 @@ function imprimirListaCliente() {
 }
 function generarPDFListaCliente() { imprimirListaCliente(); }
 
-// ============================================================
-// RENDERIZAR INVENTARIO
-// ============================================================
 function renderizarInventario() {
     const tbody = document.getElementById('inventarioTabla'); const contador = document.getElementById('inventarioContador');
     const productosActivos = productos.filter(p => esActivo(p)); contador.textContent = `Total de productos activos: ${productosActivos.length}`;
@@ -2826,9 +2863,6 @@ function renderizarInventario() {
     if (productosOrdenados.length > 0) { tbody.innerHTML += `<tr style="background:#e2e8f0;font-weight:bold;"><td colspan="8" style="text-align:right;">💰 VALOR TOTAL DEL INVENTARIO:</td><td colspan="3" style="color:#2563eb;font-size:14px;">$${valorTotalInventario.toFixed(2)}</td></tr>`; }
 }
 
-// ============================================================
-// BUSCADOR DE INVENTARIO
-// ============================================================
 document.getElementById('btnBuscarInventario').addEventListener('click', function() { filtrarInventario(); });
 document.getElementById('buscarInventario').addEventListener('keyup', function(e) { if (e.key === 'Enter') { filtrarInventario(); } });
 
@@ -2840,9 +2874,6 @@ function filtrarInventario() {
     document.getElementById('inventarioContador').textContent = `Productos encontrados: ${totalVisible}`;
 }
 
-// ============================================================
-// BUSCADOR DE CLIENTES
-// ============================================================
 document.getElementById('btnBuscarClientes').addEventListener('click', function() { filtrarClientes(); });
 document.getElementById('buscarClientes').addEventListener('keyup', function(e) { if (e.key === 'Enter') { filtrarClientes(); } });
 
@@ -2852,9 +2883,6 @@ function filtrarClientes() {
     filas.forEach(fila => { const texto = fila.textContent.toLowerCase(); if (busqueda === '' || texto.includes(busqueda)) { fila.style.display = ''; } else { fila.style.display = 'none'; } });
 }
 
-// ============================================================
-// RENDERIZAR HISTORICO DE VENTAS
-// ============================================================
 function renderizarHistoricoVentas(fechaDesde, fechaHasta) {
     const tbody = document.getElementById('historicoVentasTabla');
     let filtradas = cotizaciones.filter(c => c.tipo !== 'COTIZACION');
@@ -2873,9 +2901,6 @@ function renderizarHistoricoVentas(fechaDesde, fechaHasta) {
     tbody.innerHTML = html; document.getElementById('totalVentasFiltradas').textContent = `💰 TOTAL VENTAS: $${totalVentasFiltradas.toFixed(2)}`;
 }
 
-// ============================================================
-// GRÁFICAS EN TIEMPO REAL
-// ============================================================
 function renderizarGraficas() {
     if (!modoAdmin) return;
     const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
@@ -2887,7 +2912,8 @@ function renderizarGraficas() {
     const categorias = obtenerCategorias(); const cantidades = categorias.map(cat => productos.filter(p => p.categoria && normalizarCategoria(p.categoria) === normalizarCategoria(cat)).length);
     if (chartCategorias) { chartCategorias.destroy(); }
     chartCategorias = new Chart(document.getElementById('categoriasChart'), { type: 'doughnut', data: { labels: categorias.length > 0 ? categorias : ['Sin categoría'], datasets: [{ data: categorias.length > 0 ? cantidades : [productos.length], backgroundColor: ['#2563eb', '#f59e0b', '#22c55e', '#8b5cf6', '#ef4444', '#ec4899', '#06b6d4', '#f472b6'] }] }, options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 8 } } } } } });
-    const ventasProductos = {}; cotizacionesFiltradas.forEach(c => { (c.productos || []).forEach(item => { const key = item.nombre || 'Producto'; if (!ventasProductos[key]) ventasProductos[key] = 0; ventasProductos[key] += parseInt(item.cantidad) || 0; }); }); const topProductos = Object.entries(ventasProductos).sort((a,b) => b[1]-a[1]).slice(0,5);
+    const ventasProductos = {}; cotizacionesFiltradas.forEach(c => { (c.productos || []).forEach(item => { const key = item.nombre || 'Producto'; if (!ventasProductos[key]) ventasProductos[key] = 0; ventasProductos[key] += parseInt(item.cantidad) || 0; }); });
+    const topProductos = Object.entries(ventasProductos).sort((a,b) => b[1]-a[1]).slice(0,10);
     if (chartTopProductos) { chartTopProductos.destroy(); }
     chartTopProductos = new Chart(document.getElementById('topProductosChart'), { type: 'bar', data: { labels: topProductos.map(item => item[0]), datasets: [{ label: 'Unidades Vendidas', data: topProductos.map(item => item[1]), backgroundColor: '#f59e0b', borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false } }, indexAxis: 'y', scales: { x: { beginAtZero: true } } } });
     const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']; const ventasPorMes = new Array(12).fill(0);
@@ -2896,9 +2922,6 @@ function renderizarGraficas() {
     chartVentasMes = new Chart(document.getElementById('ventasMesChart'), { type: 'line', data: { labels: meses, datasets: [{ label: 'Ventas ($)', data: ventasPorMes, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
 }
 
-// ============================================================
-// ACTUALIZAR PANEL ADMIN
-// ============================================================
 function actualizarPanelAdmin() {
     if (!modoAdmin) return;
     const totalVentas = cotizaciones.filter(c => c.tipo !== 'COTIZACION').reduce((s, c) => s + parseFloat(c.total || 0), 0);
@@ -2949,9 +2972,6 @@ function compartirReporteVentas() {
     window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
-// ============================================================
-// MODAL STOCK
-// ============================================================
 document.getElementById('btnStockSumar').onclick = function() { modoStock = 'sumar'; this.classList.add('active'); document.getElementById('btnStockPoner').classList.remove('active'); document.getElementById('btnStockDevolver').classList.remove('active'); document.getElementById('modalStockInstruccion').textContent = 'Ingresa la cantidad a AGREGAR'; document.getElementById('modalStockInput').placeholder = 'Cantidad a agregar'; document.getElementById('modalStockInput').value = ''; document.getElementById('modalStockRazon').style.display = 'none'; document.getElementById('modalStockRazonInput').value = ''; };
 document.getElementById('btnStockPoner').onclick = function() { modoStock = 'poner'; this.classList.add('active'); document.getElementById('btnStockSumar').classList.remove('active'); document.getElementById('btnStockDevolver').classList.remove('active'); document.getElementById('modalStockInstruccion').textContent = 'Ingresa el NUEVO stock total'; document.getElementById('modalStockInput').placeholder = 'Nuevo stock total'; document.getElementById('modalStockInput').value = ''; document.getElementById('modalStockRazon').style.display = 'none'; document.getElementById('modalStockRazonInput').value = ''; };
 document.getElementById('btnStockDevolver').onclick = function() { modoStock = 'devolver'; this.classList.add('active'); document.getElementById('btnStockSumar').classList.remove('active'); document.getElementById('btnStockPoner').classList.remove('active'); document.getElementById('modalStockInstruccion').textContent = 'Ingresa la cantidad DEVUELTA'; document.getElementById('modalStockInput').placeholder = 'Cantidad devuelta'; document.getElementById('modalStockInput').value = ''; document.getElementById('modalStockRazon').style.display = 'block'; document.getElementById('modalStockRazonInput').value = ''; document.getElementById('modalStockRazonInput').focus(); };
@@ -2960,29 +2980,20 @@ document.getElementById('btnStockCancelar').onclick = () => { document.getElemen
 
 function abrirModalStock(id) { const prod = productos.find(p => p.id === id); if (!prod) return; productoStockActual = id; document.getElementById('modalStockProducto').textContent = `${prod.nombre} - Stock: ${prod.stock || 0}`; document.getElementById('modalStockInput').value = ''; document.getElementById('modalStockRazonInput').value = ''; document.getElementById('modalStockRazon').style.display = 'none'; modoStock = 'sumar'; document.getElementById('btnStockSumar').classList.add('active'); document.getElementById('btnStockPoner').classList.remove('active'); document.getElementById('btnStockDevolver').classList.remove('active'); document.getElementById('modalStockInstruccion').textContent = 'Ingresa la cantidad a AGREGAR'; document.getElementById('modalStock').style.display = 'flex'; setTimeout(() => document.getElementById('modalStockInput').focus(), 100); }
 
-// ============================================================
-// FUNCIÓN PARA GENERAR HTML DE IMPRESIÓN
-// ============================================================
 function generarHTMLCompletoImpresion(titulo, contenido) {
     const fecha = new Date().toLocaleDateString('es-MX');
     return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${titulo} - GAETO COMERCIOS</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Arial,sans-serif;padding:20px;background:white;font-size:11px}.header-preview{text-align:center;margin-bottom:20px;padding:10px;border-bottom:2px solid #002b5c}.header-preview img{max-width:150px;height:auto;display:block;margin:0 auto 10px auto}.header-preview h2{color:#002b5c;margin:10px 0 5px 0;font-size:18px}.header-preview p{color:#64748b;font-size:12px;margin:5px 0}table{width:100%;border-collapse:collapse;font-size:10px;margin-top:10px}th{background:#002b5c!important;color:white!important;padding:6px 8px;text-align:left;border:1px solid #002b5c;font-size:9px}td{padding:4px 8px;border-bottom:1px solid #e2e8f0;font-size:9px}tr:nth-child(even){background:#f8fafc}.pie{text-align:center;margin-top:25px;padding-top:15px;border-top:2px solid #002b5c;font-size:9px;color:#64748b}@page{size:A4 portrait;margin:10mm 15mm}@media print{body{padding:10px}.no-print{display:none!important}}</style></head><body><div class="header-preview"><img src="${LOGO_URL}" alt="GAETO COMERCIOS"><h2>${titulo}</h2><p>📅 ${fecha}</p><hr style="border:1px solid #e2e8f0;margin:8px 0;"></div>${contenido}<div class="pie">📞 228 287 7441 | 📍 Jiménez s/n, Col. Miguel Alemán, Veracruz, Ver.</div><div class="no-print" style="text-align:center;margin-top:15px;padding:10px;border-top:1px solid #ccc;"><button onclick="window.print()" style="background:#2563eb;color:white;border:none;padding:8px 20px;border-radius:30px;font-weight:bold;cursor:pointer;font-size:12px;">🖨️ Imprimir</button><button onclick="window.close()" style="background:#e2e8f0;color:#334155;border:none;padding:8px 20px;border-radius:30px;font-weight:bold;cursor:pointer;font-size:12px;margin-left:8px;">❌ Cerrar</button></div></body></html>`;
 }
 
-// ============================================================
-// COMPARTIR CATÁLOGO
-// ============================================================
 document.getElementById('compartirBtn').onclick = function() {
     const url = "https://tolentinojose01-collab.github.io/tiendaenlinea-gaetocomerciozm/";
     const mensaje = `📦 *GAETO COMERCIOS* 🛒\nCatálogo: ${url}\n📅 PEDIDOS: LUNES, MARTES, MIÉRCOLES\n🚚 ENTREGAS: VIERNES Y SÁBADOS\n📞 228 287 7441\n\n🔗 Haz tu pedido desde el catálogo. ¡Regístrate y te contactamos!`;
     if (navigator.share) { navigator.share({ title: 'GAETO COMERCIOS', text: mensaje }).then(() => mostrarNotificacion("✅ Compartido")).catch(() => {}); } else { window.open(`https://wa.me/522282877441?text=${encodeURIComponent(mensaje)}`, '_blank'); }
 };
 
-// ============================================================
-// IMPRIMIR CATÁLOGO COMPLETO - BOTÓN
-// ============================================================
 document.getElementById('catalogoImprimirBtn').onclick = function() {
     if (!modoAdmin) {
-        mostrarNotificacion("🔐 Activa modo Admin (3 clics en el logo)");
+        mostrarNotificacion("🔐 Activa modo Admin (10 clics en el logo)");
         return;
     }
     imprimirCatalogoCompleto();
@@ -2995,11 +3006,9 @@ function imprimirCatalogoCompleto() {
         return;
     }
     
-    // Guardar estado
     const catActual = categoriaActiva;
     const busqActual = textoBusqueda;
     
-    // Mostrar todos
     categoriaActiva = "TODOS";
     textoBusqueda = "";
     renderizarFiltros();
@@ -3015,9 +3024,6 @@ function imprimirCatalogoCompleto() {
     }, 600);
 }
 
-// ============================================================
-// WINDOW ONLOAD
-// ============================================================
 window.onload = function() {
     initTabs();
     document.getElementById('btnFiltrarVentas').addEventListener('click', function() { const desde = document.getElementById('fechaDesde').value; const hasta = document.getElementById('fechaHasta').value; renderizarHistoricoVentas(desde, hasta); });
@@ -3026,11 +3032,11 @@ window.onload = function() {
     document.getElementById('vaciarCarritoBtn').onclick = () => { carrito = []; renderizarCarrito(); };
     document.getElementById('toggleModoBtn').onclick = () => { if (modoAdmin) { if (confirm('¿Salir del modo administrador?')) { desactivarModoAdmin(); mostrarNotificacion('👁️ Modo cliente activado'); } } };
     document.getElementById('adminPanelBtn').onclick = () => { if (modoAdmin) { document.getElementById('adminPanel').classList.toggle('visible'); if (document.getElementById('adminPanel').classList.contains('visible')) { actualizarPanelAdmin(); renderizarGraficas(); } } else { document.getElementById('modalPwd').style.display = 'flex'; document.getElementById('pwdInput').focus(); } };
-    document.getElementById('promosImgBtn').onclick = function() { if (modoAdmin) { abrirPromosImg(); } else { mostrarNotificacion("🔐 Activa modo Admin (3 clics en el logo)"); } };
+    document.getElementById('promosImgBtn').onclick = function() { if (modoAdmin) { abrirPromosImg(); } else { mostrarNotificacion("🔐 Activa modo Admin (10 clics en el logo)"); } };
     document.getElementById('agregarProductoBtn').onclick = () => { const nuevoRef = database.ref('productos').push(); nuevoRef.set({ codigo: "GAETO-" + Math.floor(1000 + Math.random() * 9000), nombre: "Nuevo Artículo", descripcion: "Descripción", categoria: "GENERAL", color: "", precioLista: "100", descuento: "0", stock: "10", imagenUrl: "", promoFuera: "NO", textoPromo: "", vigenciaPromo: "", precioCompra: "60", activo: "SI" }).then(() => { mostrarNotificacion("➕ Producto creado. ¡Edítalo!"); setTimeout(() => { const nuevos = productos.filter(p => p.nombre === "Nuevo Artículo"); if (nuevos.length > 0) toggleEditor(nuevos[nuevos.length-1].id); }, 500); }).catch(err => mostrarNotificacion("❌ Error: " + err.message)); };
-    document.getElementById('promocionesBtn').onclick = function() { if (modoAdmin) { document.getElementById('adminPanel').classList.add('visible'); document.querySelectorAll('.tabs-admin button').forEach(function(b) { b.classList.remove('activo'); }); document.querySelector('.tabs-admin button[data-tab="tabListasPrecios"]').classList.add('activo'); document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('visible'); }); document.getElementById('tabListasPrecios').classList.add('visible'); mostrarTabPrecios('promociones'); setTimeout(function() { renderizarPromociones(); }, 300); } else { mostrarNotificacion("🔐 Activa modo Admin (3 clics en el logo)"); } };
+    document.getElementById('promocionesBtn').onclick = function() { if (modoAdmin) { document.getElementById('adminPanel').classList.add('visible'); document.querySelectorAll('.tabs-admin button').forEach(function(b) { b.classList.remove('activo'); }); document.querySelector('.tabs-admin button[data-tab="tabListasPrecios"]').classList.add('activo'); document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('visible'); }); document.getElementById('tabListasPrecios').classList.add('visible'); mostrarTabPrecios('promociones'); setTimeout(function() { renderizarPromociones(); }, 300); } else { mostrarNotificacion("🔐 Activa modo Admin (10 clics en el logo)"); } };
     console.log('✅ GAETO COMERCIOS - Sistema cargado correctamente');
-    console.log('🔐 Para activar modo Admin: 3 clics en el logo');
+    console.log('🔐 Para activar modo Admin: 10 clics en el logo');
     console.log('📸 Promos Imagen: Botón "PROMOS IMAGEN" - Solo promociones en imagen');
     console.log('📦 Imprimir Catálogo: Botón "IMPRIMIR CATÁLOGO" - Modo Admin');
     console.log('📷 Ticket: Botón "📷 WhatsApp" en el ticket - Ahora funciona correctamente');
